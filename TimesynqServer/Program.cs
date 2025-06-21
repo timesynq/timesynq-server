@@ -1,25 +1,52 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using TimesynqServer.Database;
+using TimesynqServer.Database.Entities;
+using TimesynqServer.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
+
+string? dbConnectionString = builder.Configuration.GetConnectionString("SqlServerDatabase");
+
+builder.Services.AddDbContext<TimesynqDbContext>(options => options.UseSqlServer(dbConnectionString));
+
+builder.Services.AddIdentityCore<TimesynqUser>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 12;
+
+    options.SignIn.RequireConfirmedAccount = true;
+})
+    .AddEntityFrameworkStores<TimesynqDbContext>()
+    .AddApiEndpoints();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    app.ApplyMigrations();
 }
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapTimesynqIdentityApi<TimesynqUser>();
+
 
 app.Run();
