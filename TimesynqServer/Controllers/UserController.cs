@@ -44,7 +44,14 @@ namespace TimesynqServer.Controllers
 
                 if (!createdUser.Succeeded)
                 {
-                    return StatusCode(400, createdUser.Errors);
+                    return BadRequest(createdUser.Errors);
+                }
+
+                var roleResult = await _userManager.AddToRoleAsync(newUser, "UnconfirmedUser");
+
+                if (!roleResult.Succeeded)
+                {
+                    return BadRequest(roleResult.Errors);
                 }
 
                 return Ok("User Created");
