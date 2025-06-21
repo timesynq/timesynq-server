@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesynqServer.Database;
 
@@ -11,9 +12,11 @@ using TimesynqServer.Database;
 namespace TimesynqServer.Migrations
 {
     [DbContext(typeof(TimesynqDbContext))]
-    partial class TimesynqDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250620030239_UseOldProfilePictureScheme")]
+    partial class UseOldProfilePictureScheme
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -168,6 +171,10 @@ namespace TimesynqServer.Migrations
 
                     b.Property<DateTime>("CreatedOnUTC")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)

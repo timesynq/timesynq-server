@@ -11,13 +11,22 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme); //todo: switch to jwt bearer tokens
+builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
 
 string? dbConnectionString = builder.Configuration.GetConnectionString("SqlServerDatabase");
 
 builder.Services.AddDbContext<TimesynqDbContext>(options => options.UseSqlServer(dbConnectionString));
 
-builder.Services.AddIdentityCore<TimesynqUser>()
+builder.Services.AddIdentityCore<TimesynqUser>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 12;
+
+    options.SignIn.RequireConfirmedAccount = true;
+})
     .AddEntityFrameworkStores<TimesynqDbContext>()
     .AddApiEndpoints();
 
@@ -33,10 +42,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapIdentityApi<TimesynqUser>();
+app.MapTimesynqIdentityApi<TimesynqUser>();
 
 
 app.Run();

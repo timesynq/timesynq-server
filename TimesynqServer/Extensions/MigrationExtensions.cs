@@ -10,7 +10,6 @@ namespace TimesynqServer.Extensions
             using IServiceScope scope = app.ApplicationServices.CreateScope();
             using TimesynqDbContext dbContext = scope.ServiceProvider.GetRequiredService<TimesynqDbContext>();
             dbContext.Database.Migrate();
-
         }
     }
 }
