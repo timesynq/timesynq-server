@@ -2,5 +2,13 @@
 
 namespace TimesynqServer.Database.Entities
 {
-    public class TimesynqRole : IdentityRole<Guid> {}
+    public class TimesynqRole : IdentityRole<Guid> 
+    {
+        public TimesynqRole(): base() { }
+
+        public TimesynqRole(string rolename) : base(rolename)
+        {
+            
+        }
+    }
 }

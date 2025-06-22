@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
@@ -25,9 +26,10 @@ builder.Services.AddIdentityCore<TimesynqUser>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 12;
 
-    options.SignIn.RequireConfirmedAccount = true;
+    options.SignIn.RequireConfirmedAccount = false;
 })
     .AddEntityFrameworkStores<TimesynqDbContext>()
+    .AddUserStore<UserStore<TimesynqUser, TimesynqRole, TimesynqDbContext, Guid>>()
     .AddApiEndpoints();
 
 var app = builder.Build();
