@@ -1,9 +1,11 @@
+using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
+using TimesynqServer.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,12 @@ builder.Services.AddIdentityCore<TimesynqUser>(options =>
     .AddEntityFrameworkStores<TimesynqDbContext>()
     .AddUserStore<UserStore<TimesynqUser, TimesynqRole, TimesynqDbContext, Guid>>()
     .AddApiEndpoints();
+
+builder.Services.AddTransient<IEmailSender<TimesynqUser>, EmailSender<TimesynqUser>>();
+
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+builder.Services.AddAWSService<IAmazonSimpleEmailService>();
+builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection(EmailSenderOptions.ConfigurationSection));
 
 var app = builder.Build();
 

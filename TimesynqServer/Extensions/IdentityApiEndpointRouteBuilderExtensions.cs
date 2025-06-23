@@ -1,12 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -14,10 +8,19 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
+using TimesynqServer.Database.Entities;
 using TimesynqServer.Models.DTO;
+using TimesynqServer.Services;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -52,6 +55,54 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         string? confirmEmailEndpointName = null;
 
         var routeGroup = endpoints.MapGroup("");
+
+        routeGroup.MapPost("/register", async Task<Results<Ok, ValidationProblem>>
+            ([FromBody] SignUpRequestDTO signUpRequestDTO, HttpContext context, [FromServices] IServiceProvider sp) =>
+        {
+            var userManager = sp.GetRequiredService<UserManager<TUser>>();
+
+            if (!userManager.SupportsUserEmail)
+            {
+                throw new NotSupportedException($"{nameof(MapTimesynqIdentityApi)} requires a user store with email support.");
+            }
+
+            var userStore = sp.GetRequiredService<IUserStore<TUser>>();
+            var emailStore = (IUserEmailStore<TUser>)userStore;
+            var email = signUpRequestDTO.Email;
+
+            if (string.IsNullOrEmpty(email) || !_emailAddressAttribute.IsValid(email))
+            {
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidEmail(email)));
+            }
+
+            var user = new TUser();
+            await userStore.SetUserNameAsync(user, signUpRequestDTO.Username, CancellationToken.None);
+            await emailStore.SetEmailAsync(user, email, CancellationToken.None);
+
+            if(user is TimesynqUser timesynqUser)
+            {
+                timesynqUser.ProfilePicture = TimesynqRandomizer.GenerateIdenticon();
+                timesynqUser.CreatedOnUTC = DateTime.UtcNow;
+                timesynqUser.LastUpdatedOnUTC = DateTime.UtcNow;
+            }
+
+            var result = await userManager.CreateAsync(user, signUpRequestDTO.Password!);
+
+            if (!result.Succeeded)
+            {
+                return CreateValidationProblem(result);
+            }
+
+            result = await userManager.AddToRoleAsync(user, "UnconfirmedUser");
+
+            if (!result.Succeeded)
+            {
+                return CreateValidationProblem(result);
+            }
+
+            await SendConfirmationEmailAsync(user, userManager, context, email);
+            return TypedResults.Ok();
+        });
 
         routeGroup.MapPost("/login", async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>>
             ([FromBody] LoginRequestDTO login, [FromQuery] bool? useCookies, [FromQuery] bool? useSessionCookies, [FromServices] IServiceProvider sp) =>
@@ -124,25 +175,30 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.Unauthorized();
             }
 
-            IdentityResult result;
+            IdentityResult confirmResult;
+            IdentityResult roleResult;
 
             if (string.IsNullOrEmpty(changedEmail))
             {
-                result = await userManager.ConfirmEmailAsync(user, code);
+                confirmResult = await userManager.ConfirmEmailAsync(user, code);
+                roleResult = await userManager.AddToRoleAsync(user, "ConfirmedUser");
+                if (!roleResult.Succeeded)
+                {
+                    return TypedResults.Unauthorized();
+                }
+
+                roleResult = await userManager.RemoveFromRoleAsync(user, "UnconfirmedUser");
+                if (!roleResult.Succeeded)
+                {
+                    return TypedResults.Unauthorized();
+                }
             }
             else
             {
-                // As with Identity UI, email and user name are one and the same. So when we update the email,
-                // we need to update the user name.
-                result = await userManager.ChangeEmailAsync(user, changedEmail, code);
-
-                if (result.Succeeded)
-                {
-                    result = await userManager.SetUserNameAsync(user, changedEmail);
-                }
+                confirmResult = await userManager.ChangeEmailAsync(user, changedEmail, code);
             }
 
-            if (!result.Succeeded)
+            if (!confirmResult.Succeeded)
             {
                 return TypedResults.Unauthorized();
             }
