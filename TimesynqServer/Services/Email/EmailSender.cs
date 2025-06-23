@@ -47,7 +47,7 @@ namespace TimesynqServer.Services.Email
                     Subject = new Content(subject),
                     Body = new Body
                     {
-                        Text = new Content(body)
+                        Html = new Content($"<h1>Click the link below to confirm your email.</h1><p>{body}</p>")
                     }
                 }
             };

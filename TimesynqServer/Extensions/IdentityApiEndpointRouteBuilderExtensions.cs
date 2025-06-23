@@ -42,7 +42,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
     /// </param>
     /// <returns>An <see cref="IEndpointConventionBuilder"/> to further customize the added endpoints.</returns>
     public static IEndpointConventionBuilder MapTimesynqIdentityApi<TUser>(this IEndpointRouteBuilder endpoints)
-        where TUser : TimesynqUser, new()
+        where TUser : class, new()
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
@@ -79,9 +79,12 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             await userStore.SetUserNameAsync(user, signUpRequestDTO.Username, CancellationToken.None);
             await emailStore.SetEmailAsync(user, email, CancellationToken.None);
 
-            user.ProfilePicture = TimesynqRandomizer.GenerateIdenticon();
-            user.CreatedOnUTC = DateTime.UtcNow;
-            user.LastUpdatedOnUTC = DateTime.UtcNow;
+            if(user is TimesynqUser timesynqUser)
+            {
+                timesynqUser.ProfilePicture = TimesynqRandomizer.GenerateIdenticon();
+                timesynqUser.CreatedOnUTC = DateTime.UtcNow;
+                timesynqUser.LastUpdatedOnUTC = DateTime.UtcNow;
+            }
 
             var result = await userManager.CreateAsync(user, signUpRequestDTO.Password!);
 
