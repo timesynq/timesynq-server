@@ -20,20 +20,20 @@ namespace TimesynqServer.Services.Email
 
         public async Task SendConfirmationLinkAsync(TUser user, string email, string confirmationLink)
         {
-            await Execute(email, "Confirm email for Timesynq", confirmationLink);
+            await Execute(email, "Confirm email for Timesynq", "Click the link below to confirm your email.", confirmationLink);
         }
 
         public async Task SendPasswordResetCodeAsync(TUser user, string email, string resetCode)
         {
-            await Execute(email, "Reset password for Timesynq", resetCode);
+            await Execute(email, "Reset password for Timesynq", "Your password reset code", resetCode);
         }
 
         public async Task SendPasswordResetLinkAsync(TUser user, string email, string resetLink)
         {
-            await Execute(email, "Password reset code for Timesynq", resetLink);
+            await Execute(email, "Password reset code for Timesynq", "Click the link below to reset your password", resetLink);
         }
 
-        private async Task Execute(string email, string subject, string body)
+        private async Task Execute(string email, string subject, string body, string link)
         {
             var request = new SendEmailRequest
             {
@@ -47,7 +47,7 @@ namespace TimesynqServer.Services.Email
                     Subject = new Content(subject),
                     Body = new Body
                     {
-                        Html = new Content($"<h1>Click the link below to confirm your email.</h1><p>{body}</p>")
+                        Html = new Content($"<h1>{body}</h1><p>{link}</p>")
                     }
                 }
             };
