@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Models.DTO
+﻿namespace TimesynqServer.Models.DTO.Request.Account
 {
     public sealed class LoginRequestDTO
     {

@@ -9,6 +9,8 @@ namespace TimesynqServer.Database
     {
         public TimesynqDbContext(DbContextOptions<TimesynqDbContext> options) : base(options) { }
 
+        public DbSet<Follow> Follows { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -35,6 +37,19 @@ namespace TimesynqServer.Database
                 },
             };
             builder.Entity<TimesynqRole>().HasData(roles);
+
+            builder.Entity<Follow>().HasKey(f => new { f.FollowerId, f.FolloweeId });
+            builder.Entity<Follow>()
+                .HasOne(f => f.Follower)
+                .WithMany(u => u.Following)
+                .HasForeignKey(f => f.FollowerId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Follow>()
+                .HasOne(f => f.Followee)
+                .WithMany(u => u.Followers)
+                .HasForeignKey(f => f.FolloweeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
 
     }
