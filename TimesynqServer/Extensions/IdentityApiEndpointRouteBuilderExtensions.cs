@@ -19,7 +19,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using TimesynqServer.Database.Entities;
-using TimesynqServer.Models.DTO;
+using TimesynqServer.Models.DTO.Request.Account;
 using TimesynqServer.Services;
 
 namespace Microsoft.AspNetCore.Routing;

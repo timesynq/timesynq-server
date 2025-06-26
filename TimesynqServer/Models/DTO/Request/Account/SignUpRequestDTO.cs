@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TimesynqServer.Models.DTO
+namespace TimesynqServer.Models.DTO.Request.Account
 {
     public sealed class SignUpRequestDTO
     {
