@@ -7,7 +7,7 @@ using System.Security.Claims;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
-using TimesynqServer.Hubs;
+using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);

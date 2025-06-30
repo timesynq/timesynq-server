@@ -8,7 +8,7 @@ using TimesynqServer.Services;
 using TimesynqServer.Services.Cache;
 using TimesynqServer.Services.Cache.HubCache;
 
-namespace TimesynqServer.Hubs
+namespace TimesynqServer.Hubs.TrackerHub
 {
     [Authorize]
     public class TrackerHub : Hub

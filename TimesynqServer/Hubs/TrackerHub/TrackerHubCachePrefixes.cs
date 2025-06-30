@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Hubs
+﻿namespace TimesynqServer.Hubs.TrackerHub
 {
     public static class TrackerHubCachePrefixes
     {
