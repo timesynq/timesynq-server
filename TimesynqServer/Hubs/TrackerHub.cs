@@ -90,8 +90,8 @@ namespace TimesynqServer.Hubs
                 return;
             }
 
-            await Clients.Group(ownedRoom.Code).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
-            await _hubCacheService.RemoveAsync($"room:{ownedRoom.Code}");
+            await Clients.Group(ownedRoom.RoomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
+            await _hubCacheService.RemoveAsync($"room:{ownedRoom.RoomCode}");
         }
 
         public async Task CreateRoom(Guid? wipId = null)
@@ -120,8 +120,8 @@ namespace TimesynqServer.Hubs
             //todo: tracker info initialization
 
             var newRoom = new Room
-            {
-                Code = roomCode,
+            { 
+                RoomCode = roomCode,
                 OwnerId = callerGuid,
             };
 
