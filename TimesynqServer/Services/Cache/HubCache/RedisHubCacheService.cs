@@ -9,31 +9,10 @@ namespace TimesynqServer.Services.Cache.HubCache
             throw new NotImplementedException();
         }
 
-        public Task<Connection> GetConnectionAsync(Guid userId)
+        public Task SetAsync<T>(string key, T value) where T : class
         {
             throw new NotImplementedException();
         }
-
-        public Task<Connection> GetConnectionAsync(Guid userId, string roomCode)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Room> GetRoomAsync(Guid ownerId, string roomCode)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Room> GetRoomAsync(string roomCode)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<Connection>> GetRoomConnectionsAsync(string roomCode)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task RemoveAsync(string key)
         {
             throw new NotImplementedException();
@@ -44,9 +23,20 @@ namespace TimesynqServer.Services.Cache.HubCache
             throw new NotImplementedException();
         }
 
-        public Task SetAsync<T>(string key, T value) where T : class
+        public Task<Connection> GetConnectionAsync(string key, string roomCode)
         {
             throw new NotImplementedException();
         }
+
+        public Task<Room> GetRoomAsync(string key, Guid ownerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<Connection>> GetRoomConnectionsAsync(string roomCode)
+        {
+            throw new NotImplementedException();
+        }
+        
     }
 }
