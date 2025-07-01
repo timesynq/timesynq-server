@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using System.Security.Claims;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
+using TimesynqServer.Services.Cache.RedisConnectionProvider;
 using TimesynqServer.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +47,8 @@ builder.Services.AddAWSService<IAmazonSimpleEmailService>();
 builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection(EmailSenderOptions.ConfigurationSection));
 
 builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<IRedisConnectionProvider, RedisConnectionProvider>();
 
 var app = builder.Build();
 
