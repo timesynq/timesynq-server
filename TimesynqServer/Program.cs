@@ -9,7 +9,6 @@ using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
-using TimesynqServer.Services.Cache.RedisConnectionProvider;
 using TimesynqServer.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,7 +47,7 @@ builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection(
 
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<IRedisConnectionProvider, RedisConnectionProvider>();
+builder.AddRedisClient("Redis");
 
 var app = builder.Build();
 

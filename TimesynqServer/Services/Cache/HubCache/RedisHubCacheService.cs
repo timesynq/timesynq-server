@@ -1,18 +1,28 @@
-﻿using TimesynqServer.Models.Cache;
+﻿using StackExchange.Redis;
+using TimesynqServer.Models.Cache;
 
 namespace TimesynqServer.Services.Cache.HubCache
 {
     public class RedisHubCacheService : IHubCacheService
     {
+
+        private IConnectionMultiplexer _redis;
+
+        public RedisHubCacheService(IConnectionMultiplexer redis)
+        {
+            _redis = redis;
+        }
+
         public Task<T?> GetAsync<T>(string key) where T : class
         {
             throw new NotImplementedException();
         }
 
         public Task SetAsync<T>(string key, T value) where T : class
-        {
+        { 
             throw new NotImplementedException();
         }
+
         public Task RemoveAsync(string key)
         {
             throw new NotImplementedException();

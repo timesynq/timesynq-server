@@ -10,7 +10,7 @@ using TimesynqServer.Services.Cache.HubCache;
 
 namespace TimesynqServer.Hubs.TrackerHub
 {
-    [Authorize]
+    [Authorize(Roles = "ConfirmedUser, Admin")]
     public class TrackerHub : Hub
     {
 
