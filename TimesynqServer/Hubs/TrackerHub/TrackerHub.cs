@@ -42,7 +42,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             {
                 return;
             }
-            await _hubCacheService.RemoveAsync($"connection:{callerGuid}");
+            await _hubCacheService.RemoveAsync($"{TrackerHubCachePrefixes.Connection}:{callerGuid}");
 
             string roomCode = connection.RoomCode;
             TimesynqUser? user = await _dbContext.Users.FindAsync(callerGuid);
@@ -65,12 +65,12 @@ namespace TimesynqServer.Hubs.TrackerHub
             if (ownerConnection == null) 
             {
                 await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
-                await _hubCacheService.RemoveByPrefix($"room:{roomCode}");
+                await _hubCacheService.RemoveByPrefix($"{TrackerHubCachePrefixes.Room}:{roomCode}");
 
                 IEnumerable<Connection> closedRoomConnections = await _hubCacheService.GetRoomConnectionsAsync(roomCode);
                 foreach(var connectionToClosedRoom in closedRoomConnections)
                 {
-                    await _hubCacheService.RemoveAsync($"connection:{connectionToClosedRoom.UserId}");
+                    await _hubCacheService.RemoveAsync($"{TrackerHubCachePrefixes.Connection}:{connectionToClosedRoom.UserId}");
                 }
             }
         }
@@ -91,7 +91,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             }
 
             await Clients.Group(ownedRoom.RoomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
-            await _hubCacheService.RemoveAsync($"room:{ownedRoom.RoomCode}");
+            await _hubCacheService.RemoveAsync($"{TrackerHubCachePrefixes.Room}:{ownedRoom.RoomCode}");
         }
 
         public async Task CreateRoom(Guid? wipId = null)
@@ -125,7 +125,7 @@ namespace TimesynqServer.Hubs.TrackerHub
                 OwnerId = callerGuid,
             };
 
-            await _hubCacheService.SetAsync($"room:{roomCode}", newRoom);
+            await _hubCacheService.SetAsync($"{TrackerHubCachePrefixes.Room}:{roomCode}", newRoom);
 
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveRoomCode);
 
@@ -155,7 +155,7 @@ namespace TimesynqServer.Hubs.TrackerHub
                 UserId = callerGuid,
             };
 
-            await _hubCacheService.SetAsync($"connection:{callerGuid}", newConnection);
+            await _hubCacheService.SetAsync($"{TrackerHubCachePrefixes.Connection}:{callerGuid}", newConnection);
 
             TimesynqUser? user = await _dbContext.Users.FindAsync(callerGuid);
             if (user == null)
