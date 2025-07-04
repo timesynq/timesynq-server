@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using System.Security.Claims;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
+using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +45,10 @@ builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonSimpleEmailService>();
 builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection(EmailSenderOptions.ConfigurationSection));
 
+builder.Services.AddSignalR();
+
+builder.AddRedisClient("Redis");
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -60,6 +66,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapTimesynqIdentityApi<TimesynqUser>();
+
+app.MapHub<TrackerHub>("hub");
 
 app.MapGet("ping", () =>
 {
