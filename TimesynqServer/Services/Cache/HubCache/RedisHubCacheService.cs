@@ -1,9 +1,8 @@
-﻿using StackExchange.Redis;
-using TimesynqServer.Models.Cache;
+﻿using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using System.Text.Json;
-using Microsoft.IdentityModel.Tokens;
-using System.Net;
 using TimesynqServer.Hubs.TrackerHub.Const;
+using TimesynqServer.Models.Cache;
 
 namespace TimesynqServer.Services.Cache.HubCache
 {
@@ -27,7 +26,7 @@ namespace TimesynqServer.Services.Cache.HubCache
                 return null;
             }
 
-            return JsonSerializer.Deserialize<T>(stringResult!);          
+            return JsonSerializer.Deserialize<T>(stringResult!);
         }
 
         public async Task<bool> SetAsync<T>(string key, T value) where T : class
@@ -60,7 +59,7 @@ namespace TimesynqServer.Services.Cache.HubCache
             }
 
             Connection? connection = JsonSerializer.Deserialize<Connection?>(stringResult!);
-            if(connection == null || connection.RoomCode != roomCode)
+            if (connection == null || connection.RoomCode != roomCode)
             {
                 return null;
             }
@@ -79,7 +78,7 @@ namespace TimesynqServer.Services.Cache.HubCache
             }
 
             Room? room = JsonSerializer.Deserialize<Room?>(stringResult!);
-            if(room == null || room.OwnerId != ownerId)
+            if (room == null || room.OwnerId != ownerId)
             {
                 return null;
             }

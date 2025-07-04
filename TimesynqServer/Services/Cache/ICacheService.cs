@@ -1,6 +1,4 @@
-﻿using TimesynqServer.Models.Cache;
-
-namespace TimesynqServer.Services.Cache
+﻿namespace TimesynqServer.Services.Cache
 {
     public interface ICacheService
     {
