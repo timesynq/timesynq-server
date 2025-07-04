@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Hubs.TrackerHub
+﻿namespace TimesynqServer.Hubs.TrackerHub.Const
 {
     public static class TrackerHubClientCallbacks
     {

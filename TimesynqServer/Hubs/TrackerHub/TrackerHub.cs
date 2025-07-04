@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
+using TimesynqServer.Hubs.TrackerHub.Const;
 using TimesynqServer.Models.Cache;
 using TimesynqServer.Services;
 using TimesynqServer.Services.Cache;
@@ -62,17 +63,18 @@ namespace TimesynqServer.Hubs.TrackerHub
             await Task.Delay(30 * 1000);
 
             Connection? ownerConnection = await _hubCacheService.GetConnectionAsync($"{TrackerHubCachePrefixes.Connection}:{callerGuid}", roomCode);
-            if (ownerConnection == null) 
+            if(ownerConnection != null)
             {
-                await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
-                await _hubCacheService.RemoveByPrefix($"{TrackerHubCachePrefixes.Room}:{roomCode}");
-
-                IEnumerable<Connection> closedRoomConnections = await _hubCacheService.GetRoomConnectionsAsync(roomCode);
-                foreach(var connectionToClosedRoom in closedRoomConnections)
-                {
-                    await _hubCacheService.RemoveAsync($"{TrackerHubCachePrefixes.Connection}:{connectionToClosedRoom.UserId}");
-                }
+                return;
             }
+
+            bool isRoomClosed = await _hubCacheService.CloseRoom(roomCode);
+            if (!isRoomClosed)
+            {
+                return;
+            }
+
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
         }
 
         public async Task DisbandRoom(string roomCode)
@@ -90,8 +92,14 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return;
             }
 
+            bool isRoomClosed = await _hubCacheService.CloseRoom(roomCode);
+            if (!isRoomClosed)
+            {
+                return;
+            }
+
             await Clients.Group(ownedRoom.RoomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
-            await _hubCacheService.RemoveAsync($"{TrackerHubCachePrefixes.Room}:{ownedRoom.RoomCode}");
+
         }
 
         public async Task CreateRoom(Guid? wipId = null)
@@ -115,17 +123,21 @@ namespace TimesynqServer.Hubs.TrackerHub
                 roomCode = TimesynqRandomizer.GenerateRoomCode();
             }
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
-
-            //todo: tracker info initialization
-
             var newRoom = new Room
             { 
                 RoomCode = roomCode,
                 OwnerId = callerGuid,
             };
 
-            await _hubCacheService.SetAsync($"{TrackerHubCachePrefixes.Room}:{roomCode}", newRoom);
+            bool isRoomCached = await _hubCacheService.SetAsync($"{TrackerHubCachePrefixes.Room}:{roomCode}", newRoom);
+            if (!isRoomCached)
+            {
+                return;
+            }
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
+
+            //todo: tracker info initialization
 
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveRoomCode);
 
@@ -146,8 +158,6 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return;
             }
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
-
             var newConnection = new Connection
             {
                 ConnectionId = Context.ConnectionId,
@@ -155,7 +165,13 @@ namespace TimesynqServer.Hubs.TrackerHub
                 UserId = callerGuid,
             };
 
-            await _hubCacheService.SetAsync($"{TrackerHubCachePrefixes.Connection}:{callerGuid}", newConnection);
+            bool isConnectionCached = await _hubCacheService.SetConnectionAsync($"{TrackerHubCachePrefixes.Connection}:{callerGuid}", newConnection);
+            if (!isConnectionCached)
+            {
+                return;
+            }
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
             TimesynqUser? user = await _dbContext.Users.FindAsync(callerGuid);
             if (user == null)
