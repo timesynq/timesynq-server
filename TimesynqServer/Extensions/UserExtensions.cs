@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using TimesynqServer.Database.Entities;
+﻿using TimesynqServer.Database.Entities;
 using TimesynqServer.Models.DTO;
 
 namespace TimesynqServer.Extensions

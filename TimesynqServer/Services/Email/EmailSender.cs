@@ -2,7 +2,6 @@
 using Amazon.SimpleEmail.Model;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using TimesynqServer.Database.Entities;
 
 namespace TimesynqServer.Services.Email
 {

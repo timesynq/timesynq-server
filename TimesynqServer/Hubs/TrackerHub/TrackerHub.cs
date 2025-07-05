@@ -6,7 +6,6 @@ using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub.Const;
 using TimesynqServer.Models.Cache;
 using TimesynqServer.Services;
-using TimesynqServer.Services.Cache;
 using TimesynqServer.Services.Cache.HubCache;
 
 namespace TimesynqServer.Hubs.TrackerHub
@@ -47,14 +46,14 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             string roomCode = connection.RoomCode;
             TimesynqUser? user = await _dbContext.Users.FindAsync(callerGuid);
-            if(user == null)
+            if (user == null)
             {
                 return;
             }
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.RemoveProfilePicture, user.ToUserDTO());
 
             Room? ownedRoom = await _hubCacheService.GetRoomAsync($"{TrackerHubCachePrefixes.Room}:{roomCode}", user.Id);
-            if (ownedRoom == null) 
+            if (ownedRoom == null)
             {
                 return;
             }
@@ -63,7 +62,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             await Task.Delay(30 * 1000);
 
             Connection? ownerConnection = await _hubCacheService.GetConnectionAsync($"{TrackerHubCachePrefixes.Connection}:{callerGuid}", roomCode);
-            if(ownerConnection != null)
+            if (ownerConnection != null)
             {
                 return;
             }
@@ -124,7 +123,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             }
 
             var newRoom = new Room
-            { 
+            {
                 RoomCode = roomCode,
                 OwnerId = callerGuid,
             };

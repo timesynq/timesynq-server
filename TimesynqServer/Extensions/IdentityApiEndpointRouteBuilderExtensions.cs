@@ -2,19 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -79,7 +74,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             await userStore.SetUserNameAsync(user, signUpRequestDTO.Username, CancellationToken.None);
             await emailStore.SetEmailAsync(user, email, CancellationToken.None);
 
-            if(user is TimesynqUser timesynqUser)
+            if (user is TimesynqUser timesynqUser)
             {
                 timesynqUser.ProfilePicture = TimesynqRandomizer.GenerateIdenticon();
                 timesynqUser.CreatedOnUTC = DateTime.UtcNow;

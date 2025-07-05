@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
-using TimesynqServer.Models.DTO;
 using TimesynqServer.Models.DTO.Request.Follow;
 
 namespace TimesynqServer.Controllers
@@ -56,7 +54,7 @@ namespace TimesynqServer.Controllers
         public async Task<IActionResult> FollowUser([FromBody] FollowRequestDTO followRequest)
         {
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if(callerId == null)
+            if (callerId == null)
             {
                 return Unauthorized("Invalid token");
             }
@@ -76,7 +74,7 @@ namespace TimesynqServer.Controllers
             bool alreadyFollowing = await _dbContext.Follows
                 .AnyAsync(f => f.FollowerId == callerGuid && f.FolloweeId == followRequest.FolloweeGuid);
 
-            if(alreadyFollowing)
+            if (alreadyFollowing)
             {
                 return Conflict("Already following this user");
             }
@@ -106,7 +104,7 @@ namespace TimesynqServer.Controllers
             Follow? follow = await _dbContext.Follows
                 .FirstOrDefaultAsync(f => f.FollowerId == callerGuid && f.FolloweeId == unfollowRequest.FolloweeGuid);
 
-            if(follow == null)
+            if (follow == null)
             {
                 return NotFound("Not following this user");
             }
