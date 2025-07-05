@@ -5,7 +5,9 @@ using System.Security.Claims;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
+using TimesynqServer.Models.DTO;
 using TimesynqServer.Models.DTO.Request.Follow;
+using TimesynqServer.Models.Pagination;
 
 namespace TimesynqServer.Controllers
 {
@@ -21,32 +23,60 @@ namespace TimesynqServer.Controllers
             _dbContext = dbContext;
         }
 
-        //paginate!!
         [HttpGet("{userId}/followers")]
         [Authorize]
-        public async Task<IActionResult> GetFollowers(Guid userId)
+        public async Task<IActionResult> GetFollowers(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
-            var followers = await _dbContext.Follows
+
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            int totalFollowers = await _dbContext.Follows
+                .Where(f => f.FolloweeId == userId)
+                .CountAsync();
+
+            int totalPages = (int)Math.Ceiling((double)totalFollowers / pageSize);
+
+            pageNumber = Math.Clamp(pageNumber, 1, totalPages);
+
+            IEnumerable<UserDTO> followers = await _dbContext.Follows
                 .Where(f => f.FolloweeId == userId)
                 .Include(f => f.Follower)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(f => f.Follower!.ToUserDTO())
                 .ToListAsync();
 
-            return Ok(followers);
+            PagedResult<UserDTO> pagedResult = followers.ToPagedResult(pageNumber, pageSize, totalFollowers, totalPages, Request);
+
+            return Ok(pagedResult);
         }
 
-        //paginate!!
-        [HttpGet("{userId}/following")]
+        [HttpGet("{userId}/followees")]
         [Authorize]
-        public async Task<IActionResult> GetFollowing(Guid userId)
+        public async Task<IActionResult> GetFollowees(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
-            var following = await _dbContext.Follows
+
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            int totalFollowees = await _dbContext.Follows
+                .Where(f => f.FollowerId == userId)
+                .CountAsync();
+
+            int totalPages = (int)Math.Ceiling((double)totalFollowees / pageSize);
+
+            pageNumber = Math.Clamp(pageNumber, 1, totalPages);
+
+            IEnumerable<UserDTO> followees = await _dbContext.Follows
                 .Where(f => f.FollowerId == userId)
                 .Include(f => f.Followee)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(f => f.Followee!.ToUserDTO())
                 .ToListAsync();
 
-            return Ok(following);
+            PagedResult<UserDTO> pagedResult = followees.ToPagedResult(pageNumber, pageSize, totalFollowees, totalPages, Request);
+
+            return Ok(pagedResult);
         }
 
         [HttpPost]

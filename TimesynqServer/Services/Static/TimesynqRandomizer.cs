@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace TimesynqServer.Services
+namespace TimesynqServer.Services.Static
 {
     public static class TimesynqRandomizer
     {
@@ -16,7 +16,7 @@ namespace TimesynqServer.Services
         {
             var sb = new StringBuilder();
 
-            string color = String.Format("{0:X6}", _random.Next(0x1000000));
+            string color = string.Format("{0:X6}", _random.Next(0x1000000));
             sb.Append(color);
 
             var identiconPixels = new char[_pixelsLength];
