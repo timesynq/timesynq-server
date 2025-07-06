@@ -5,8 +5,8 @@ using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub.Const;
 using TimesynqServer.Models.Cache;
-using TimesynqServer.Services;
 using TimesynqServer.Services.Cache.HubCache;
+using TimesynqServer.Services.Static;
 
 namespace TimesynqServer.Hubs.TrackerHub
 {
