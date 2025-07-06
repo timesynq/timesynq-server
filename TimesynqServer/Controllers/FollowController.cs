@@ -27,7 +27,6 @@ namespace TimesynqServer.Controllers
         [Authorize]
         public async Task<IActionResult> GetFollowers(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
-
             pageSize = Math.Clamp(pageSize, 1, 100);
 
             int totalFollowers = await _dbContext.Follows
@@ -55,7 +54,6 @@ namespace TimesynqServer.Controllers
         [Authorize]
         public async Task<IActionResult> GetFollowees(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
-
             pageSize = Math.Clamp(pageSize, 1, 100);
 
             int totalFollowees = await _dbContext.Follows

@@ -2,6 +2,9 @@
 
 namespace TimesynqServer.Services.Static
 {
+    /// <summary>
+    /// Static methods for randomized values used across Timesynq
+    /// </summary>
     public static class TimesynqRandomizer
     {
         private static readonly Random _random = new();
@@ -12,6 +15,17 @@ namespace TimesynqServer.Services.Static
         private const int _randomCodeLength = 8;
         private const string _characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 
+        /// <summary>
+        /// Generates a unique, 21 character identicon string consisting of a hex color code followed by a series of pixel values.
+        /// </summary>
+        /// <remarks>
+        /// First 6 chars = hex color;
+        /// Next 15 = 5x5 grid (binary), mirrored:
+        /// Cols 1=5, 2=4. '1' = color, '0' = white.
+        /// </remarks>
+        /// <returns>
+        /// A string containing a 6-character hexadecimal color code, followed by a sequence of characters representing the identicon's pixels.
+        /// </returns>
         public static string GenerateIdenticon()
         {
             var sb = new StringBuilder();
@@ -30,6 +44,15 @@ namespace TimesynqServer.Services.Static
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Generates a random room code string composed of characters from a predefined set.
+        /// </summary>
+        /// <remarks>
+        /// The generated code may not be unique. If needed, uniqueness will need to be verified by the calling method.
+        /// </remarks>
+        /// <returns>
+        /// A string representing the randomly generated room code, with length determined by <c>_randomCodeLength</c>.
+        /// </returns>
         public static string GenerateRoomCode()
         {
             var randomCode = new char[_randomCodeLength];
