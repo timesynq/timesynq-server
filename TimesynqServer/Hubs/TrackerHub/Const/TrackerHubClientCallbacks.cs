@@ -1,5 +1,8 @@
 ﻿namespace TimesynqServer.Hubs.TrackerHub.Const
 {
+    /// <summary>
+    /// Provides standardized client method names.
+    /// </summary>
     public static class TrackerHubClientCallbacks
     {
         public const string DisbandRoom = nameof(DisbandRoom);

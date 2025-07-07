@@ -1,5 +1,9 @@
 ﻿namespace TimesynqServer.Models.DTO.Request.Account
 {
+
+    /// <summary>
+    /// Represents the required user information for a login request.
+    /// </summary>
     public sealed class LoginRequestDTO
     {
         /// <summary>

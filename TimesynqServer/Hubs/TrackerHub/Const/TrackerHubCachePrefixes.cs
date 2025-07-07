@@ -1,5 +1,8 @@
 ﻿namespace TimesynqServer.Hubs.TrackerHub.Const
 {
+    /// <summary>
+    /// Provides standardized cache key prefixes for TrackerHub models.
+    /// </summary>
     public static class TrackerHubCachePrefixes
     {
         public const string Room = "room";
