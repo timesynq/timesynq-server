@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Hubs.TrackerHub.Const
+﻿namespace TimesynqServer.Hubs.TrackerHub
 {
     /// <summary>
     /// Provides standardized client method names.

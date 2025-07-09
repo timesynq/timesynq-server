@@ -10,7 +10,7 @@
     public class Connection
     {
         /// <summary>
-        /// The ID of the connected user.
+        /// The connected user's unique identifier.
         /// </summary>
         public required Guid UserId { get; set; }
 

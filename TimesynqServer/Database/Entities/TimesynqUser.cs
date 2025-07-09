@@ -12,7 +12,7 @@ namespace TimesynqServer.Database.Entities
     public class TimesynqUser : IdentityUser<Guid>
     {
         /// <summary>
-        /// A string representation of the user's Guid
+        /// A string representation of the user's unique identifier.
         /// </summary>
         public string IdString => Id.ToString();
 

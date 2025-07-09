@@ -1,11 +1,13 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Text.Json;
-using TimesynqServer.Hubs.TrackerHub.Const;
 using TimesynqServer.Models.Cache;
 
 namespace TimesynqServer.Services.Cache.TrackerHubCache
 {
+    /// <summary>
+    /// Redis implementation for managing TrackerHub connections and rooms.
+    /// </summary>
     public class RedisTrackerHubCache : ITrackerHubCache
     {
 
@@ -16,6 +18,7 @@ namespace TimesynqServer.Services.Cache.TrackerHubCache
             _redis = redis;
         }
 
+        /// <inheritdoc/>
         public async Task<Connection?> GetConnectionAsync(Guid userId)
         {
             string key = $"{TrackerHubCachePrefixes.Connection}:{userId}";
@@ -31,6 +34,7 @@ namespace TimesynqServer.Services.Cache.TrackerHubCache
             return JsonSerializer.Deserialize<Connection>(stringResult!);
         }
 
+        /// <inheritdoc/>
         public async Task<Connection?> GetConnectionAsync(Guid userId, string roomCode)
         {
             string key = $"{TrackerHubCachePrefixes.Connection}:{userId}";
@@ -52,6 +56,7 @@ namespace TimesynqServer.Services.Cache.TrackerHubCache
             return connection;
         }
 
+        /// <inheritdoc/>
         public async Task<bool> SetConnectionAsync(Guid userId, Connection connection)
         {
             string key = $"{TrackerHubCachePrefixes.Connection}:{userId}";
@@ -68,6 +73,7 @@ namespace TimesynqServer.Services.Cache.TrackerHubCache
             return isTransactionSuccessful;
         }
 
+        /// <inheritdoc/>
         public async Task<bool> RemoveConnectionAsync(Guid userId, string roomCode)
         {
             string roomConnectionsSetKey = $"{TrackerHubCachePrefixes.Room}:{roomCode}:{TrackerHubCachePrefixes.Connections}";
@@ -83,6 +89,7 @@ namespace TimesynqServer.Services.Cache.TrackerHubCache
             return isTransactionSuccessful;
         }
 
+        /// <inheritdoc/>
         public async Task<Room?> GetRoomAsync(string roomCode)
         {
             string key = $"{TrackerHubCachePrefixes.Room}:{roomCode}";
@@ -98,6 +105,7 @@ namespace TimesynqServer.Services.Cache.TrackerHubCache
             return JsonSerializer.Deserialize<Room>(stringResult!);
         }
 
+        /// <inheritdoc/>
         public async Task<Room?> GetRoomAsync(string roomCode, Guid ownerId)
         {
             string key = $"{TrackerHubCachePrefixes.Room}:{roomCode}";
@@ -119,6 +127,7 @@ namespace TimesynqServer.Services.Cache.TrackerHubCache
             return room;
         }
 
+        /// <inheritdoc/>
         public async Task<bool> SetRoomAsync(string roomCode, Room room)
         {
             string key = $"{TrackerHubCachePrefixes.Room}:{roomCode}";
@@ -131,6 +140,7 @@ namespace TimesynqServer.Services.Cache.TrackerHubCache
             return isWriteSuccessful;
         }
 
+        /// <inheritdoc/>
         public async Task<bool> RemoveRoomAsync(string roomCode)
         {
             string roomConnectionsSetKey = $"{TrackerHubCachePrefixes.Room}:{roomCode}:{TrackerHubCachePrefixes.Connections}";
