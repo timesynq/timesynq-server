@@ -8,6 +8,8 @@ using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Services.Email;
+using TimesynqServer.Services.Repository.FollowRepository;
+using TimesynqServer.Services.Repository.UserRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,8 @@ builder.Services.AddIdentityCore<TimesynqUser>(options =>
     .AddApiEndpoints();
 
 builder.Services.AddTransient<IEmailSender<TimesynqUser>, EmailSender<TimesynqUser>>();
+builder.Services.AddScoped<IUserRepository,  UserRepository>();
+builder.Services.AddScoped<IFollowRepository, FollowRepository>();
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonSimpleEmailService>();
