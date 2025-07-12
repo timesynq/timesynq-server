@@ -8,6 +8,8 @@ using TimesynqServer.Extensions;
 using TimesynqServer.Models.DTO;
 using TimesynqServer.Models.DTO.Request.Follow;
 using TimesynqServer.Models.Pagination;
+using TimesynqServer.Services.Repository.FollowRepository;
+using TimesynqServer.Services.Repository.UserRepository;
 
 namespace TimesynqServer.Controllers
 {
@@ -15,12 +17,34 @@ namespace TimesynqServer.Controllers
     [ApiController]
     public class FollowController : ControllerBase
     {
+        private readonly IUserRepository _userRepository;
+        private readonly IFollowRepository _followRepository;
 
-        private TimesynqDbContext _dbContext;
-
-        public FollowController(TimesynqDbContext dbContext)
+        public FollowController(IUserRepository userRepository, IFollowRepository followRepository)
         {
-            _dbContext = dbContext;
+            _userRepository = userRepository;
+            _followRepository = followRepository;
+        }
+
+        [HttpGet("{userId}")]
+        [Authorize(Roles = "ConfirmedUser, Admin")]
+        public async Task<IActionResult> GetFollow(Guid userId)
+        {
+            string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (callerId == null)
+            {
+                return Unauthorized("Invalid token");
+            }
+            Guid callerGuid = Guid.Parse(callerId);
+
+            Follow? follow = await _followRepository.GetFollowAsync(callerGuid, userId);
+
+            if(follow == null)
+            {
+                return NotFound("Not following this user");
+            }
+
+            return Ok(follow.ToFollowDTO());
         }
 
         [HttpGet("{userId}/followers")]
@@ -29,21 +53,18 @@ namespace TimesynqServer.Controllers
         {
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            int totalFollowers = await _dbContext.Follows
-                .Where(f => f.FolloweeId == userId)
-                .CountAsync();
+            int totalFollowers = await _followRepository.GetFollowersCountAsync(userId);
 
             int totalPages = (int)Math.Ceiling((double)totalFollowers / pageSize);
 
+            if(totalPages <= 0)
+            {
+                return Ok(new List<UserDTO>());
+            }
+
             pageNumber = Math.Clamp(pageNumber, 1, totalPages);
 
-            IEnumerable<UserDTO> followers = await _dbContext.Follows
-                .Where(f => f.FolloweeId == userId)
-                .Include(f => f.Follower)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Select(f => f.Follower!.ToUserDTO())
-                .ToListAsync();
+            IEnumerable<UserDTO> followers = await _followRepository.GetFollowersAsync(userId, pageNumber, pageSize);
 
             PagedResult<UserDTO> pagedResult = followers.ToPagedResult(pageNumber, pageSize, totalFollowers, totalPages, Request);
 
@@ -56,21 +77,18 @@ namespace TimesynqServer.Controllers
         {
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            int totalFollowees = await _dbContext.Follows
-                .Where(f => f.FollowerId == userId)
-                .CountAsync();
+            int totalFollowees = await _followRepository.GetFolloweesCountAsync(userId);
 
             int totalPages = (int)Math.Ceiling((double)totalFollowees / pageSize);
 
+            if (totalPages <= 0)
+            {
+                return Ok(new List<UserDTO>());
+            }
+
             pageNumber = Math.Clamp(pageNumber, 1, totalPages);
 
-            IEnumerable<UserDTO> followees = await _dbContext.Follows
-                .Where(f => f.FollowerId == userId)
-                .Include(f => f.Followee)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Select(f => f.Followee!.ToUserDTO())
-                .ToListAsync();
+            IEnumerable<UserDTO> followees = await _followRepository.GetFolloweesAsync(userId, pageNumber, pageSize);
 
             PagedResult<UserDTO> pagedResult = followees.ToPagedResult(pageNumber, pageSize, totalFollowees, totalPages, Request);
 
@@ -93,27 +111,20 @@ namespace TimesynqServer.Controllers
                 return Conflict("Can't follow yourself");
             }
 
-            var followee = await _dbContext.Users.FindAsync(followRequest.FolloweeGuid);
+            UserDTO? followee = await _userRepository.GetById(followRequest.FolloweeGuid);
             if (followee == null)
             {
                 return NotFound("Followee doesn't exist");
             }
 
-            bool alreadyFollowing = await _dbContext.Follows
-                .AnyAsync(f => f.FollowerId == callerGuid && f.FolloweeId == followRequest.FolloweeGuid);
+            Follow? existingFollow = await _followRepository.GetFollowAsync(callerGuid, followRequest.FolloweeGuid);
 
-            if (alreadyFollowing)
+            if (existingFollow != null)
             {
                 return Conflict("Already following this user");
             }
 
-            var follow = new Follow
-            {
-                FollowerId = callerGuid,
-                FolloweeId = followRequest.FolloweeGuid,
-            };
-            await _dbContext.Follows.AddAsync(follow);
-            await _dbContext.SaveChangesAsync();
+            await _followRepository.FollowAsync(callerGuid, followRequest.FolloweeGuid);
 
             return Ok("Followed successfully");
         }
@@ -129,16 +140,14 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            Follow? follow = await _dbContext.Follows
-                .FirstOrDefaultAsync(f => f.FollowerId == callerGuid && f.FolloweeId == unfollowRequest.FolloweeGuid);
+            Follow? existingFollow = await _followRepository.GetFollowAsync(callerGuid, unfollowRequest.FolloweeGuid);
 
-            if (follow == null)
+            if (existingFollow == null)
             {
                 return NotFound("Not following this user");
             }
 
-            _dbContext.Remove(follow);
-            await _dbContext.SaveChangesAsync();
+            await _followRepository.UnfollowAsync(existingFollow);
 
             return Ok("Unfollowed successfully");
         }

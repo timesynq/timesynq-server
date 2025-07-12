@@ -4,7 +4,9 @@ using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Models.Cache;
+using TimesynqServer.Models.DTO;
 using TimesynqServer.Services.Cache.TrackerHubCache;
+using TimesynqServer.Services.Repository.UserRepository;
 using TimesynqServer.Services.Static;
 
 namespace TimesynqServer.Hubs.TrackerHub
@@ -12,14 +14,13 @@ namespace TimesynqServer.Hubs.TrackerHub
     [Authorize(Roles = "ConfirmedUser, Admin")]
     public class TrackerHub : Hub
     {
+        private readonly ITrackerHubCache _trackerHubCache;
+        private readonly IUserRepository _userRepository;
 
-        private ITrackerHubCache _trackerHubCache;
-        private TimesynqDbContext _dbContext;
-
-        public TrackerHub(ITrackerHubCache hubCacheService, TimesynqDbContext dbContext)
+        public TrackerHub(ITrackerHubCache hubCacheService, IUserRepository userRepository)
         {
             _trackerHubCache = hubCacheService;
-            _dbContext = dbContext;
+            _userRepository = userRepository;
         }
 
         public override Task OnConnectedAsync()
@@ -44,12 +45,12 @@ namespace TimesynqServer.Hubs.TrackerHub
             await _trackerHubCache.RemoveConnectionAsync(callerGuid, connection.RoomCode);
 
             string roomCode = connection.RoomCode;
-            TimesynqUser? user = await _dbContext.Users.FindAsync(callerGuid);
+            UserDTO? user = await _userRepository.GetById(callerGuid);
             if (user == null)
             {
                 return;
             }
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.RemoveProfilePicture, user.ToUserDTO());
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.RemoveProfilePicture, user);
 
             Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, user.Id);
             if (ownedRoom == null)
@@ -171,7 +172,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-            TimesynqUser? user = await _dbContext.Users.FindAsync(callerGuid);
+            UserDTO? user = await _userRepository.GetById(callerGuid);
             if (user == null)
             {
                 return;
@@ -179,7 +180,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             //todo: tracker info initialization
 
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, user.ToUserDTO());
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, user);
 
         }
 
