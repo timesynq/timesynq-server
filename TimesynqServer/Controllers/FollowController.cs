@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Models.DTO;
@@ -15,7 +13,7 @@ namespace TimesynqServer.Controllers
 {
     [Route("follows")]
     [ApiController]
-    public class FollowController : ControllerBase
+    public class FollowController : TimesynqController
     {
         private readonly IUserRepository _userRepository;
         private readonly IFollowRepository _followRepository;
@@ -26,25 +24,25 @@ namespace TimesynqServer.Controllers
             _followRepository = followRepository;
         }
 
-        [HttpGet("{userId}")]
+        [HttpGet("{followeeGuid}")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
-        public async Task<IActionResult> GetFollow(Guid userId)
+        public async Task<IActionResult> GetFollow(Guid followeeGuid)
         {
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (callerId == null)
             {
-                return Unauthorized("Invalid token");
+                return ErrorResponse(StatusCodes.Status401Unauthorized, "Invalid token");
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            Follow? follow = await _followRepository.GetFollowAsync(callerGuid, userId);
+            Follow? follow = await _followRepository.GetFollowAsync(callerGuid, followeeGuid);
 
-            if(follow == null)
+            if (follow == null)
             {
-                return NotFound("Not following this user");
+                return ErrorResponse(StatusCodes.Status404NotFound, "Not following this user");
             }
 
-            return Ok(follow.ToFollowDTO());
+            return OkResponse(StatusCodes.Status200OK, follow.ToFollowDTO());
         }
 
         [HttpGet("{userId}/followers")]
@@ -57,9 +55,9 @@ namespace TimesynqServer.Controllers
 
             int totalPages = (int)Math.Ceiling((double)totalFollowers / pageSize);
 
-            if(totalPages <= 0)
+            if (totalPages <= 0)
             {
-                return Ok(new List<UserDTO>());
+                return OkResponse(StatusCodes.Status200OK, new List<UserDTO>());
             }
 
             pageNumber = Math.Clamp(pageNumber, 1, totalPages);
@@ -68,7 +66,7 @@ namespace TimesynqServer.Controllers
 
             PagedResult<UserDTO> pagedResult = followers.ToPagedResult(pageNumber, pageSize, totalFollowers, totalPages, Request);
 
-            return Ok(pagedResult);
+            return OkResponse(StatusCodes.Status200OK, pagedResult);
         }
 
         [HttpGet("{userId}/followees")]
@@ -83,7 +81,7 @@ namespace TimesynqServer.Controllers
 
             if (totalPages <= 0)
             {
-                return Ok(new List<UserDTO>());
+                return OkResponse(StatusCodes.Status200OK, new List<UserDTO>());
             }
 
             pageNumber = Math.Clamp(pageNumber, 1, totalPages);
@@ -92,7 +90,7 @@ namespace TimesynqServer.Controllers
 
             PagedResult<UserDTO> pagedResult = followees.ToPagedResult(pageNumber, pageSize, totalFollowees, totalPages, Request);
 
-            return Ok(pagedResult);
+            return OkResponse(StatusCodes.Status200OK, pagedResult);
         }
 
         [HttpPost]
@@ -102,31 +100,32 @@ namespace TimesynqServer.Controllers
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (callerId == null)
             {
-                return Unauthorized("Invalid token");
+                return ErrorResponse(StatusCodes.Status401Unauthorized, "Invalid token");
             }
             Guid callerGuid = Guid.Parse(callerId);
 
             if (callerGuid == followRequest.FolloweeGuid)
             {
-                return Conflict("Can't follow yourself");
+                return ErrorResponse(StatusCodes.Status409Conflict, "Can't follow yourself");
             }
 
-            UserDTO? followee = await _userRepository.GetById(followRequest.FolloweeGuid);
+            TimesynqUser? followee = await _userRepository.GetById(followRequest.FolloweeGuid);
             if (followee == null)
             {
-                return NotFound("Followee doesn't exist");
+                return ErrorResponse(StatusCodes.Status404NotFound, "Followee doesn't exist");
             }
 
             Follow? existingFollow = await _followRepository.GetFollowAsync(callerGuid, followRequest.FolloweeGuid);
 
             if (existingFollow != null)
             {
-                return Conflict("Already following this user");
+                return ErrorResponse(StatusCodes.Status409Conflict, "Already following this user");
             }
 
-            await _followRepository.FollowAsync(callerGuid, followRequest.FolloweeGuid);
+            Follow persistedFollow = await _followRepository.FollowAsync(callerGuid, followRequest.FolloweeGuid);
+            string resourceUri = $"{Request.Scheme}://{Request.Host}{Request.Path}{followRequest.FolloweeGuid}";
 
-            return Ok("Followed successfully");
+            return OkResponse(StatusCodes.Status201Created, persistedFollow.ToFollowDTO(), resourceUri);
         }
 
         [HttpDelete]
@@ -136,7 +135,7 @@ namespace TimesynqServer.Controllers
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (callerId == null)
             {
-                return Unauthorized("Invalid token");
+                return ErrorResponse(StatusCodes.Status401Unauthorized, "Invalid token");
             }
             Guid callerGuid = Guid.Parse(callerId);
 
@@ -144,12 +143,12 @@ namespace TimesynqServer.Controllers
 
             if (existingFollow == null)
             {
-                return NotFound("Not following this user");
+                return ErrorResponse(StatusCodes.Status404NotFound, "Not following this user");
             }
 
             await _followRepository.UnfollowAsync(existingFollow);
 
-            return Ok("Unfollowed successfully");
+            return NoContent();
         }
 
     }
