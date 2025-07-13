@@ -7,6 +7,7 @@ using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
+using TimesynqServer.Middleware;
 using TimesynqServer.Services.Email;
 using TimesynqServer.Services.Repository.FollowRepository;
 using TimesynqServer.Services.Repository.UserRepository;
@@ -61,6 +62,8 @@ if (app.Environment.IsDevelopment())
 
     app.ApplyMigrations();
 }
+
+app.UseMiddleware<ExceptionsMiddleware>();
 
 app.UseHttpsRedirection();
 
