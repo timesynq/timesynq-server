@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Models.Cache;
@@ -45,12 +44,12 @@ namespace TimesynqServer.Hubs.TrackerHub
             await _trackerHubCache.RemoveConnectionAsync(callerGuid, connection.RoomCode);
 
             string roomCode = connection.RoomCode;
-            UserDTO? user = await _userRepository.GetById(callerGuid);
+            TimesynqUser? user = await _userRepository.GetById(callerGuid);
             if (user == null)
             {
                 return;
             }
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.RemoveProfilePicture, user);
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.RemoveProfilePicture, user.ToUserDTO());
 
             Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, user.Id);
             if (ownedRoom == null)
@@ -172,7 +171,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-            UserDTO? user = await _userRepository.GetById(callerGuid);
+            TimesynqUser? user = await _userRepository.GetById(callerGuid);
             if (user == null)
             {
                 return;
@@ -180,7 +179,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             //todo: tracker info initialization
 
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, user);
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, user.ToUserDTO());
 
         }
 

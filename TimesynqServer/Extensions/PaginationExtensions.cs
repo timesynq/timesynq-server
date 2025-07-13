@@ -46,7 +46,8 @@ namespace TimesynqServer.Extensions
                 query.Set(nameof(pageNumber), targetPage.ToString());
                 query.Set(nameof(pageSize), pageSize.ToString());
                 return $"{baseUrl}?{query}";
-            };
+            }
+            ;
 
             return new PagedResult<T>
             {

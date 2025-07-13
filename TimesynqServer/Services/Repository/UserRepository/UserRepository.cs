@@ -15,16 +15,16 @@ namespace TimesynqServer.Services.Repository.UserRepository
             _dbContext = dbContext;
         }
 
-        public async Task<UserDTO?> GetById(Guid userId)
+        public async Task<TimesynqUser?> GetById(Guid userId)
         {
             TimesynqUser? user = await _dbContext.Users.FindAsync(userId);
 
-            if(user == null)
+            if (user == null)
             {
                 return null;
             }
 
-            return user.ToUserDTO();
+            return user;
         }
     }
 }

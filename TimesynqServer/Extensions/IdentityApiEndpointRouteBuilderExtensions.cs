@@ -63,7 +63,13 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
             var userStore = sp.GetRequiredService<IUserStore<TUser>>();
             var emailStore = (IUserEmailStore<TUser>)userStore;
+            var userName = signUpRequestDTO.Username;
             var email = signUpRequestDTO.Email;
+
+            if (string.IsNullOrEmpty(userName) || userName.Length < 3 || userName.Length > 24)
+            {
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidUserName(userName)));
+            }
 
             if (string.IsNullOrEmpty(email) || !_emailAddressAttribute.IsValid(email))
             {
@@ -71,7 +77,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             }
 
             var user = new TUser();
-            await userStore.SetUserNameAsync(user, signUpRequestDTO.Username, CancellationToken.None);
+            await userStore.SetUserNameAsync(user, userName, CancellationToken.None);
             await emailStore.SetEmailAsync(user, email, CancellationToken.None);
 
             if (user is TimesynqUser timesynqUser)

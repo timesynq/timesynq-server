@@ -18,7 +18,7 @@ namespace TimesynqServer.Services.Cache.TrackerHubCache
         public Task<Connection?> GetConnectionAsync(Guid userId);
 
         /// <summary>
-        /// Retrieves teh connection information for a specified user in a specific room.
+        /// Retrieves the connection information for a specified user in a specific room.
         /// </summary>
         /// <param name="userId">The connected user's unique identifier.</param>
         /// <param name="roomCode">The room's unique identifier.</param>

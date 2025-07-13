@@ -2,7 +2,6 @@
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
-using TimesynqServer.Migrations;
 using TimesynqServer.Models.DTO;
 
 namespace TimesynqServer.Services.Repository.FollowRepository
@@ -60,7 +59,7 @@ namespace TimesynqServer.Services.Repository.FollowRepository
                 .ToListAsync();
         }
 
-        public async Task FollowAsync(Guid followerId, Guid followeeId)
+        public async Task<Follow> FollowAsync(Guid followerId, Guid followeeId)
         {
             var follow = new Follow
             {
@@ -69,6 +68,8 @@ namespace TimesynqServer.Services.Repository.FollowRepository
             };
             await _dbContext.Follows.AddAsync(follow);
             await _dbContext.SaveChangesAsync();
+
+            return follow;
         }
 
         public async Task UnfollowAsync(Follow follow)

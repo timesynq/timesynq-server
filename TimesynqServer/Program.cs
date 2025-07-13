@@ -7,6 +7,7 @@ using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
+using TimesynqServer.Middleware;
 using TimesynqServer.Services.Email;
 using TimesynqServer.Services.Repository.FollowRepository;
 using TimesynqServer.Services.Repository.UserRepository;
@@ -37,10 +38,11 @@ builder.Services.AddIdentityCore<TimesynqUser>(options =>
     .AddRoles<TimesynqRole>()
     .AddEntityFrameworkStores<TimesynqDbContext>()
     .AddUserStore<UserStore<TimesynqUser, TimesynqRole, TimesynqDbContext, Guid>>()
+    .AddErrorDescriber<CustomIdentityErrorDescriber>()
     .AddApiEndpoints();
 
 builder.Services.AddTransient<IEmailSender<TimesynqUser>, EmailSender<TimesynqUser>>();
-builder.Services.AddScoped<IUserRepository,  UserRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFollowRepository, FollowRepository>();
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
@@ -61,6 +63,8 @@ if (app.Environment.IsDevelopment())
     app.ApplyMigrations();
 }
 
+app.UseMiddleware<ExceptionsMiddleware>();
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -75,16 +79,5 @@ app.MapGet("ping", () =>
 {
     return "pong";
 });
-
-app.MapGet("me", async (ClaimsPrincipal principal, TimesynqDbContext dbContext) =>
-{
-    string id = principal.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
-    TimesynqUser? user = await dbContext.Users.FindAsync(Guid.Parse(id));
-    if (user == null)
-    {
-        return null;
-    }
-    return user.ToUserDTO();
-}).RequireAuthorization();
 
 app.Run();
