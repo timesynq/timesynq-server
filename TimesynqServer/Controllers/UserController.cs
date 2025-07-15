@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
@@ -20,6 +20,7 @@ namespace TimesynqServer.Controllers
         }
 
         [HttpGet("me")]
+        [Authorize]
         public async Task<IActionResult> Me()
         {
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
