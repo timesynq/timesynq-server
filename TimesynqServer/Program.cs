@@ -2,17 +2,40 @@ using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using Serilog;
+using Serilog.Sinks.OpenTelemetry;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Middleware;
 using TimesynqServer.Services.Email;
+using TimesynqServer.Services.Logging;
 using TimesynqServer.Services.Repository.FollowRepository;
 using TimesynqServer.Services.Repository.UserRepository;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+SerilogOptions serilogOptions = builder.Configuration.GetSection(SerilogOptions.ConfigurationSection).Get<SerilogOptions>()!;
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.OpenTelemetry(x =>
+    {
+        x.Endpoint = serilogOptions.Endpoint;
+        x.Protocol = OtlpProtocol.HttpProtobuf;
+        x.Headers = new Dictionary<string, string>
+        {
+            ["X-Seq-ApiKey"] = serilogOptions.ApiKey,
+        };
+        x.ResourceAttributes = new Dictionary<string, object>
+        {
+            ["service.name"] = serilogOptions.ServiceName,
+        };
+    })
+    .CreateLogger();
+
+builder.Services.AddSerilog();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -63,20 +86,22 @@ if (app.Environment.IsDevelopment())
     app.ApplyMigrations();
 }
 
-app.UseMiddleware<ExceptionsMiddleware>();
-
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionsMiddleware>();
+app.UseMiddleware<LogAuthorizedUserIdMiddleware>();
 
 app.MapControllers();
 app.MapTimesynqIdentityApi<TimesynqUser>();
 
 app.MapHub<TrackerHub>("hub");
 
-app.MapGet("ping", () =>
+app.MapGet("ping", (ILogger<Program> logger) =>
 {
+    logger.LogInformation("pong");
     return "pong";
 });
 

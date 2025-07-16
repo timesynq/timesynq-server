@@ -8,10 +8,12 @@ namespace TimesynqServer.Middleware
     {
 
         private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionsMiddleware> _logger;
 
-        public ExceptionsMiddleware(RequestDelegate next)
+        public ExceptionsMiddleware(RequestDelegate next, ILogger<ExceptionsMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -22,7 +24,7 @@ namespace TimesynqServer.Middleware
             }
             catch (Exception ex) 
             {
-                //todo: log exception
+                _logger.LogError("Exception caught: {Exception}", ex.ToString());
 
                 var response = new ResponseDTO<object>
                 {
