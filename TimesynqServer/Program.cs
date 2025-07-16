@@ -86,12 +86,13 @@ if (app.Environment.IsDevelopment())
     app.ApplyMigrations();
 }
 
-app.UseMiddleware<ExceptionsMiddleware>();
-
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionsMiddleware>();
+app.UseMiddleware<LogAuthorizedUserIdMiddleware>();
 
 app.MapControllers();
 app.MapTimesynqIdentityApi<TimesynqUser>();
