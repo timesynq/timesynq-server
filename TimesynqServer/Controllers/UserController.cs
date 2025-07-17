@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Extensions;
+using TimesynqServer.Models.DTO;
 using TimesynqServer.Services.Repository.UserRepository;
 
 namespace TimesynqServer.Controllers
@@ -21,6 +22,10 @@ namespace TimesynqServer.Controllers
 
         [HttpGet("me")]
         [Authorize]
+        [ProducesResponseType(typeof(ResponseDTO<UserDTO>), StatusCodes.Status200OK)]
+        [ProducesErrorResponseType(typeof(ResponseDTO<object>))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Me()
         {
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
