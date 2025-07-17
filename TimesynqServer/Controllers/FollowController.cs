@@ -109,7 +109,7 @@ namespace TimesynqServer.Controllers
                 return ErrorResponse(StatusCodes.Status409Conflict, "Can't follow yourself");
             }
 
-            TimesynqUser? followee = await _userRepository.GetById(followRequest.FolloweeGuid);
+            TimesynqUser? followee = await _userRepository.GetByIdAsync(followRequest.FolloweeGuid);
             if (followee == null)
             {
                 return ErrorResponse(StatusCodes.Status404NotFound, "Followee doesn't exist");

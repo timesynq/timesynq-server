@@ -30,7 +30,7 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            TimesynqUser? user = await _userRepository.GetById(callerGuid);
+            TimesynqUser? user = await _userRepository.GetByIdAsync(callerGuid);
             if (user == null)
             {
                 return ErrorResponse(StatusCodes.Status404NotFound, "User not found");
