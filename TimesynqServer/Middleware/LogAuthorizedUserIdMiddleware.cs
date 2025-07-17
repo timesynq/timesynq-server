@@ -30,7 +30,8 @@ namespace TimesynqServer.Middleware
                     }
                     else
                     {
-                        _logger.LogInformation("User {UserId} called endpoint {Endpoint}", callerId, endpoint.DisplayName);
+                        string? role = context.User.FindFirst(ClaimTypes.Role)?.Value;
+                        _logger.LogInformation("User {UserId} with role {Role} called endpoint {Endpoint}", callerId, role, endpoint.DisplayName);
                     }
                 }
             }

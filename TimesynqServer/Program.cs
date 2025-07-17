@@ -89,10 +89,12 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-app.UseAuthorization();
 
 app.UseMiddleware<ExceptionsMiddleware>();
 app.UseMiddleware<LogAuthorizedUserIdMiddleware>();
+app.UseMiddleware<EmailNotConfirmedMiddleware>();
+
+app.UseAuthorization();
 
 app.MapControllers();
 app.MapTimesynqIdentityApi<TimesynqUser>();
