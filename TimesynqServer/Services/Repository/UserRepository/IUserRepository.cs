@@ -5,6 +5,6 @@ namespace TimesynqServer.Services.Repository.UserRepository
 {
     public interface IUserRepository
     {
-        public Task<TimesynqUser?> GetById(Guid userId);
+        public Task<TimesynqUser?> GetByIdAsync(Guid userId);
     }
 }

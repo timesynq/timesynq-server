@@ -44,7 +44,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             await _trackerHubCache.RemoveConnectionAsync(callerGuid, connection.RoomCode);
 
             string roomCode = connection.RoomCode;
-            TimesynqUser? user = await _userRepository.GetById(callerGuid);
+            TimesynqUser? user = await _userRepository.GetByIdAsync(callerGuid);
             if (user == null)
             {
                 return;
@@ -171,7 +171,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-            TimesynqUser? user = await _userRepository.GetById(callerGuid);
+            TimesynqUser? user = await _userRepository.GetByIdAsync(callerGuid);
             if (user == null)
             {
                 return;

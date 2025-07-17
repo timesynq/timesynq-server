@@ -26,6 +26,11 @@ namespace TimesynqServer.Controllers
 
         [HttpGet("{followeeGuid}")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(typeof(ResponseDTO<FollowDTO>), StatusCodes.Status200OK)]
+        [ProducesErrorResponseType(typeof(ResponseDTO<object>))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetFollow(Guid followeeGuid)
         {
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -47,6 +52,7 @@ namespace TimesynqServer.Controllers
 
         [HttpGet("{userId}/followers")]
         [Authorize]
+        [ProducesResponseType(typeof(ResponseDTO<PagedResult<UserDTO>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFollowers(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             pageSize = Math.Clamp(pageSize, 1, 100);
@@ -71,6 +77,7 @@ namespace TimesynqServer.Controllers
 
         [HttpGet("{userId}/followees")]
         [Authorize]
+        [ProducesResponseType(typeof(ResponseDTO<PagedResult<UserDTO>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFollowees(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             pageSize = Math.Clamp(pageSize, 1, 100);
@@ -95,6 +102,12 @@ namespace TimesynqServer.Controllers
 
         [HttpPost]
         [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(typeof(FollowDTO), StatusCodes.Status201Created)]
+        [ProducesErrorResponseType(typeof(ResponseDTO<object>))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> FollowUser([FromBody] FollowRequestDTO followRequest)
         {
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -109,7 +122,7 @@ namespace TimesynqServer.Controllers
                 return ErrorResponse(StatusCodes.Status409Conflict, "Can't follow yourself");
             }
 
-            TimesynqUser? followee = await _userRepository.GetById(followRequest.FolloweeGuid);
+            TimesynqUser? followee = await _userRepository.GetByIdAsync(followRequest.FolloweeGuid);
             if (followee == null)
             {
                 return ErrorResponse(StatusCodes.Status404NotFound, "Followee doesn't exist");
@@ -130,6 +143,10 @@ namespace TimesynqServer.Controllers
 
         [HttpDelete]
         [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesErrorResponseType(typeof(ResponseDTO<object>))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UnfollowUser([FromBody] UnfollowRequestDTO unfollowRequest)
         {
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
