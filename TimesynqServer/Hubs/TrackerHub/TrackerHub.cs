@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using TimesynqServer.Database.Entities;
+using TimesynqServer.Database.Projections;
+using TimesynqServer.Database.Repository.UserRepository;
 using TimesynqServer.Extensions;
 using TimesynqServer.Models.Cache;
 using TimesynqServer.Models.DTO;
 using TimesynqServer.Services.Cache.TrackerHubCache;
-using TimesynqServer.Services.Repository.UserRepository;
 using TimesynqServer.Services.Static;
 
 namespace TimesynqServer.Hubs.TrackerHub
@@ -44,14 +45,17 @@ namespace TimesynqServer.Hubs.TrackerHub
             await _trackerHubCache.RemoveConnectionAsync(callerGuid, connection.RoomCode);
 
             string roomCode = connection.RoomCode;
-            TimesynqUser? user = await _userRepository.GetByIdAsync(callerGuid);
-            if (user == null)
+            UserProjection? userProjection = await _userRepository.GetByIdAsync(callerGuid);
+            if (userProjection == null)
             {
                 return;
             }
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.RemoveProfilePicture, user.ToUserDTO());
 
-            Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, user.Id);
+            UserDTO userDTO = UserDTO.FromProjection(userProjection);
+
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.RemoveProfilePicture, userDTO);
+
+            Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, userProjection.Id);
             if (ownedRoom == null)
             {
                 return;
@@ -171,15 +175,17 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-            TimesynqUser? user = await _userRepository.GetByIdAsync(callerGuid);
-            if (user == null)
+            UserProjection? userProjection = await _userRepository.GetByIdAsync(callerGuid);
+            if (userProjection == null)
             {
                 return;
             }
 
+            UserDTO userDTO = UserDTO.FromProjection(userProjection);
+
             //todo: tracker info initialization
 
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, user.ToUserDTO());
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, userDTO);
 
         }
 

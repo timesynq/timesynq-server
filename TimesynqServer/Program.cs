@@ -6,13 +6,13 @@ using Serilog;
 using Serilog.Sinks.OpenTelemetry;
 using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
+using TimesynqServer.Database.Repository.FollowRepository;
+using TimesynqServer.Database.Repository.UserRepository;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Middleware;
 using TimesynqServer.Services.Email;
 using TimesynqServer.Services.Logging;
-using TimesynqServer.Services.Repository.FollowRepository;
-using TimesynqServer.Services.Repository.UserRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 

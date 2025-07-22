@@ -2,9 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TimesynqServer.Database.Entities;
+using TimesynqServer.Database.Projections;
+using TimesynqServer.Database.Repository.UserRepository;
 using TimesynqServer.Extensions;
 using TimesynqServer.Models.DTO;
-using TimesynqServer.Services.Repository.UserRepository;
 
 namespace TimesynqServer.Controllers
 {
@@ -35,13 +36,13 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            TimesynqUser? user = await _userRepository.GetByIdAsync(callerGuid);
-            if (user == null)
+            UserProjection? userProjection = await _userRepository.GetByIdAsync(callerGuid);
+            if (userProjection == null)
             {
                 return ErrorResponse(StatusCodes.Status404NotFound, "User not found");
             }
 
-            return OkResponse(StatusCodes.Status200OK, user.ToUserDTO());
+            return OkResponse(StatusCodes.Status200OK, UserDTO.FromProjection(userProjection));
         }
 
 

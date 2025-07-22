@@ -2,12 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TimesynqServer.Database.Entities;
+using TimesynqServer.Database.Projections;
+using TimesynqServer.Database.Repository.FollowRepository;
+using TimesynqServer.Database.Repository.UserRepository;
 using TimesynqServer.Extensions;
+using TimesynqServer.Migrations;
 using TimesynqServer.Models.DTO;
 using TimesynqServer.Models.DTO.Request.Follow;
 using TimesynqServer.Models.Pagination;
-using TimesynqServer.Services.Repository.FollowRepository;
-using TimesynqServer.Services.Repository.UserRepository;
 
 namespace TimesynqServer.Controllers
 {
@@ -68,9 +70,11 @@ namespace TimesynqServer.Controllers
 
             pageNumber = Math.Clamp(pageNumber, 1, totalPages);
 
-            IEnumerable<UserDTO> followers = await _followRepository.GetFollowersAsync(userId, pageNumber, pageSize);
+            IEnumerable<UserProjection> followers = await _followRepository.GetFollowersAsync(userId, pageNumber, pageSize);
 
-            PagedResult<UserDTO> pagedResult = followers.ToPagedResult(pageNumber, pageSize, totalFollowers, totalPages, Request);
+            IEnumerable<UserDTO> followerDTOs = followers.Select(UserDTO.FromProjection);
+
+            PagedResult<UserDTO> pagedResult = followerDTOs.ToPagedResult(pageNumber, pageSize, totalFollowers, totalPages, Request);
 
             return OkResponse(StatusCodes.Status200OK, pagedResult);
         }
@@ -93,9 +97,11 @@ namespace TimesynqServer.Controllers
 
             pageNumber = Math.Clamp(pageNumber, 1, totalPages);
 
-            IEnumerable<UserDTO> followees = await _followRepository.GetFolloweesAsync(userId, pageNumber, pageSize);
+            IEnumerable<UserProjection> followees = await _followRepository.GetFolloweesAsync(userId, pageNumber, pageSize);
 
-            PagedResult<UserDTO> pagedResult = followees.ToPagedResult(pageNumber, pageSize, totalFollowees, totalPages, Request);
+            IEnumerable<UserDTO> followeeDTOs = followees.Select(UserDTO.FromProjection);
+
+            PagedResult<UserDTO> pagedResult = followeeDTOs.ToPagedResult(pageNumber, pageSize, totalFollowees, totalPages, Request);
 
             return OkResponse(StatusCodes.Status200OK, pagedResult);
         }
@@ -122,8 +128,8 @@ namespace TimesynqServer.Controllers
                 return ErrorResponse(StatusCodes.Status409Conflict, "Can't follow yourself");
             }
 
-            TimesynqUser? followee = await _userRepository.GetByIdAsync(followRequest.FolloweeGuid);
-            if (followee == null)
+            UserProjection? followeeProjection = await _userRepository.GetByIdAsync(followRequest.FolloweeGuid);
+            if (followeeProjection == null)
             {
                 return ErrorResponse(StatusCodes.Status404NotFound, "Followee doesn't exist");
             }

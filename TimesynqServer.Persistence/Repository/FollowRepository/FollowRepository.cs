@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TimesynqServer.Database;
 using TimesynqServer.Database.Entities;
-using TimesynqServer.Extensions;
-using TimesynqServer.Models.DTO;
+using TimesynqServer.Database.Projections;
 
-namespace TimesynqServer.Services.Repository.FollowRepository
+namespace TimesynqServer.Database.Repository.FollowRepository
 {
     public class FollowRepository : IFollowRepository
     {
@@ -40,7 +38,7 @@ namespace TimesynqServer.Services.Repository.FollowRepository
                 .CountAsync();
         }
 
-        public async Task<IEnumerable<UserDTO>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize)
+        public async Task<IEnumerable<UserProjection>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize)
         {
             return await _dbContext.Follows
                 .AsNoTracking()
@@ -48,17 +46,17 @@ namespace TimesynqServer.Services.Repository.FollowRepository
                 .OrderBy(f => f.CreatedOnUTC)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .Select(f => new UserDTO
-                {
-                    Id = f.Follower!.Id,
-                    UserName = f.Follower.UserName!,
-                    ProfilePicture = f.Follower.ProfilePicture!,
-                    CreatedOnUTC = f.Follower.CreatedOnUTC,
-                })
+                .Select(f => new UserProjection
+                (
+                    f.Follower!.Id,
+                    f.Follower.UserName!,
+                    f.Follower.ProfilePicture!,
+                    f.Follower.CreatedOnUTC
+                ))
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<UserDTO>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize)
+        public async Task<IEnumerable<UserProjection>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize)
         {
             return await _dbContext.Follows
                 .AsNoTracking()
@@ -66,13 +64,13 @@ namespace TimesynqServer.Services.Repository.FollowRepository
                 .OrderBy(f => f.CreatedOnUTC)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .Select(f => new UserDTO 
-                {
-                    Id = f.Followee!.Id,
-                    UserName = f.Followee.UserName!,
-                    ProfilePicture = f.Followee.ProfilePicture!,
-                    CreatedOnUTC = f.Followee.CreatedOnUTC,
-                })
+                .Select(f => new UserProjection
+                (
+                    f.Followee!.Id,
+                    f.Followee.UserName!,
+                    f.Followee.ProfilePicture!,
+                    f.Followee.CreatedOnUTC
+                ))
                 .ToListAsync();
         }
 
