@@ -23,12 +23,12 @@ namespace TimesynqServer.Models.DTO
         /// Next 15 = 5x5 grid (binary), mirrored:
         /// Cols 1=5, 2=4. '1' = color, '0' = white.
         /// </summary>
-        public string ProfilePicture { get; set; }
+        public string ProfilePicture { get; }
 
         /// <summary>
         /// The date when the user registered their account.
         /// </summary>
-        public DateTime CreatedOnUTC { get; set; }
+        public DateTime CreatedOnUTC { get; }
 
         private UserDTO(Guid id, string userName, string profilePicture, DateTime createdOnUTC)
         {
