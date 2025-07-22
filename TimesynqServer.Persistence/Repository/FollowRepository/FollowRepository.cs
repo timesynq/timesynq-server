@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Database.Projections;
+using TimesynqServer.Persistence.Projections;
 
 namespace TimesynqServer.Database.Repository.FollowRepository
 {
@@ -14,11 +15,17 @@ namespace TimesynqServer.Database.Repository.FollowRepository
             _dbContext = dbContext;
         }
 
-        public async Task<Follow?> GetFollowAsync(Guid followerId, Guid followeeId)
+        public async Task<FollowProjection?> GetFollowAsync(Guid followerId, Guid followeeId)
         {
             return await _dbContext.Follows
                 .AsNoTracking()
                 .Where(f => f.FollowerId == followerId && f.FolloweeId == followeeId)
+                .Select(f => new FollowProjection
+                (
+                    f.FollowerId,
+                    f.FolloweeId,
+                    f.CreatedOnUTC
+                ))
                 .FirstOrDefaultAsync();
         }
 
@@ -74,7 +81,7 @@ namespace TimesynqServer.Database.Repository.FollowRepository
                 .ToListAsync();
         }
 
-        public async Task<Follow> FollowAsync(Guid followerId, Guid followeeId)
+        public async Task<FollowProjection> FollowAsync(Guid followerId, Guid followeeId)
         {
             var follow = new Follow
             {
@@ -84,13 +91,14 @@ namespace TimesynqServer.Database.Repository.FollowRepository
             await _dbContext.Follows.AddAsync(follow);
             await _dbContext.SaveChangesAsync();
 
-            return follow;
+            return new FollowProjection(follow);
         }
 
-        public async Task UnfollowAsync(Follow follow)
+        public async Task UnfollowAsync(Guid followerId, Guid followeeId)
         {
-            _dbContext.Remove(follow);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Follows
+                .Where(f => f.FollowerId == followerId && f.FolloweeId == followeeId)
+                .ExecuteDeleteAsync(); //executes immediately, don't need to call SaveChangesAsync()
         }
 
     }

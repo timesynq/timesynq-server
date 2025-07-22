@@ -10,6 +10,7 @@ using TimesynqServer.Migrations;
 using TimesynqServer.Models.DTO;
 using TimesynqServer.Models.DTO.Request.Follow;
 using TimesynqServer.Models.Pagination;
+using TimesynqServer.Persistence.Projections;
 
 namespace TimesynqServer.Controllers
 {
@@ -42,14 +43,14 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            Follow? follow = await _followRepository.GetFollowAsync(callerGuid, followeeGuid);
+            FollowProjection? followProjection = await _followRepository.GetFollowAsync(callerGuid, followeeGuid);
 
-            if (follow == null)
+            if (followProjection == null)
             {
                 return ErrorResponse(StatusCodes.Status404NotFound, "Not following this user");
             }
 
-            return OkResponse(StatusCodes.Status200OK, follow.ToFollowDTO());
+            return OkResponse(StatusCodes.Status200OK, FollowDTO.FromProjection(followProjection));
         }
 
         [HttpGet("{userId}/followers")]
@@ -134,17 +135,17 @@ namespace TimesynqServer.Controllers
                 return ErrorResponse(StatusCodes.Status404NotFound, "Followee doesn't exist");
             }
 
-            Follow? existingFollow = await _followRepository.GetFollowAsync(callerGuid, followRequest.FolloweeGuid);
+            FollowProjection? existingFollowProjection = await _followRepository.GetFollowAsync(callerGuid, followRequest.FolloweeGuid);
 
-            if (existingFollow != null)
+            if (existingFollowProjection != null)
             {
                 return ErrorResponse(StatusCodes.Status409Conflict, "Already following this user");
             }
 
-            Follow persistedFollow = await _followRepository.FollowAsync(callerGuid, followRequest.FolloweeGuid);
+            FollowProjection persistedFollowProjection = await _followRepository.FollowAsync(callerGuid, followRequest.FolloweeGuid);
             string resourceUri = $"{Request.Scheme}://{Request.Host}{Request.Path}{followRequest.FolloweeGuid}";
 
-            return OkResponse(StatusCodes.Status201Created, persistedFollow.ToFollowDTO(), resourceUri);
+            return OkResponse(StatusCodes.Status201Created, FollowDTO.FromProjection(persistedFollowProjection), resourceUri);
         }
 
         [HttpDelete]
@@ -162,14 +163,14 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            Follow? existingFollow = await _followRepository.GetFollowAsync(callerGuid, unfollowRequest.FolloweeGuid);
+            FollowProjection? existingFollowProjection = await _followRepository.GetFollowAsync(callerGuid, unfollowRequest.FolloweeGuid);
 
-            if (existingFollow == null)
+            if (existingFollowProjection == null)
             {
                 return ErrorResponse(StatusCodes.Status404NotFound, "Not following this user");
             }
 
-            await _followRepository.UnfollowAsync(existingFollow);
+            await _followRepository.UnfollowAsync(existingFollowProjection.FollowerId, existingFollowProjection.FolloweeId);
 
             return NoContent();
         }
