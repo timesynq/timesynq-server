@@ -75,7 +75,7 @@ namespace TimesynqServer.Controllers
 
             IEnumerable<UserDTO> followerDTOs = followers.Select(UserDTO.FromProjection);
 
-            PagedResult<UserDTO> pagedResult = followerDTOs.ToPagedResult(pageNumber, pageSize, totalFollowers, totalPages, Request);
+            var pagedResult = new PagedResult<UserDTO>(followerDTOs, pageNumber, pageSize, totalFollowers, totalPages, Request);
 
             return OkResponse(StatusCodes.Status200OK, pagedResult);
         }
@@ -102,7 +102,7 @@ namespace TimesynqServer.Controllers
 
             IEnumerable<UserDTO> followeeDTOs = followees.Select(UserDTO.FromProjection);
 
-            PagedResult<UserDTO> pagedResult = followeeDTOs.ToPagedResult(pageNumber, pageSize, totalFollowees, totalPages, Request);
+            var pagedResult = new PagedResult<UserDTO>(followeeDTOs, pageNumber, pageSize, totalFollowees, totalPages, Request);
 
             return OkResponse(StatusCodes.Status200OK, pagedResult);
         }

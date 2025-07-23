@@ -1,4 +1,7 @@
-﻿namespace TimesynqServer.Models.Pagination
+﻿using System.Collections.Specialized;
+using System.Web;
+
+namespace TimesynqServer.Models.Pagination
 {
     /// <summary>
     /// Represents a paginated result containing a collection of items and associated metadata including pagination URLs.
@@ -9,51 +12,85 @@
         /// <summary>
         /// The collection of items for the current page.
         /// </summary>
-        public required IEnumerable<T> Items { get; set; } = [];
+        public IEnumerable<T> Items { get; }
 
         /// <summary>
         /// The current page number (1-indexed).
         /// </summary>
-        public required int PageNumber { get; set; }
+        public int PageNumber { get; }
 
         /// <summary>
         /// The number of items per page.
         /// </summary>
-        public required int PageSize { get; set; }
+        public int PageSize { get; }
 
         /// <summary>
         /// The total number of items across all pages.
         /// </summary>
-        public required int TotalItems { get; set; }
+        public int TotalItems { get; }
 
         /// <summary>
         /// The total number of pages.
         /// </summary>
-        public required int TotalPages { get; set; }
+        public int TotalPages { get; }
 
         /// <summary>
         /// Link to the first page (if applicable, string.Empty otherwise).
         /// </summary>
-        public required string FirstPageUrl { get; set; }
+        public string FirstPageUrl { get; }
 
         /// <summary>
         /// Link to the last page (if applicable, string.Empty otherwise).
         /// </summary>
-        public required string LastPageUrl { get; set; }
+        public string LastPageUrl { get; }
 
         /// <summary>
         /// Link to the previous page (if applicable, string.Empty otherwise).
         /// </summary>
-        public required string PreviousPageUrl { get; set; }
+        public string PreviousPageUrl { get; }
 
         /// <summary>
         /// Link to the next page (if applicable, string.Empty otherwise).
         /// </summary>
-        public required string NextPageUrl { get; set; }
+        public string NextPageUrl { get; }
 
         /// <summary>
         /// Link to the current page.
         /// </summary>
-        public required string SelfPageUrl { get; set; }
+        public string SelfPageUrl { get; }
+
+        public PagedResult(
+            IEnumerable<T> items,
+            int pageNumber,
+            int pageSize,
+            int totalItems,
+            int totalPages,
+            HttpRequest request)
+        {
+
+            string baseUrl = $"{request.Scheme}://{request.Host}{request.Path}";
+
+            string BuildUrl(int targetPage)
+            {
+                NameValueCollection query = HttpUtility.ParseQueryString(request.QueryString.ToString());
+                query.Set(nameof(pageNumber), targetPage.ToString());
+                query.Set(nameof(pageSize), pageSize.ToString());
+                return $"{baseUrl}?{query}";
+            }
+            ;
+
+            Items = items;
+            PageNumber = pageNumber;
+            PageSize = pageSize;
+            TotalItems = totalItems;
+            TotalPages = totalPages;
+            FirstPageUrl = totalPages > 0 ? BuildUrl(1) : string.Empty;
+            LastPageUrl = totalPages > 0 ? BuildUrl(totalPages) : string.Empty;
+            PreviousPageUrl = pageNumber > 1 ? BuildUrl(pageNumber - 1) : string.Empty;
+            NextPageUrl = pageNumber < totalPages ? BuildUrl(pageNumber + 1) : string.Empty;
+            SelfPageUrl = BuildUrl(pageNumber);
+
+        }
+
     }
 }
