@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Azure;
+using System.Net;
 using System.Text.Json;
 using TimesynqServer.Models.DTO;
 
@@ -18,9 +19,56 @@ namespace TimesynqServer.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+
+            async void Respond<T>(ResponseDTO<T> responseDTO)
+            {
+
+                string serializedResponse = JsonSerializer.Serialize(responseDTO);
+
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = responseDTO.StatusCode;
+
+                await context.Response.WriteAsync(serializedResponse);
+            }
+            ;
+
             try
             {
                 await _next(context);
+            }
+            catch (BadHttpRequestException badHttpRequestException)
+            {
+                //this block is for requests thrown by minimal apis, such as the ones used in the identity
+                //it's somewhat of a hacky fix because AFAIK throwing BadHttpRequestException is how minimal apis handle malformed request bodies
+
+                _logger.LogWarning("BadHttpRequestException caught: {Exception}", badHttpRequestException.ToString());
+
+                var response = new ResponseDTO<object>
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Errors = ["Request body is incorrectly formed."],
+                    Result = null,
+                };
+
+                Respond(response);
+
+            }
+            catch(InvalidOperationException invalidOperationException)
+            {
+                //this exception is thrown in the /refresh identity endpoint
+                //catching it here lets me return 401 instead of 500
+
+                _logger.LogWarning("InvalidOperationException caught: {Exception}", invalidOperationException.ToString());
+
+                var response = new ResponseDTO<object>
+                {
+                    StatusCode = StatusCodes.Status401Unauthorized,
+                    Errors = ["Invalid operation."],
+                    Result = null,
+                };
+
+                Respond(response);
+
             }
             catch (Exception ex) 
             {
@@ -33,12 +81,7 @@ namespace TimesynqServer.Middleware
                     Result = null,
                 };
 
-                string serializedResponse = JsonSerializer.Serialize(response);
-
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-                await context.Response.WriteAsync(serializedResponse);
+                Respond(response);
             }
         }
 

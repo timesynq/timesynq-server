@@ -1,6 +1,7 @@
 using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
@@ -11,6 +12,7 @@ using TimesynqServer.Database.Repository.UserRepository;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Middleware;
+using TimesynqServer.Models.DTO;
 using TimesynqServer.Services.Email;
 using TimesynqServer.Services.Logging;
 
@@ -75,6 +77,27 @@ builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection(
 builder.Services.AddSignalR();
 
 builder.AddRedisClient("Redis");
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value != null && e.Value.Errors.Count > 0)
+            .SelectMany(e => e.Value!.Errors)
+            .Select(err => err.ErrorMessage)
+            .ToArray();
+
+        var response = new ResponseDTO<object>
+        {
+            StatusCode = StatusCodes.Status400BadRequest,
+            Errors = errors,
+            Result = null,
+        };
+
+        return new BadRequestObjectResult(response);
+    };
+});
 
 var app = builder.Build();
 
