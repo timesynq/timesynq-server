@@ -11,7 +11,7 @@ namespace TimesynqServer.Controllers
 {
     [Route("users")]
     [ApiController]
-    public class UserController : TimesynqController
+    public class UserController : ControllerBase
     {
 
         private readonly IUserRepository _userRepository;
@@ -23,8 +23,8 @@ namespace TimesynqServer.Controllers
 
         [HttpGet("me")]
         [Authorize]
-        [ProducesResponseType(typeof(ResponseDTO<UserDTO>), StatusCodes.Status200OK)]
-        [ProducesErrorResponseType(typeof(ResponseDTO<object>))]
+        [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Me()
@@ -32,17 +32,23 @@ namespace TimesynqServer.Controllers
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (callerId == null)
             {
-                return ErrorResponse(StatusCodes.Status401Unauthorized, "Invalid token");
+                return Problem(
+                    statusCode: StatusCodes.Status401Unauthorized,
+                    detail: "Invalid token."
+                );
             }
             Guid callerGuid = Guid.Parse(callerId);
 
             UserProjection? userProjection = await _userRepository.GetByIdAsync(callerGuid);
             if (userProjection == null)
             {
-                return ErrorResponse(StatusCodes.Status404NotFound, "User not found");
+                return Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    detail: "User not found."
+                );
             }
 
-            return OkResponse(StatusCodes.Status200OK, UserDTO.FromProjection(userProjection));
+            return Ok(UserDTO.FromProjection(userProjection));
         }
 
 

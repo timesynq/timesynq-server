@@ -2,6 +2,7 @@ using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
@@ -82,20 +83,19 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
     {
-        var errors = context.ModelState
-            .Where(e => e.Value != null && e.Value.Errors.Count > 0)
-            .SelectMany(e => e.Value!.Errors)
-            .Select(err => err.ErrorMessage)
-            .ToArray();
+        var problemDetailsFactory = context.HttpContext.RequestServices
+            .GetRequiredService<ProblemDetailsFactory>();
 
-        var response = new ResponseDTO<object>
+        var problemDetails = problemDetailsFactory.CreateValidationProblemDetails(
+            context.HttpContext,
+            context.ModelState,
+            statusCode: StatusCodes.Status400BadRequest,
+            title: "One or more validation errors occurred.");
+
+        return new BadRequestObjectResult(problemDetails)
         {
-            StatusCode = StatusCodes.Status400BadRequest,
-            Errors = errors,
-            Result = null,
+            ContentTypes = { "application/problem+json" }
         };
-
-        return new BadRequestObjectResult(response);
     };
 });
 

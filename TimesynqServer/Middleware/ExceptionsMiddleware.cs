@@ -1,4 +1,6 @@
 ﻿using Azure;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Net;
 using System.Text.Json;
 using TimesynqServer.Models.DTO;
@@ -17,18 +19,15 @@ namespace TimesynqServer.Middleware
             _logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, ProblemDetailsFactory problemDetailsFactory)
         {
 
-            async void Respond<T>(ResponseDTO<T> responseDTO)
+            async void Respond(ProblemDetails problemDetails)
             {
+                context.Response.ContentType = "application/problem+json";
+                context.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status500InternalServerError;
 
-                string serializedResponse = JsonSerializer.Serialize(responseDTO);
-
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = responseDTO.StatusCode;
-
-                await context.Response.WriteAsync(serializedResponse);
+                await context.Response.WriteAsJsonAsync(problemDetails);
             }
             ;
 
@@ -43,14 +42,15 @@ namespace TimesynqServer.Middleware
 
                 _logger.LogWarning("BadHttpRequestException caught: {Exception}", badHttpRequestException.ToString());
 
-                var response = new ResponseDTO<object>
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Errors = ["Request body is incorrectly formed."],
-                    Result = null,
-                };
+                var problemDetails = problemDetailsFactory.CreateProblemDetails(
+                    httpContext: context, 
+                    statusCode: StatusCodes.Status400BadRequest, 
+                    title: "Bad Request", 
+                    type: "https://tools.ietf.org/html/rfc7231#section-6.5.1", 
+                    detail: "The request body is incorrectly formed"
+                );
 
-                Respond(response);
+                Respond(problemDetails);
 
             }
             catch(InvalidOperationException invalidOperationException)
@@ -60,28 +60,30 @@ namespace TimesynqServer.Middleware
 
                 _logger.LogWarning("InvalidOperationException caught: {Exception}", invalidOperationException.ToString());
 
-                var response = new ResponseDTO<object>
-                {
-                    StatusCode = StatusCodes.Status401Unauthorized,
-                    Errors = ["Invalid operation."],
-                    Result = null,
-                };
+                var problemDetails = problemDetailsFactory.CreateProblemDetails(
+                    httpContext: context,
+                    statusCode: StatusCodes.Status401Unauthorized,
+                    title: "Invalid Operation",
+                    type: "https://datatracker.ietf.org/doc/html/rfc7235#section-3.1",
+                    detail: "Invalid operation."
+                );
 
-                Respond(response);
+                Respond(problemDetails);
 
             }
             catch (Exception ex) 
             {
                 _logger.LogError("Exception caught: {Exception}", ex.ToString());
 
-                var response = new ResponseDTO<object>
-                {
-                    StatusCode = StatusCodes.Status500InternalServerError,
-                    Errors = ["An unexpected error occurred."],
-                    Result = null,
-                };
+                var problemDetails = problemDetailsFactory.CreateProblemDetails(
+                    httpContext: context,
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    title: "Internal Server Error",
+                    type: "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+                    detail: "An unexpected error occurred."
+                );
 
-                Respond(response);
+                Respond(problemDetails);
             }
         }
 

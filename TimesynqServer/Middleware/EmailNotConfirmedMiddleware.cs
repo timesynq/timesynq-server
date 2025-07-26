@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text.Json;
@@ -18,7 +19,7 @@ namespace TimesynqServer.Middleware
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context, UserManager<TimesynqUser> userManager)
+        public async Task InvokeAsync(HttpContext context, UserManager<TimesynqUser> userManager, ProblemDetailsFactory problemDetailsFactory)
         {
 
             ClaimsPrincipal user = context.User;
@@ -60,19 +61,18 @@ namespace TimesynqServer.Middleware
                 return;
             }
 
-            var response = new ResponseDTO<object>
-            {
-                StatusCode = StatusCodes.Status403Forbidden,
-                Errors = ["Confirm your email to access this."],
-                Result = null,
-            };
+            var problemDetails = problemDetailsFactory.CreateProblemDetails(
+                    httpContext: context,
+                    statusCode: StatusCodes.Status403Forbidden,
+                    title: "Forbidden.",
+                    type: "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+                    detail: "Confirm your email to access this."
+                );
 
-            string serializedResponse = JsonSerializer.Serialize(response);
-
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/problem+json";
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
 
-            await context.Response.WriteAsync(serializedResponse);
+            await context.Response.WriteAsJsonAsync(problemDetails);
         }
 
     }

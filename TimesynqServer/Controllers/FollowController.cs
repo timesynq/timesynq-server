@@ -16,7 +16,7 @@ namespace TimesynqServer.Controllers
 {
     [Route("follows")]
     [ApiController]
-    public class FollowController : TimesynqController
+    public class FollowController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
         private readonly IFollowRepository _followRepository;
@@ -29,8 +29,8 @@ namespace TimesynqServer.Controllers
 
         [HttpGet("{followeeGuid}")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
-        [ProducesResponseType(typeof(ResponseDTO<FollowDTO>), StatusCodes.Status200OK)]
-        [ProducesErrorResponseType(typeof(ResponseDTO<object>))]
+        [ProducesResponseType(typeof(FollowDTO), StatusCodes.Status200OK)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -39,7 +39,10 @@ namespace TimesynqServer.Controllers
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (callerId == null)
             {
-                return ErrorResponse(StatusCodes.Status401Unauthorized, "Invalid token");
+                return Problem(
+                    statusCode: StatusCodes.Status401Unauthorized,
+                    detail: "Invalid token."
+                );
             }
             Guid callerGuid = Guid.Parse(callerId);
 
@@ -47,15 +50,18 @@ namespace TimesynqServer.Controllers
 
             if (followProjection == null)
             {
-                return ErrorResponse(StatusCodes.Status404NotFound, "Not following this user");
+                return Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    detail: "Not following this user."
+                );
             }
 
-            return OkResponse(StatusCodes.Status200OK, FollowDTO.FromProjection(followProjection));
+            return Ok(FollowDTO.FromProjection(followProjection));
         }
 
         [HttpGet("{userId}/followers")]
         [Authorize]
-        [ProducesResponseType(typeof(ResponseDTO<PagedResult<UserDTO>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFollowers(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             pageSize = Math.Clamp(pageSize, 1, 100);
@@ -66,7 +72,7 @@ namespace TimesynqServer.Controllers
 
             if (totalPages <= 0)
             {
-                return OkResponse(StatusCodes.Status200OK, new List<UserDTO>());
+                return Ok(new List<UserDTO>());
             }
 
             pageNumber = Math.Clamp(pageNumber, 1, totalPages);
@@ -77,12 +83,12 @@ namespace TimesynqServer.Controllers
 
             var pagedResult = new PagedResult<UserDTO>(followerDTOs, pageNumber, pageSize, totalFollowers, totalPages, Request);
 
-            return OkResponse(StatusCodes.Status200OK, pagedResult);
+            return Ok(pagedResult);
         }
 
         [HttpGet("{userId}/followees")]
         [Authorize]
-        [ProducesResponseType(typeof(ResponseDTO<PagedResult<UserDTO>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFollowees(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             pageSize = Math.Clamp(pageSize, 1, 100);
@@ -93,7 +99,7 @@ namespace TimesynqServer.Controllers
 
             if (totalPages <= 0)
             {
-                return OkResponse(StatusCodes.Status200OK, new List<UserDTO>());
+                return Ok(new List<UserDTO>());
             }
 
             pageNumber = Math.Clamp(pageNumber, 1, totalPages);
@@ -104,13 +110,14 @@ namespace TimesynqServer.Controllers
 
             var pagedResult = new PagedResult<UserDTO>(followeeDTOs, pageNumber, pageSize, totalFollowees, totalPages, Request);
 
-            return OkResponse(StatusCodes.Status200OK, pagedResult);
+            return Ok(pagedResult);
         }
 
         [HttpPost]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(typeof(FollowDTO), StatusCodes.Status201Created)]
-        [ProducesErrorResponseType(typeof(ResponseDTO<object>))]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -120,46 +127,63 @@ namespace TimesynqServer.Controllers
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (callerId == null)
             {
-                return ErrorResponse(StatusCodes.Status401Unauthorized, "Invalid token");
+                return Problem(
+                    statusCode: StatusCodes.Status401Unauthorized,
+                    detail: "Invalid token."
+                );
             }
             Guid callerGuid = Guid.Parse(callerId);
 
             if (callerGuid == followRequest.FolloweeGuid)
             {
-                return ErrorResponse(StatusCodes.Status409Conflict, "Can't follow yourself");
+                return Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    detail: "Can't follow yourself."
+                );
             }
 
             UserProjection? followeeProjection = await _userRepository.GetByIdAsync(followRequest.FolloweeGuid);
             if (followeeProjection == null)
             {
-                return ErrorResponse(StatusCodes.Status404NotFound, "Followee doesn't exist");
+                return Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    detail: "Followee doesn't exist."
+                );
             }
 
             FollowProjection? existingFollowProjection = await _followRepository.GetFollowAsync(callerGuid, followRequest.FolloweeGuid);
 
             if (existingFollowProjection != null)
             {
-                return ErrorResponse(StatusCodes.Status409Conflict, "Already following this user");
+                return Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    detail: "Already following this user."
+                );
             }
 
             FollowProjection persistedFollowProjection = await _followRepository.FollowAsync(callerGuid, followRequest.FolloweeGuid);
             string resourceUri = $"{Request.Scheme}://{Request.Host}{Request.Path}{followRequest.FolloweeGuid}";
 
-            return OkResponse(StatusCodes.Status201Created, FollowDTO.FromProjection(persistedFollowProjection), resourceUri);
+            return Created(resourceUri, FollowDTO.FromProjection(persistedFollowProjection));
         }
 
         [HttpDelete]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesErrorResponseType(typeof(ResponseDTO<object>))]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UnfollowUser([FromBody] UnfollowRequestDTO unfollowRequest)
         {
             string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (callerId == null)
             {
-                return ErrorResponse(StatusCodes.Status401Unauthorized, "Invalid token");
+                return Problem(
+                    statusCode: StatusCodes.Status401Unauthorized,
+                    detail: "Invalid token."
+                );
             }
             Guid callerGuid = Guid.Parse(callerId);
 
@@ -167,7 +191,10 @@ namespace TimesynqServer.Controllers
 
             if (existingFollowProjection == null)
             {
-                return ErrorResponse(StatusCodes.Status404NotFound, "Not following this user");
+                return Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    detail: "Not following this user."
+                );
             }
 
             await _followRepository.UnfollowAsync(existingFollowProjection.FollowerId, existingFollowProjection.FolloweeId);
