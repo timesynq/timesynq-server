@@ -11,7 +11,7 @@ namespace TimesynqServer.Database.Repository.FollowRepository
         public Task<int> GetFolloweesCountAsync(Guid followerId);
         public Task<IEnumerable<UserProjection>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize);
         public Task<IEnumerable<UserProjection>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize);
-        public Task<FollowProjection> FollowAsync(Guid followerId, Guid followeeId);
-        public Task UnfollowAsync(Guid followerId, Guid followeeId);
+        public Task<FollowProjection> AddFollowAsync(Guid followerId, Guid followeeId);
+        public Task DeleteFollowAsync(Guid followerId, Guid followeeId);
     }
 }

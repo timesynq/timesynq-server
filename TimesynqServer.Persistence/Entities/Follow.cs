@@ -8,26 +8,46 @@
         /// <summary>
         /// The ID of the user who follows another user.
         /// </summary>
-        public Guid FollowerId { get; set; }
+        public Guid FollowerId { get; private set; }
 
         /// <summary>
         /// The ID of the user who is being followed by another user.
         /// </summary>
-        public Guid FolloweeId { get; set; }
+        public Guid FolloweeId { get; private set; }
 
         /// <summary>
         /// The date when the follow action occurred.
         /// </summary>
-        public DateTime CreatedOnUTC { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedOnUTC { get; private set; }
 
         /// <summary>
         /// Navigation property for the user who follows another user.
         /// </summary>
-        public TimesynqUser? Follower { get; set; }
+        public TimesynqUser? Follower { get; private set; }
 
         /// <summary>
         /// Navigation property for the user who is being followed by another user.
         /// </summary>
-        public TimesynqUser? Followee { get; set; }
+        public TimesynqUser? Followee { get; private set; }
+
+        private Follow() { }
+
+        private Follow(Guid followerId, Guid followeeId)
+        {
+            FollowerId = followerId;
+            FolloweeId = followeeId;
+            CreatedOnUTC = DateTime.UtcNow;
+        }
+
+        public static Follow Create(Guid followerId, Guid followeeId)
+        {
+            if(followerId == followeeId)
+            {
+                throw new NotImplementedException();
+            }
+
+            return new Follow(followerId, followeeId);
+        }
+
     }
 }

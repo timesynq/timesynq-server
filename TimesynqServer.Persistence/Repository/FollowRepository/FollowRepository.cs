@@ -81,20 +81,15 @@ namespace TimesynqServer.Database.Repository.FollowRepository
                 .ToListAsync();
         }
 
-        public async Task<FollowProjection> FollowAsync(Guid followerId, Guid followeeId)
+        public async Task<FollowProjection> AddFollowAsync(Guid followerId, Guid followeeId)
         {
-            var follow = new Follow
-            {
-                FollowerId = followerId,
-                FolloweeId = followeeId,
-            };
+            var follow = Follow.Create(followerId, followeeId);
             await _dbContext.Follows.AddAsync(follow);
             await _dbContext.SaveChangesAsync();
-
             return new FollowProjection(follow);
         }
 
-        public async Task UnfollowAsync(Guid followerId, Guid followeeId)
+        public async Task DeleteFollowAsync(Guid followerId, Guid followeeId)
         {
             await _dbContext.Follows
                 .Where(f => f.FollowerId == followerId && f.FolloweeId == followeeId)

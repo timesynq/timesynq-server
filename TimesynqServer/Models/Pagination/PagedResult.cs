@@ -59,6 +59,15 @@ namespace TimesynqServer.Models.Pagination
         /// </summary>
         public string SelfPageUrl { get; }
 
+        /// <summary>
+        /// Constructs a PagedResult object that provides navigation URLs.
+        /// </summary>
+        /// <param name="items">The page of items.</param>
+        /// <param name="pageNumber">The requested page number.</param>
+        /// <param name="pageSize">The requested number of items to return per page.</param>
+        /// <param name="totalItems">The total number of items in the database.</param>
+        /// <param name="totalPages">The total number of pages based on the pageSize.</param>
+        /// <param name="request">The HttpRequest associated with the call.</param>
         public PagedResult(
             IEnumerable<T> items,
             int pageNumber,
@@ -90,6 +99,29 @@ namespace TimesynqServer.Models.Pagination
             NextPageUrl = pageNumber < totalPages ? BuildUrl(pageNumber + 1) : string.Empty;
             SelfPageUrl = BuildUrl(pageNumber);
 
+        }
+
+        private PagedResult()
+        {
+            Items = [];
+            PageNumber = 0;
+            PageSize = 0;
+            TotalItems = 0;
+            TotalPages = 0;
+            FirstPageUrl = string.Empty;
+            LastPageUrl = string.Empty;
+            PreviousPageUrl = string.Empty;
+            NextPageUrl = string.Empty;
+            SelfPageUrl= string.Empty;
+        }
+
+        /// <summary>
+        /// Constructs an empty PagedResult object for when there are 0 total items.
+        /// </summary>
+        /// <returns>A PagedResult with no items or navigation URLs.</returns>
+        public static PagedResult<T> CreateEmpty()
+        {
+            return new PagedResult<T>();
         }
 
     }

@@ -11,6 +11,7 @@ using TimesynqServer.Models.DTO;
 using TimesynqServer.Models.DTO.Request.Follow;
 using TimesynqServer.Models.Pagination;
 using TimesynqServer.Persistence.Projections;
+using TimesynqServer.Services.Service.FollowService;
 
 namespace TimesynqServer.Controllers
 {
@@ -20,11 +21,13 @@ namespace TimesynqServer.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IFollowRepository _followRepository;
+        private readonly IFollowService _followService;
 
-        public FollowController(IUserRepository userRepository, IFollowRepository followRepository)
+        public FollowController(IUserRepository userRepository, IFollowRepository followRepository, IFollowService followService)
         {
             _userRepository = userRepository;
             _followRepository = followRepository;
+            _followService = followService;
         }
 
         [HttpGet("{followeeGuid}")]
@@ -46,9 +49,9 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            FollowProjection? followProjection = await _followRepository.GetFollowAsync(callerGuid, followeeGuid);
+            FollowDTO? followDTO = await _followService.GetFollowAsync(callerGuid, followeeGuid);
 
-            if (followProjection == null)
+            if (followDTO == null)
             {
                 return Problem(
                     statusCode: StatusCodes.Status404NotFound,
@@ -56,7 +59,7 @@ namespace TimesynqServer.Controllers
                 );
             }
 
-            return Ok(FollowDTO.FromProjection(followProjection));
+            return Ok(followDTO);
         }
 
         [HttpGet("{userId}/followers")]
@@ -64,26 +67,7 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFollowers(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
-            pageSize = Math.Clamp(pageSize, 1, 100);
-
-            int totalFollowers = await _followRepository.GetFollowersCountAsync(userId);
-
-            int totalPages = (int)Math.Ceiling((double)totalFollowers / pageSize);
-
-            if (totalPages <= 0)
-            {
-                return Ok(new List<UserDTO>());
-            }
-
-            pageNumber = Math.Clamp(pageNumber, 1, totalPages);
-
-            IEnumerable<UserProjection> followers = await _followRepository.GetFollowersAsync(userId, pageNumber, pageSize);
-
-            IEnumerable<UserDTO> followerDTOs = followers.Select(UserDTO.FromProjection);
-
-            var pagedResult = new PagedResult<UserDTO>(followerDTOs, pageNumber, pageSize, totalFollowers, totalPages, Request);
-
-            return Ok(pagedResult);
+            return Ok(await _followService.GetFollowersAsync(userId, pageNumber, pageSize, Request));
         }
 
         [HttpGet("{userId}/followees")]
@@ -91,26 +75,7 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFollowees(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
-            pageSize = Math.Clamp(pageSize, 1, 100);
-
-            int totalFollowees = await _followRepository.GetFolloweesCountAsync(userId);
-
-            int totalPages = (int)Math.Ceiling((double)totalFollowees / pageSize);
-
-            if (totalPages <= 0)
-            {
-                return Ok(new List<UserDTO>());
-            }
-
-            pageNumber = Math.Clamp(pageNumber, 1, totalPages);
-
-            IEnumerable<UserProjection> followees = await _followRepository.GetFolloweesAsync(userId, pageNumber, pageSize);
-
-            IEnumerable<UserDTO> followeeDTOs = followees.Select(UserDTO.FromProjection);
-
-            var pagedResult = new PagedResult<UserDTO>(followeeDTOs, pageNumber, pageSize, totalFollowees, totalPages, Request);
-
-            return Ok(pagedResult);
+            return Ok(await _followService.GetFolloweesAsync(userId, pageNumber, pageSize, Request));
         }
 
         [HttpPost]
@@ -161,7 +126,7 @@ namespace TimesynqServer.Controllers
                 );
             }
 
-            FollowProjection persistedFollowProjection = await _followRepository.FollowAsync(callerGuid, followRequest.FolloweeGuid);
+            FollowProjection persistedFollowProjection = await _followRepository.AddFollowAsync(callerGuid, followRequest.FolloweeGuid);
             string resourceUri = $"{Request.Scheme}://{Request.Host}{Request.Path}{followRequest.FolloweeGuid}";
 
             return Created(resourceUri, FollowDTO.FromProjection(persistedFollowProjection));
@@ -197,7 +162,7 @@ namespace TimesynqServer.Controllers
                 );
             }
 
-            await _followRepository.UnfollowAsync(existingFollowProjection.FollowerId, existingFollowProjection.FolloweeId);
+            await _followRepository.DeleteFollowAsync(existingFollowProjection.FollowerId, existingFollowProjection.FolloweeId);
 
             return NoContent();
         }

@@ -16,6 +16,7 @@ using TimesynqServer.Middleware;
 using TimesynqServer.Models.DTO;
 using TimesynqServer.Services.Email;
 using TimesynqServer.Services.Logging;
+using TimesynqServer.Services.Service.FollowService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +71,8 @@ builder.Services.AddIdentityCore<TimesynqUser>(options =>
 builder.Services.AddTransient<IEmailSender<TimesynqUser>, EmailSender<TimesynqUser>>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFollowRepository, FollowRepository>();
+
+builder.Services.AddScoped<IFollowService, FollowService>();
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonSimpleEmailService>();
