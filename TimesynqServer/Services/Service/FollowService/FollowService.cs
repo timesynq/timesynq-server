@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
+using TimesynqServer.Database.Entities;
 using TimesynqServer.Database.Projections;
 using TimesynqServer.Database.Repository.FollowRepository;
 using TimesynqServer.Database.Repository.UserRepository;
@@ -98,12 +99,15 @@ namespace TimesynqServer.Services.Service.FollowService
                 return Result<FollowDTO>.Failure(DomainErrors.Follow.AlreadyFollowing);
             }
 
-            Result<FollowProjection> addFollowResult = await _followRepository.AddFollowAsync(followerId, followeeId);
-
-            return addFollowResult.Match
+            Result<Follow> followCreationResult = Follow.Create(followerId, followeeId);
+            return await followCreationResult.Match
             (
-                onSuccess: followProjection => Result<FollowDTO>.Success(FollowDTO.FromProjection(followProjection)),
-                onFailure: Result<FollowDTO>.Failure
+                onSuccess: async follow =>
+                {
+                    await _followRepository.AddFollowAsync(follow);
+                    return Result<FollowDTO>.Success(FollowDTO.FromFollow(follow));
+                },
+                onFailure: error => Task.FromResult(Result<FollowDTO>.Failure(error))
             );
         }
 

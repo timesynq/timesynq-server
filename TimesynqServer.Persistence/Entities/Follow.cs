@@ -46,7 +46,7 @@ namespace TimesynqServer.Database.Entities
         {
             if(followerId == followeeId)
             {
-                Result<Follow>.Failure(DomainErrors.Follow.CantFollowYourself);
+                return Result<Follow>.Failure(DomainErrors.Follow.CantFollowYourself);
             }
 
             return Result<Follow>.Success(new Follow(followerId, followeeId));

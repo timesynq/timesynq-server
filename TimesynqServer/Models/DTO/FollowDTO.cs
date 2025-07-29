@@ -1,4 +1,5 @@
-﻿using TimesynqServer.Database.Projections;
+﻿using TimesynqServer.Database.Entities;
+using TimesynqServer.Database.Projections;
 using TimesynqServer.Persistence.Projections;
 
 namespace TimesynqServer.Models.DTO
@@ -46,6 +47,13 @@ namespace TimesynqServer.Models.DTO
             ArgumentNullException.ThrowIfNull(projection);
 
             return new FollowDTO(projection.FollowerId, projection.FolloweeId, projection.CreatedOnUTC);
+        }
+
+        public static FollowDTO FromFollow(Follow follow)
+        {
+            ArgumentNullException.ThrowIfNull(follow);
+
+            return new FollowDTO(follow.FollowerId, follow.FolloweeId, follow.CreatedOnUTC);
         }
 
     }
