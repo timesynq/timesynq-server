@@ -1,16 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Database.Projections;
-using TimesynqServer.Database.Repository.FollowRepository;
-using TimesynqServer.Database.Repository.UserRepository;
-using TimesynqServer.Extensions;
-using TimesynqServer.Migrations;
+using TimesynqServer.Common.Result;
 using TimesynqServer.Models.DTO;
 using TimesynqServer.Models.DTO.Request.Follow;
 using TimesynqServer.Models.Pagination;
-using TimesynqServer.Persistence.Projections;
 using TimesynqServer.Services.Service.FollowService;
 
 namespace TimesynqServer.Controllers
@@ -19,14 +13,10 @@ namespace TimesynqServer.Controllers
     [ApiController]
     public class FollowController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IFollowRepository _followRepository;
         private readonly IFollowService _followService;
 
-        public FollowController(IUserRepository userRepository, IFollowRepository followRepository, IFollowService followService)
+        public FollowController(IFollowService followService)
         {
-            _userRepository = userRepository;
-            _followRepository = followRepository;
             _followService = followService;
         }
 
@@ -99,37 +89,19 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            if (callerGuid == followRequest.FolloweeGuid)
-            {
-                return Problem(
-                    statusCode: StatusCodes.Status409Conflict,
-                    detail: "Can't follow yourself."
-                );
-            }
-
-            UserProjection? followeeProjection = await _userRepository.GetByIdAsync(followRequest.FolloweeGuid);
-            if (followeeProjection == null)
-            {
-                return Problem(
-                    statusCode: StatusCodes.Status404NotFound,
-                    detail: "Followee doesn't exist."
-                );
-            }
-
-            FollowProjection? existingFollowProjection = await _followRepository.GetFollowAsync(callerGuid, followRequest.FolloweeGuid);
-
-            if (existingFollowProjection != null)
-            {
-                return Problem(
-                    statusCode: StatusCodes.Status409Conflict,
-                    detail: "Already following this user."
-                );
-            }
-
-            FollowProjection persistedFollowProjection = await _followRepository.AddFollowAsync(callerGuid, followRequest.FolloweeGuid);
-            string resourceUri = $"{Request.Scheme}://{Request.Host}{Request.Path}{followRequest.FolloweeGuid}";
-
-            return Created(resourceUri, FollowDTO.FromProjection(persistedFollowProjection));
+            Result<FollowDTO> followResult = await _followService.FollowAsync(callerGuid, followRequest.FolloweeGuid);
+            return followResult.Match
+            (
+                onSuccess: followDTO =>
+                {
+                    string resourceUri = $"{Request.Scheme}://{Request.Host}{Request.Path}{followRequest.FolloweeGuid}";
+                    return Created(resourceUri, followDTO);
+                },
+                onFailure: error => Problem(
+                    statusCode: error.Code,
+                    detail: error.Message
+                )
+            );
         }
 
         [HttpDelete]
@@ -152,19 +124,15 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            FollowProjection? existingFollowProjection = await _followRepository.GetFollowAsync(callerGuid, unfollowRequest.FolloweeGuid);
-
-            if (existingFollowProjection == null)
-            {
-                return Problem(
-                    statusCode: StatusCodes.Status404NotFound,
-                    detail: "Not following this user."
-                );
-            }
-
-            await _followRepository.DeleteFollowAsync(existingFollowProjection.FollowerId, existingFollowProjection.FolloweeId);
-
-            return NoContent();
+            Result unfollowResult = await _followService.UnfollowAsync(callerGuid, unfollowRequest.FolloweeGuid);
+            return unfollowResult.Match<IActionResult>
+            (
+                onSuccess: NoContent,
+                onFailure: error => Problem(
+                    statusCode: error.Code,
+                    detail: error.Message
+                )
+            );
         }
 
     }

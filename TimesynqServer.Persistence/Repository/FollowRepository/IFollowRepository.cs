@@ -1,5 +1,6 @@
 ﻿using TimesynqServer.Database.Entities;
 using TimesynqServer.Database.Projections;
+using TimesynqServer.Common.Result;
 using TimesynqServer.Persistence.Projections;
 
 namespace TimesynqServer.Database.Repository.FollowRepository
@@ -11,7 +12,7 @@ namespace TimesynqServer.Database.Repository.FollowRepository
         public Task<int> GetFolloweesCountAsync(Guid followerId);
         public Task<IEnumerable<UserProjection>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize);
         public Task<IEnumerable<UserProjection>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize);
-        public Task<FollowProjection> AddFollowAsync(Guid followerId, Guid followeeId);
-        public Task DeleteFollowAsync(Guid followerId, Guid followeeId);
+        public Task<Result<FollowProjection>> AddFollowAsync(Guid followerId, Guid followeeId);
+        public Task<int> DeleteFollowAsync(Guid followerId, Guid followeeId);
     }
 }

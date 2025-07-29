@@ -19,5 +19,9 @@
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TimesynqServer.Common\TimesynqServer.Common.csproj" />
+  </ItemGroup>
 	
 </Project>

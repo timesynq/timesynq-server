@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Database.Projections;
+using TimesynqServer.Common.Result;
 using TimesynqServer.Persistence.Projections;
+using TimesynqServer.Common;
 
 namespace TimesynqServer.Database.Repository.FollowRepository
 {
@@ -81,17 +83,25 @@ namespace TimesynqServer.Database.Repository.FollowRepository
                 .ToListAsync();
         }
 
-        public async Task<FollowProjection> AddFollowAsync(Guid followerId, Guid followeeId)
+        public async Task<Result<FollowProjection>> AddFollowAsync(Guid followerId, Guid followeeId)
         {
-            var follow = Follow.Create(followerId, followeeId);
-            await _dbContext.Follows.AddAsync(follow);
-            await _dbContext.SaveChangesAsync();
-            return new FollowProjection(follow);
+            Result<Follow> followCreationResult = Follow.Create(followerId, followeeId);
+
+            return await followCreationResult.Match
+            (
+                onSuccess: async follow =>
+                {
+                    await _dbContext.Follows.AddAsync(follow);
+                    await _dbContext.SaveChangesAsync();
+                    return Result<FollowProjection>.Success(new FollowProjection(follow));
+                },
+                onFailure: error => Task.FromResult(Result<FollowProjection>.Failure(error))
+            );
         }
 
-        public async Task DeleteFollowAsync(Guid followerId, Guid followeeId)
+        public async Task<int> DeleteFollowAsync(Guid followerId, Guid followeeId)
         {
-            await _dbContext.Follows
+            return await _dbContext.Follows
                 .Where(f => f.FollowerId == followerId && f.FolloweeId == followeeId)
                 .ExecuteDeleteAsync(); //executes immediately, don't need to call SaveChangesAsync()
         }

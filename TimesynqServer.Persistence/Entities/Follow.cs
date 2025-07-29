@@ -1,4 +1,7 @@
-﻿namespace TimesynqServer.Database.Entities
+﻿using TimesynqServer.Common;
+using TimesynqServer.Common.Result;
+
+namespace TimesynqServer.Database.Entities
 {
     /// <summary>
     /// Represents a follower-following relationship between two users.
@@ -39,14 +42,14 @@
             CreatedOnUTC = DateTime.UtcNow;
         }
 
-        public static Follow Create(Guid followerId, Guid followeeId)
+        public static Result<Follow> Create(Guid followerId, Guid followeeId)
         {
             if(followerId == followeeId)
             {
-                throw new NotImplementedException();
+                Result<Follow>.Failure(DomainErrors.Follow.CantFollowYourself);
             }
 
-            return new Follow(followerId, followeeId);
+            return Result<Follow>.Success(new Follow(followerId, followeeId));
         }
 
     }

@@ -1,6 +1,10 @@
 ﻿using Azure.Core;
+using System.Security.Claims;
+using TimesynqServer.Common;
+using TimesynqServer.Common.Result;
 using TimesynqServer.Database.Projections;
 using TimesynqServer.Database.Repository.FollowRepository;
+using TimesynqServer.Database.Repository.UserRepository;
 using TimesynqServer.Models.DTO;
 using TimesynqServer.Models.Pagination;
 using TimesynqServer.Persistence.Projections;
@@ -9,11 +13,12 @@ namespace TimesynqServer.Services.Service.FollowService
 {
     public class FollowService : IFollowService
     {
-
+        private readonly IUserRepository _userRepository;
         private readonly IFollowRepository _followRepository;
 
-        public FollowService(IFollowRepository followRepository) 
+        public FollowService(IUserRepository userRepository, IFollowRepository followRepository) 
         {
+            _userRepository = userRepository;
             _followRepository = followRepository;
         }
 
@@ -71,6 +76,45 @@ namespace TimesynqServer.Services.Service.FollowService
             IEnumerable<UserDTO> followeeDTOs = followees.Select(UserDTO.FromProjection);
 
             return new PagedResult<UserDTO>(followeeDTOs, pageNumber, pageSize, totalFollowees, totalPages, httpRequest);
+        }
+
+        public async Task<Result<FollowDTO>> FollowAsync(Guid followerId, Guid followeeId)
+        {
+            UserProjection? followerProjection = await _userRepository.GetByIdAsync(followerId);
+            if(followerProjection == null)
+            {
+                return Result<FollowDTO>.Failure(DomainErrors.User.NotFound);
+            }
+
+            UserProjection? followeeProjection = await _userRepository.GetByIdAsync(followeeId);
+            if (followeeProjection == null)
+            {
+                return Result<FollowDTO>.Failure(DomainErrors.User.NotFound);
+            }
+
+            FollowProjection? existingFollowProjection = await _followRepository.GetFollowAsync(followerId, followeeId);
+            if (existingFollowProjection != null)
+            {
+                return Result<FollowDTO>.Failure(DomainErrors.Follow.AlreadyFollowing);
+            }
+
+            Result<FollowProjection> addFollowResult = await _followRepository.AddFollowAsync(followerId, followeeId);
+
+            return addFollowResult.Match
+            (
+                onSuccess: followProjection => Result<FollowDTO>.Success(FollowDTO.FromProjection(followProjection)),
+                onFailure: Result<FollowDTO>.Failure
+            );
+        }
+
+        public async Task<Result> UnfollowAsync(Guid followerId, Guid followeeId)
+        {
+            int deleted = await _followRepository.DeleteFollowAsync(followerId, followeeId);
+            if(deleted == 0)
+            {
+                return Result.Failure(DomainErrors.Follow.NotFollowing);
+            }
+            return Result.Success();
         }
 
     }
