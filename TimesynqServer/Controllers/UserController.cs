@@ -6,6 +6,7 @@ using TimesynqServer.Database.Projections;
 using TimesynqServer.Database.Repository.UserRepository;
 using TimesynqServer.Extensions;
 using TimesynqServer.Models.DTO;
+using TimesynqServer.Services.Service.UserService;
 
 namespace TimesynqServer.Controllers
 {
@@ -14,11 +15,11 @@ namespace TimesynqServer.Controllers
     public class UserController : ControllerBase
     {
 
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
 
-        public UserController(IUserRepository userRepository)
+        public UserController(IUserService userService)
         {
-            _userRepository = userRepository;
+            _userService = userService;
         }
 
         [HttpGet("me")]
@@ -39,8 +40,8 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            UserProjection? userProjection = await _userRepository.GetByIdAsync(callerGuid);
-            if (userProjection == null)
+            UserDTO? userDTO = await _userService.GetUserAsync(callerGuid);
+            if (userDTO == null)
             {
                 return Problem(
                     statusCode: StatusCodes.Status404NotFound,
@@ -48,7 +49,7 @@ namespace TimesynqServer.Controllers
                 );
             }
 
-            return Ok(UserDTO.FromProjection(userProjection));
+            return Ok(userDTO);
         }
 
 

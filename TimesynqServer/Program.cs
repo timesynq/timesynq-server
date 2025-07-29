@@ -17,6 +17,7 @@ using TimesynqServer.Models.DTO;
 using TimesynqServer.Services.Email;
 using TimesynqServer.Services.Logging;
 using TimesynqServer.Services.Service.FollowService;
+using TimesynqServer.Services.Service.UserService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +73,7 @@ builder.Services.AddTransient<IEmailSender<TimesynqUser>, EmailSender<TimesynqUs
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFollowRepository, FollowRepository>();
 
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFollowService, FollowService>();
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());

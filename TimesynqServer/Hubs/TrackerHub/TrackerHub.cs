@@ -7,6 +7,7 @@ using TimesynqServer.Extensions;
 using TimesynqServer.Models.Cache;
 using TimesynqServer.Models.DTO;
 using TimesynqServer.Services.Cache.TrackerHubCache;
+using TimesynqServer.Services.Service.UserService;
 using TimesynqServer.Services.Static;
 
 namespace TimesynqServer.Hubs.TrackerHub
@@ -15,12 +16,12 @@ namespace TimesynqServer.Hubs.TrackerHub
     public class TrackerHub : Hub
     {
         private readonly ITrackerHubCache _trackerHubCache;
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
 
-        public TrackerHub(ITrackerHubCache hubCacheService, IUserRepository userRepository)
+        public TrackerHub(ITrackerHubCache hubCacheService, IUserService userService)
         {
             _trackerHubCache = hubCacheService;
-            _userRepository = userRepository;
+            _userService = userService;
         }
 
         public override Task OnConnectedAsync()
@@ -45,17 +46,15 @@ namespace TimesynqServer.Hubs.TrackerHub
             await _trackerHubCache.RemoveConnectionAsync(callerGuid, connection.RoomCode);
 
             string roomCode = connection.RoomCode;
-            UserProjection? userProjection = await _userRepository.GetByIdAsync(callerGuid);
-            if (userProjection == null)
+            UserDTO? userDTO = await _userService.GetUserAsync(callerGuid);
+            if (userDTO == null)
             {
                 return;
             }
 
-            UserDTO userDTO = UserDTO.FromProjection(userProjection);
-
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.RemoveProfilePicture, userDTO);
 
-            Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, userProjection.Id);
+            Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, userDTO.Id);
             if (ownedRoom == null)
             {
                 return;
@@ -175,13 +174,11 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-            UserProjection? userProjection = await _userRepository.GetByIdAsync(callerGuid);
-            if (userProjection == null)
+            UserDTO? userDTO = await _userService.GetUserAsync(callerGuid);
+            if (userDTO == null)
             {
                 return;
             }
-
-            UserDTO userDTO = UserDTO.FromProjection(userProjection);
 
             //todo: tracker info initialization
 
