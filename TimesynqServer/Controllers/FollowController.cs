@@ -39,17 +39,15 @@ namespace TimesynqServer.Controllers
             }
             Guid callerGuid = Guid.Parse(callerId);
 
-            FollowDTO? followDTO = await _followService.GetFollowAsync(callerGuid, followeeGuid);
-
-            if (followDTO == null)
-            {
-                return Problem(
-                    statusCode: StatusCodes.Status404NotFound,
-                    detail: "Not following this user."
-                );
-            }
-
-            return Ok(followDTO);
+            Result<FollowDTO> getFollowResult = await _followService.GetFollowAsync(callerGuid, followeeGuid);
+            return getFollowResult.Match
+            (
+                onSuccess: Ok,
+                onFailure: error => Problem(
+                    statusCode: error.Code,
+                    detail: error.Message
+                )
+            );
         }
 
         [HttpGet("{userId}/followers")]

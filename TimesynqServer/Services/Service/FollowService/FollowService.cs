@@ -23,16 +23,16 @@ namespace TimesynqServer.Services.Service.FollowService
             _followRepository = followRepository;
         }
 
-        public async Task<FollowDTO?> GetFollowAsync(Guid followerId, Guid followeeId)
+        public async Task<Result<FollowDTO>> GetFollowAsync(Guid followerId, Guid followeeId)
         {
             FollowProjection? followProjection = await _followRepository.GetFollowAsync(followerId, followeeId);
 
             if (followProjection == null)
             {
-                return null;
+                return Result<FollowDTO>.Failure(DomainErrors.Follow.NotFollowing);
             }
 
-            return FollowDTO.FromProjection(followProjection);
+            return Result<FollowDTO>.Success(FollowDTO.FromProjection(followProjection));
         }
 
         public async Task<PagedResult<UserDTO>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize, HttpRequest httpRequest)
