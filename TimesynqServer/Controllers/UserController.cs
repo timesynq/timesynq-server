@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using TimesynqServer.Common;
 using TimesynqServer.Database.Entities;
 using TimesynqServer.Database.Projections;
 using TimesynqServer.Database.Repository.UserRepository;
@@ -34,7 +35,7 @@ namespace TimesynqServer.Controllers
             {
                 return Problem(
                     statusCode: StatusCodes.Status404NotFound,
-                    detail: "User not found."
+                    detail: DomainErrors.User.NotFound.Message
                 );
             }
 

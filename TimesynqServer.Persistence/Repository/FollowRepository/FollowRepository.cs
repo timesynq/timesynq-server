@@ -87,21 +87,6 @@ namespace TimesynqServer.Database.Repository.FollowRepository
         {
             await _dbContext.Follows.AddAsync(follow);
             await _dbContext.SaveChangesAsync();
-
-            /*
-            Result<Follow> followCreationResult = Follow.Create(followerId, followeeId);
-
-            return await followCreationResult.Match
-            (
-                onSuccess: async follow =>
-                {
-                    await _dbContext.Follows.AddAsync(follow);
-                    await _dbContext.SaveChangesAsync();
-                    return Result<FollowProjection>.Success(new FollowProjection(follow));
-                },
-                onFailure: error => Task.FromResult(Result<FollowProjection>.Failure(error))
-            );
-            */
         }
 
         public async Task<int> DeleteFollowAsync(Guid followerId, Guid followeeId)
