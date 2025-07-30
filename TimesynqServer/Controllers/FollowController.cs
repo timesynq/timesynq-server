@@ -11,7 +11,7 @@ namespace TimesynqServer.Controllers
 {
     [Route("follows")]
     [ApiController]
-    public class FollowController : ControllerBase
+    public class FollowController : AuthorizedController
     {
         private readonly IFollowService _followService;
 
@@ -24,22 +24,11 @@ namespace TimesynqServer.Controllers
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(typeof(FollowDTO), StatusCodes.Status200OK)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetFollow(Guid followeeGuid)
         {
-            string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (callerId == null)
-            {
-                return Problem(
-                    statusCode: StatusCodes.Status401Unauthorized,
-                    detail: "Invalid token."
-                );
-            }
-            Guid callerGuid = Guid.Parse(callerId);
-
-            Result<FollowDTO> getFollowResult = await _followService.GetFollowAsync(callerGuid, followeeGuid);
+            Result<FollowDTO> getFollowResult = await _followService.GetFollowAsync(CallerGuid, followeeGuid);
             return getFollowResult.Match
             (
                 onSuccess: Ok,
@@ -71,23 +60,12 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(typeof(FollowDTO), StatusCodes.Status201Created)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> FollowUser([FromBody] FollowRequestDTO followRequest)
         {
-            string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (callerId == null)
-            {
-                return Problem(
-                    statusCode: StatusCodes.Status401Unauthorized,
-                    detail: "Invalid token."
-                );
-            }
-            Guid callerGuid = Guid.Parse(callerId);
-
-            Result<FollowDTO> followResult = await _followService.FollowAsync(callerGuid, followRequest.FolloweeGuid);
+            Result<FollowDTO> followResult = await _followService.FollowAsync(CallerGuid, followRequest.FolloweeGuid);
             return followResult.Match
             (
                 onSuccess: followDTO =>
@@ -107,22 +85,11 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UnfollowUser([FromBody] UnfollowRequestDTO unfollowRequest)
         {
-            string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (callerId == null)
-            {
-                return Problem(
-                    statusCode: StatusCodes.Status401Unauthorized,
-                    detail: "Invalid token."
-                );
-            }
-            Guid callerGuid = Guid.Parse(callerId);
-
-            Result unfollowResult = await _followService.UnfollowAsync(callerGuid, unfollowRequest.FolloweeGuid);
+            Result unfollowResult = await _followService.UnfollowAsync(CallerGuid, unfollowRequest.FolloweeGuid);
             return unfollowResult.Match<IActionResult>
             (
                 onSuccess: NoContent,
