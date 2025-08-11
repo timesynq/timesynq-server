@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TimesynqServer.Application\TimesynqServer.Application.csproj" />
     <ProjectReference Include="..\TimesynqServer.Common\TimesynqServer.Common.csproj" />
     <ProjectReference Include="..\TimesynqServer.Persistence\TimesynqServer.Persistence.csproj" />
   </ItemGroup>
