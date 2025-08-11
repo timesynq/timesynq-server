@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace TimesynqServer.Database.Entities
+namespace TimesynqServer.Domain.Entities
 {
     public class TimesynqRole : IdentityRole<Guid>
     {

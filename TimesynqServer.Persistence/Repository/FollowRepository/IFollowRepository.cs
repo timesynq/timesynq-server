@@ -1,9 +1,7 @@
-﻿using TimesynqServer.Database.Entities;
-using TimesynqServer.Database.Projections;
-using TimesynqServer.Common.Result;
+﻿using TimesynqServer.Domain.Entities;
 using TimesynqServer.Persistence.Projections;
 
-namespace TimesynqServer.Database.Repository.FollowRepository
+namespace TimesynqServer.Persistence.Repository.FollowRepository
 {
     public interface IFollowRepository
     {

@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using TimesynqServer.Application.DTO;
+using TimesynqServer.Application.Service.UserService;
 using TimesynqServer.Common;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Database.Projections;
-using TimesynqServer.Database.Repository.UserRepository;
-using TimesynqServer.Extensions;
-using TimesynqServer.Models.DTO;
-using TimesynqServer.Services.Service.UserService;
 
 namespace TimesynqServer.Controllers
 {

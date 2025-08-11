@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
-using System.Text.Json;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Models.DTO;
+using TimesynqServer.Domain.Entities;
 
 namespace TimesynqServer.Middleware
 {
@@ -24,7 +21,7 @@ namespace TimesynqServer.Middleware
 
             ClaimsPrincipal user = context.User;
 
-            if(user?.Identity?.IsAuthenticated == false)
+            if (user?.Identity?.IsAuthenticated == false)
             {
                 await _next(context);
                 return;
@@ -34,7 +31,7 @@ namespace TimesynqServer.Middleware
             string callerId = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value!;
 
             TimesynqUser? timesynqUser = await userManager.FindByIdAsync(callerId);
-            if(timesynqUser?.EmailConfirmed == true)
+            if (timesynqUser?.EmailConfirmed == true)
             {
                 await _next(context);
                 return;
@@ -43,7 +40,7 @@ namespace TimesynqServer.Middleware
             Endpoint? endpoint = context.GetEndpoint();
             IReadOnlyList<AuthorizeAttribute>? authorizeAttributes = endpoint?.Metadata.GetOrderedMetadata<AuthorizeAttribute>();
 
-            if(authorizeAttributes == null)
+            if (authorizeAttributes == null)
             {
                 await _next(context);
                 return;

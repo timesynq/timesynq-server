@@ -1,8 +1,8 @@
-﻿using TimesynqServer.Database.Projections;
-using TimesynqServer.Database.Repository.UserRepository;
-using TimesynqServer.Models.DTO;
+﻿using TimesynqServer.Application.DTO;
+using TimesynqServer.Persistence.Projections;
+using TimesynqServer.Persistence.Repository.UserRepository;
 
-namespace TimesynqServer.Services.Service.UserService
+namespace TimesynqServer.Application.Service.UserService
 {
     public class UserService : IUserService
     {

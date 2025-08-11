@@ -1,8 +1,7 @@
-﻿using TimesynqServer.Database.Entities;
-using TimesynqServer.Database.Projections;
+﻿using TimesynqServer.Domain.Entities;
 using TimesynqServer.Persistence.Projections;
 
-namespace TimesynqServer.Models.DTO
+namespace TimesynqServer.Application.DTO
 {
     /// <summary>
     /// Represents the publicly relevant information of a follower-following relationship between two users.

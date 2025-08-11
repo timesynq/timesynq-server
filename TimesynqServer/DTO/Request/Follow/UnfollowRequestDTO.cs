@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Models.DTO.Request.Follow
+﻿namespace TimesynqServer.DTO.Request.Follow
 {
     /// <summary>
     /// Represents the required information for an unfollow request.

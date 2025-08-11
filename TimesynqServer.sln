@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesynqServer.Common", "Ti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesynqServer.Application", "TimesynqServer.Application\TimesynqServer.Application.csproj", "{01D05A17-E2AA-40F5-9398-1A7A49A2E1C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesynqServer.Domain", "TimesynqServer.Domain\TimesynqServer.Domain.csproj", "{9C24D2B6-63A7-4486-BBEE-E78648983CC2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{01D05A17-E2AA-40F5-9398-1A7A49A2E1C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01D05A17-E2AA-40F5-9398-1A7A49A2E1C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01D05A17-E2AA-40F5-9398-1A7A49A2E1C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C24D2B6-63A7-4486-BBEE-E78648983CC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C24D2B6-63A7-4486-BBEE-E78648983CC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C24D2B6-63A7-4486-BBEE-E78648983CC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C24D2B6-63A7-4486-BBEE-E78648983CC2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

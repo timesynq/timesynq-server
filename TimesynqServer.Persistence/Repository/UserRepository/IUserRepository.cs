@@ -1,6 +1,6 @@
-﻿using TimesynqServer.Database.Projections;
+﻿using TimesynqServer.Persistence.Projections;
 
-namespace TimesynqServer.Database.Repository.UserRepository
+namespace TimesynqServer.Persistence.Repository.UserRepository
 {
     public interface IUserRepository
     {

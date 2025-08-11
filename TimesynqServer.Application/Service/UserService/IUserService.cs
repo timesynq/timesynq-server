@@ -1,6 +1,6 @@
-﻿using TimesynqServer.Models.DTO;
+﻿using TimesynqServer.Application.DTO;
 
-namespace TimesynqServer.Services.Service.UserService
+namespace TimesynqServer.Application.Service.UserService
 {
     public interface IUserService
     {

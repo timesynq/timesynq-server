@@ -13,8 +13,8 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Models.DTO.Request.Account;
+using TimesynqServer.Domain.Entities;
+using TimesynqServer.DTO.Request.Account;
 using TimesynqServer.Services.Static;
 
 namespace Microsoft.AspNetCore.Routing;

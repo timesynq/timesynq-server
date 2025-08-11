@@ -18,7 +18,7 @@ namespace TimesynqServer.Middleware
         public async Task InvokeAsync(HttpContext context)
         {
             Endpoint? endpoint = context.GetEndpoint();
-            if (endpoint != null) 
+            if (endpoint != null)
             {
                 IAuthorizeData? authorizeData = endpoint.Metadata.GetMetadata<IAuthorizeData>();
                 if (authorizeData != null)

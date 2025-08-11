@@ -1,6 +1,6 @@
-﻿using TimesynqServer.Database.Projections;
+﻿using TimesynqServer.Persistence.Projections;
 
-namespace TimesynqServer.Models.DTO
+namespace TimesynqServer.Application.DTO
 {
     /// <summary>
     /// Represents only the publicly relevant information of a TimesynqUser.

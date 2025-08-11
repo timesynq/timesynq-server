@@ -1,7 +1,7 @@
 ﻿using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
 
-namespace TimesynqServer.Database.Entities
+namespace TimesynqServer.Domain.Entities
 {
     /// <summary>
     /// Represents a follower-following relationship between two users.
@@ -44,7 +44,7 @@ namespace TimesynqServer.Database.Entities
 
         public static Result<Follow> Create(Guid followerId, Guid followeeId)
         {
-            if(followerId == followeeId)
+            if (followerId == followeeId)
             {
                 return Result<Follow>.Failure(DomainErrors.Follow.CantFollowYourself);
             }

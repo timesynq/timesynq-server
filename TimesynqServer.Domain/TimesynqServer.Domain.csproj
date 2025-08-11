@@ -6,11 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+	
+	
   <ItemGroup>
     <ProjectReference Include="..\TimesynqServer.Common\TimesynqServer.Common.csproj" />
-    <ProjectReference Include="..\TimesynqServer.Domain\TimesynqServer.Domain.csproj" />
-    <ProjectReference Include="..\TimesynqServer.Persistence\TimesynqServer.Persistence.csproj" />
-	<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+	<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.6" />
   </ItemGroup>
 
 </Project>

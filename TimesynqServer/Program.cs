@@ -6,18 +6,17 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
-using TimesynqServer.Database;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Database.Repository.FollowRepository;
-using TimesynqServer.Database.Repository.UserRepository;
+using TimesynqServer.Application.Service.FollowService;
+using TimesynqServer.Application.Service.UserService;
+using TimesynqServer.Domain.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Middleware;
-using TimesynqServer.Models.DTO;
+using TimesynqServer.Persistence;
+using TimesynqServer.Persistence.Repository.FollowRepository;
+using TimesynqServer.Persistence.Repository.UserRepository;
 using TimesynqServer.Services.Email;
 using TimesynqServer.Services.Logging;
-using TimesynqServer.Services.Service.FollowService;
-using TimesynqServer.Services.Service.UserService;
 
 var builder = WebApplication.CreateBuilder(args);
 

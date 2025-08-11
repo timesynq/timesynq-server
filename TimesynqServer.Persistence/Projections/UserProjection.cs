@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Database.Projections
+﻿namespace TimesynqServer.Persistence.Projections
 {
     /// <summary>
     /// Represents only the TimesynqUser fields we need to retrieve from the database.
@@ -35,7 +35,7 @@
         /// <param name="userName">The user's unique username.</param>
         /// <param name="profilePicture">A 21 character string representing an identicon.</param>
         /// <param name="createdOnUTC">The date when the user registered their account.</param>
-        internal UserProjection(Guid id, string userName, string profilePicture, DateTime createdOnUTC) 
+        internal UserProjection(Guid id, string userName, string profilePicture, DateTime createdOnUTC)
         {
             Id = id;
             UserName = userName;

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using TimesynqServer.Database.Entities;
+using TimesynqServer.Domain.Entities;
 
-namespace TimesynqServer.Database
+namespace TimesynqServer.Persistence
 {
     public class TimesynqDbContext : IdentityDbContext<TimesynqUser, TimesynqRole, Guid>
     {

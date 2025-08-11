@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Database.Projections;
-using TimesynqServer.Database.Repository.UserRepository;
-using TimesynqServer.Extensions;
-using TimesynqServer.Models.Cache;
-using TimesynqServer.Models.DTO;
+using TimesynqServer.Application.DTO;
+using TimesynqServer.Application.Service.UserService;
+using TimesynqServer.Domain.Cache;
 using TimesynqServer.Services.Cache.TrackerHubCache;
-using TimesynqServer.Services.Service.UserService;
 using TimesynqServer.Services.Static;
 
 namespace TimesynqServer.Hubs.TrackerHub

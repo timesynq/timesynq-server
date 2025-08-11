@@ -1,4 +1,4 @@
-﻿using TimesynqServer.Models.Cache;
+﻿using TimesynqServer.Domain.Cache;
 
 namespace TimesynqServer.Services.Cache.TrackerHubCache
 {

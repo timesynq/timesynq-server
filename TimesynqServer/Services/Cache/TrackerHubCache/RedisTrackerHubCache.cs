@@ -1,7 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Text.Json;
-using TimesynqServer.Models.Cache;
+using TimesynqServer.Domain.Cache;
 
 namespace TimesynqServer.Services.Cache.TrackerHubCache
 {

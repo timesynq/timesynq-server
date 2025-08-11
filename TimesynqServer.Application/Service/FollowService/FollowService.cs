@@ -1,24 +1,21 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Http;
+using TimesynqServer.Application.DTO;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Database.Projections;
-using TimesynqServer.Database.Repository.FollowRepository;
-using TimesynqServer.Database.Repository.UserRepository;
-using TimesynqServer.Models.DTO;
-using TimesynqServer.Models.Pagination;
+using TimesynqServer.Domain.Entities;
+using TimesynqServer.Application.Pagination;
 using TimesynqServer.Persistence.Projections;
+using TimesynqServer.Persistence.Repository.FollowRepository;
+using TimesynqServer.Persistence.Repository.UserRepository;
 
-namespace TimesynqServer.Services.Service.FollowService
+namespace TimesynqServer.Application.Service.FollowService
 {
     public class FollowService : IFollowService
     {
         private readonly IUserRepository _userRepository;
         private readonly IFollowRepository _followRepository;
 
-        public FollowService(IUserRepository userRepository, IFollowRepository followRepository) 
+        public FollowService(IUserRepository userRepository, IFollowRepository followRepository)
         {
             _userRepository = userRepository;
             _followRepository = followRepository;
@@ -83,7 +80,7 @@ namespace TimesynqServer.Services.Service.FollowService
         public async Task<Result<FollowDTO>> FollowAsync(Guid followerId, Guid followeeId)
         {
             UserProjection? followerProjection = await _userRepository.GetByIdAsync(followerId);
-            if(followerProjection == null)
+            if (followerProjection == null)
             {
                 return Result<FollowDTO>.Failure(DomainErrors.User.NotFound);
             }
@@ -115,7 +112,7 @@ namespace TimesynqServer.Services.Service.FollowService
         public async Task<Result> UnfollowAsync(Guid followerId, Guid followeeId)
         {
             int deleted = await _followRepository.DeleteFollowAsync(followerId, followeeId);
-            if(deleted == 0)
+            if (deleted == 0)
             {
                 return Result.Failure(DomainErrors.Follow.NotFollowing);
             }

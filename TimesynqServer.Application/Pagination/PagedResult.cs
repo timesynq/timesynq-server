@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Web;
 
-namespace TimesynqServer.Models.Pagination
+namespace TimesynqServer.Application.Pagination
 {
     /// <summary>
     /// Represents a paginated result containing a collection of items and associated metadata including pagination URLs.
@@ -113,7 +113,7 @@ namespace TimesynqServer.Models.Pagination
             LastPageUrl = string.Empty;
             PreviousPageUrl = string.Empty;
             NextPageUrl = string.Empty;
-            SelfPageUrl= string.Empty;
+            SelfPageUrl = string.Empty;
         }
 
         /// <summary>

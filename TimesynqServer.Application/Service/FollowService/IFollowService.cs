@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
+using TimesynqServer.Application.DTO;
 using TimesynqServer.Common.Result;
-using TimesynqServer.Models.DTO;
-using TimesynqServer.Models.Pagination;
+using TimesynqServer.Application.Pagination;
 
-namespace TimesynqServer.Services.Service.FollowService
+namespace TimesynqServer.Application.Service.FollowService
 {
     public interface IFollowService
     {

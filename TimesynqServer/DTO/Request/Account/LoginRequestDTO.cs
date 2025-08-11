@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Models.DTO.Request.Account
+﻿namespace TimesynqServer.DTO.Request.Account
 {
 
     /// <summary>

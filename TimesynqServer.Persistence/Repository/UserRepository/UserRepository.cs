@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Database.Projections;
+﻿using Microsoft.EntityFrameworkCore;
+using TimesynqServer.Persistence.Projections;
 
-namespace TimesynqServer.Database.Repository.UserRepository
+namespace TimesynqServer.Persistence.Repository.UserRepository
 {
     public class UserRepository : IUserRepository
     {

@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Models.Cache
+﻿namespace TimesynqServer.Domain.Cache
 {
     /// <summary>
     /// Represents a user connection to a SignalR room.

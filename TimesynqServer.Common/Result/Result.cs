@@ -23,7 +23,7 @@
 
         private sealed class ErrorResult(DomainError error) : Result
         {
-            public DomainError Error => error ?? 
+            public DomainError Error => error ??
                 throw new ArgumentNullException(nameof(error));
 
             public override TOut Match<TOut>

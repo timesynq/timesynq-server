@@ -1,11 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Database.Projections;
-using TimesynqServer.Common.Result;
+using TimesynqServer.Domain.Entities;
 using TimesynqServer.Persistence.Projections;
-using TimesynqServer.Common;
 
-namespace TimesynqServer.Database.Repository.FollowRepository
+namespace TimesynqServer.Persistence.Repository.FollowRepository
 {
     public class FollowRepository : IFollowRepository
     {

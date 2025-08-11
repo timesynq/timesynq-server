@@ -1,9 +1,5 @@
-﻿using Azure;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using System.Net;
-using System.Text.Json;
-using TimesynqServer.Models.DTO;
 
 namespace TimesynqServer.Middleware
 {
@@ -43,17 +39,17 @@ namespace TimesynqServer.Middleware
                 _logger.LogWarning("BadHttpRequestException caught: {Exception}", badHttpRequestException.ToString());
 
                 var problemDetails = problemDetailsFactory.CreateProblemDetails(
-                    httpContext: context, 
-                    statusCode: StatusCodes.Status400BadRequest, 
-                    title: "Bad Request", 
-                    type: "https://tools.ietf.org/html/rfc7231#section-6.5.1", 
+                    httpContext: context,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "Bad Request",
+                    type: "https://tools.ietf.org/html/rfc7231#section-6.5.1",
                     detail: "The request body is incorrectly formed"
                 );
 
                 Respond(problemDetails);
 
             }
-            catch(InvalidOperationException invalidOperationException)
+            catch (InvalidOperationException invalidOperationException)
             {
                 //this exception is thrown in the /refresh identity endpoint
                 //catching it here lets me return 401 instead of 500
@@ -71,7 +67,7 @@ namespace TimesynqServer.Middleware
                 Respond(problemDetails);
 
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 _logger.LogError("Exception caught: {Exception}", ex.ToString());
 

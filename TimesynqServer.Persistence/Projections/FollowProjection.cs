@@ -1,4 +1,4 @@
-﻿using TimesynqServer.Database.Entities;
+﻿using TimesynqServer.Domain.Entities;
 
 namespace TimesynqServer.Persistence.Projections
 {
