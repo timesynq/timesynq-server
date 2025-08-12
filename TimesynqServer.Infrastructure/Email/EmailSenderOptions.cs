@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Services.Email
+﻿namespace TimesynqServer.Infrastructure.Email
 {
     /// <summary>
     /// Configuration options for the email sender service.

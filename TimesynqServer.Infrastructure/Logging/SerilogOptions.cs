@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Services.Logging
+﻿namespace TimesynqServer.Infrastructure.Logging
 {
     public sealed class SerilogOptions
     {

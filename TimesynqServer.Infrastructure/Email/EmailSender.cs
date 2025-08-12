@@ -3,13 +3,13 @@ using Amazon.SimpleEmail.Model;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 
-namespace TimesynqServer.Services.Email
+namespace TimesynqServer.Infrastructure.Email
 {
     public class EmailSender<TUser> : IEmailSender<TUser> where TUser : class
     {
 
-        private IAmazonSimpleEmailService _emailService;
-        private IOptions<EmailSenderOptions> _options;
+        private readonly IAmazonSimpleEmailService _emailService;
+        private readonly IOptions<EmailSenderOptions> _options;
 
         public EmailSender(IAmazonSimpleEmailService emailService, IOptions<EmailSenderOptions> options)
         {

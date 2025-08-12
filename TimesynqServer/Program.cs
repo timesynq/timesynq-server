@@ -15,8 +15,8 @@ using TimesynqServer.Middleware;
 using TimesynqServer.Persistence;
 using TimesynqServer.Persistence.Repository.FollowRepository;
 using TimesynqServer.Persistence.Repository.UserRepository;
-using TimesynqServer.Services.Email;
-using TimesynqServer.Services.Logging;
+using TimesynqServer.Infrastructure.Email;
+using TimesynqServer.Infrastructure.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
