@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace TimesynqServer.Extensions
+namespace TimesynqServer.Infrastructure.Extensions
 {
     public class CustomIdentityErrorDescriber : IdentityErrorDescriber
     {

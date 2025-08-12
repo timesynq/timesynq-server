@@ -1,87 +1,26 @@
-using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
-using Serilog.Sinks.OpenTelemetry;
-using TimesynqServer.Application.Service.FollowService;
-using TimesynqServer.Application.Service.UserService;
 using TimesynqServer.Domain.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Middleware;
 using TimesynqServer.Persistence;
-using TimesynqServer.Persistence.Repository.FollowRepository;
-using TimesynqServer.Persistence.Repository.UserRepository;
-using TimesynqServer.Infrastructure.Email;
-using TimesynqServer.Infrastructure.Logging;
+using TimesynqServer.Application;
+using TimesynqServer.Infrastructure;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
-SerilogOptions serilogOptions = builder.Configuration.GetSection(SerilogOptions.ConfigurationSection).Get<SerilogOptions>()!;
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .WriteTo.OpenTelemetry(x =>
-    {
-        x.Endpoint = serilogOptions.Endpoint;
-        x.Protocol = OtlpProtocol.HttpProtobuf;
-        x.Headers = new Dictionary<string, string>
-        {
-            ["X-Seq-ApiKey"] = serilogOptions.ApiKey,
-        };
-        x.ResourceAttributes = new Dictionary<string, object>
-        {
-            ["service.name"] = serilogOptions.ServiceName,
-        };
-    })
-    .CreateLogger();
 
-builder.Services.AddSerilog();
+builder.Services.AddPersistenceServices();
+builder.Services.AddApplicationServices();
+builder.AddInfrastructure();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddAuthorization();
-builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
-
-string? dbConnectionString = builder.Configuration.GetConnectionString("SqlServerDatabase");
-
-builder.Services.AddDbContext<TimesynqDbContext>(options => options.UseSqlServer(dbConnectionString));
-
-builder.Services.AddIdentityCore<TimesynqUser>(options =>
-{
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 12;
-
-    options.SignIn.RequireConfirmedAccount = false;
-})
-    .AddRoles<TimesynqRole>()
-    .AddEntityFrameworkStores<TimesynqDbContext>()
-    .AddUserStore<UserStore<TimesynqUser, TimesynqRole, TimesynqDbContext, Guid>>()
-    .AddErrorDescriber<CustomIdentityErrorDescriber>()
-    .AddApiEndpoints();
-
-builder.Services.AddTransient<IEmailSender<TimesynqUser>, EmailSender<TimesynqUser>>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IFollowRepository, FollowRepository>();
-
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IFollowService, FollowService>();
-
-builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-builder.Services.AddAWSService<IAmazonSimpleEmailService>();
-builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection(EmailSenderOptions.ConfigurationSection));
-
-builder.Services.AddSignalR();
-
-builder.AddRedisClient("Redis");
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
