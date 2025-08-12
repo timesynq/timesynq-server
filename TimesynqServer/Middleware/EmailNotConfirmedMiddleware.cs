@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Security.Claims;
-using TimesynqServer.Domain.Entities;
+using TimesynqServer.Application.Service.UserService;
 
 namespace TimesynqServer.Middleware
 {
@@ -16,7 +16,7 @@ namespace TimesynqServer.Middleware
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context, UserManager<TimesynqUser> userManager, ProblemDetailsFactory problemDetailsFactory)
+        public async Task InvokeAsync(HttpContext context, IUserService userService, ProblemDetailsFactory problemDetailsFactory)
         {
 
             ClaimsPrincipal user = context.User;
@@ -30,8 +30,8 @@ namespace TimesynqServer.Middleware
             //we can use the null-forgiving operator as long as LogAuthorizedUserIdMiddleware is before EmailNotConfirmedMiddleware in the pipeline
             string callerId = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value!;
 
-            TimesynqUser? timesynqUser = await userManager.FindByIdAsync(callerId);
-            if (timesynqUser?.EmailConfirmed == true)
+            bool isEmailConfirmed = await userService.IsUserConfirmed(Guid.Parse(callerId));
+            if(isEmailConfirmed)
             {
                 await _next(context);
                 return;

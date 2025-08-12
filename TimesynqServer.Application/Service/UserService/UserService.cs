@@ -23,5 +23,10 @@ namespace TimesynqServer.Application.Service.UserService
 
             return UserDTO.FromProjection(userProjection);
         }
+
+        public async Task<bool> IsUserConfirmed(Guid userId)
+        {
+            return await _userRepository.GetConfirmedUserByIdAsync(userId);
+        }
     }
 }

@@ -27,5 +27,15 @@ namespace TimesynqServer.Persistence.Repository.UserRepository
                 ))
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<bool> GetConfirmedUserByIdAsync(Guid userId)
+        {
+            return await _dbContext.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => u.EmailConfirmed)
+                .FirstOrDefaultAsync();
+        }
+
     }
 }
