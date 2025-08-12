@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using TimesynqServer.Application.DTO;
+using TimesynqServer.Application.Pagination;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
 using TimesynqServer.Domain.Entities;
-using TimesynqServer.Application.Pagination;
 using TimesynqServer.Persistence.Projections;
 using TimesynqServer.Persistence.Repository.FollowRepository;
 using TimesynqServer.Persistence.Repository.UserRepository;

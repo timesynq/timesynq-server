@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Security.Claims;
 using TimesynqServer.Application.Service.UserService;
@@ -31,7 +30,7 @@ namespace TimesynqServer.Middleware
             string callerId = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value!;
 
             bool isEmailConfirmed = await userService.IsUserConfirmed(Guid.Parse(callerId));
-            if(isEmailConfirmed)
+            if (isEmailConfirmed)
             {
                 await _next(context);
                 return;

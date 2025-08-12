@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.SignalR;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Service.UserService;
+using TimesynqServer.Common;
 using TimesynqServer.Domain.Cache;
 using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
-using TimesynqServer.Common;
 
 namespace TimesynqServer.Hubs.TrackerHub
 {

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using TimesynqServer.Application;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
+using TimesynqServer.Infrastructure;
 using TimesynqServer.Middleware;
 using TimesynqServer.Persistence;
-using TimesynqServer.Application;
-using TimesynqServer.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -10,7 +10,6 @@
     <ProjectReference Include="..\TimesynqServer.Common\TimesynqServer.Common.csproj" />
     <ProjectReference Include="..\TimesynqServer.Domain\TimesynqServer.Domain.csproj" />
     <ProjectReference Include="..\TimesynqServer.Persistence\TimesynqServer.Persistence.csproj" />
-	<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
   </ItemGroup>
 
 </Project>

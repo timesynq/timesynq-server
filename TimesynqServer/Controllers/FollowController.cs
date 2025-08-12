@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TimesynqServer.Application.DTO;
+using TimesynqServer.Application.Pagination;
 using TimesynqServer.Application.Service.FollowService;
 using TimesynqServer.Common.Result;
 using TimesynqServer.DTO.Request.Follow;
-using TimesynqServer.Application.Pagination;
 
 namespace TimesynqServer.Controllers
 {

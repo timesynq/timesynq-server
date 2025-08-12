@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using TimesynqServer.Application.DTO;
-using TimesynqServer.Common.Result;
 using TimesynqServer.Application.Pagination;
+using TimesynqServer.Common.Result;
 
 namespace TimesynqServer.Application.Service.FollowService
 {
