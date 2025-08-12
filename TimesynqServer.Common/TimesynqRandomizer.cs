@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace TimesynqServer.Services.Static
+namespace TimesynqServer.Common
 {
     /// <summary>
     /// Static methods for randomized values used across Timesynq

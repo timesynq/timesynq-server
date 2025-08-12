@@ -15,7 +15,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using TimesynqServer.Domain.Entities;
 using TimesynqServer.DTO.Request.Account;
-using TimesynqServer.Services.Static;
+using TimesynqServer.Common;
 
 namespace Microsoft.AspNetCore.Routing;
 

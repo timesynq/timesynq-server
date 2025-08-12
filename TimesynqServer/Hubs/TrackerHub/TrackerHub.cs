@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Service.UserService;
 using TimesynqServer.Domain.Cache;
-using TimesynqServer.Services.Cache.TrackerHubCache;
-using TimesynqServer.Services.Static;
+using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
+using TimesynqServer.Common;
 
 namespace TimesynqServer.Hubs.TrackerHub
 {

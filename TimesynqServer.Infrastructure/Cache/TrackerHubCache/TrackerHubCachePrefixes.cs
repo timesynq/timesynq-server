@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Services.Cache.TrackerHubCache
+﻿namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 {
     /// <summary>
     /// Provides standardized cache key prefixes for TrackerHub models.

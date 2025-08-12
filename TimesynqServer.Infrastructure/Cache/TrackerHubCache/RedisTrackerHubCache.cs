@@ -3,7 +3,7 @@ using StackExchange.Redis;
 using System.Text.Json;
 using TimesynqServer.Domain.Cache;
 
-namespace TimesynqServer.Services.Cache.TrackerHubCache
+namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 {
     /// <summary>
     /// Redis implementation for managing TrackerHub connections and rooms.

@@ -1,6 +1,6 @@
 ﻿using TimesynqServer.Domain.Cache;
 
-namespace TimesynqServer.Services.Cache.TrackerHubCache
+namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 {
 
     /// <summary>
