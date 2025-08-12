@@ -14,8 +14,11 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using TimesynqServer.Domain.Entities;
-using TimesynqServer.DTO.Request.Account;
+using TimesynqServer.Infrastructure.DTO.Request.Account;
 using TimesynqServer.Common;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing;
 

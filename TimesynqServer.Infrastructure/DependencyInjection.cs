@@ -1,6 +1,8 @@
 ﻿using Amazon.SimpleEmail;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,6 +81,11 @@ namespace TimesynqServer.Infrastructure
             services.AddSignalR();
 
             return services;
+        }
+
+        public static void AddIdentityEndpoints(this IEndpointRouteBuilder app)
+        {
+            app.MapTimesynqIdentityApi<TimesynqUser>();
         }
 
     }

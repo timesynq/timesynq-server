@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TimesynqServer.DTO.Request.Account
+namespace TimesynqServer.Infrastructure.DTO.Request.Account
 {
     /// <summary>
     /// Represents the required information for a sign up request.

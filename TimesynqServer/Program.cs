@@ -1,14 +1,11 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using TimesynqServer.Domain.Entities;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Middleware;
 using TimesynqServer.Persistence;
 using TimesynqServer.Application;
 using TimesynqServer.Infrastructure;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,7 +60,7 @@ app.UseMiddleware<EmailNotConfirmedMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapTimesynqIdentityApi<TimesynqUser>();
+app.AddIdentityEndpoints();
 
 app.MapHub<TrackerHub>("hub");
 
