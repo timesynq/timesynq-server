@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TimesynqServer.Database;
+using TimesynqServer.Persistence;
 
 namespace TimesynqServer.Extensions
 {

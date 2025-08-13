@@ -1,80 +1,43 @@
-using Amazon.SimpleEmail;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
-using Serilog.Sinks.OpenTelemetry;
-using TimesynqServer.Database;
-using TimesynqServer.Database.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using TimesynqServer.Application;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
+using TimesynqServer.Infrastructure;
 using TimesynqServer.Middleware;
-using TimesynqServer.Services.Email;
-using TimesynqServer.Services.Logging;
-using TimesynqServer.Services.Repository.FollowRepository;
-using TimesynqServer.Services.Repository.UserRepository;
+using TimesynqServer.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
-SerilogOptions serilogOptions = builder.Configuration.GetSection(SerilogOptions.ConfigurationSection).Get<SerilogOptions>()!;
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .WriteTo.OpenTelemetry(x =>
-    {
-        x.Endpoint = serilogOptions.Endpoint;
-        x.Protocol = OtlpProtocol.HttpProtobuf;
-        x.Headers = new Dictionary<string, string>
-        {
-            ["X-Seq-ApiKey"] = serilogOptions.ApiKey,
-        };
-        x.ResourceAttributes = new Dictionary<string, object>
-        {
-            ["service.name"] = serilogOptions.ServiceName,
-        };
-    })
-    .CreateLogger();
 
-builder.Services.AddSerilog();
+builder.Services.AddPersistenceServices();
+builder.Services.AddApplicationServices();
+builder.AddInfrastructure();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAuthorization();
-builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
-
-string? dbConnectionString = builder.Configuration.GetConnectionString("SqlServerDatabase");
-
-builder.Services.AddDbContext<TimesynqDbContext>(options => options.UseSqlServer(dbConnectionString));
-
-builder.Services.AddIdentityCore<TimesynqUser>(options =>
+builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 12;
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var problemDetailsFactory = context.HttpContext.RequestServices
+            .GetRequiredService<ProblemDetailsFactory>();
 
-    options.SignIn.RequireConfirmedAccount = false;
-})
-    .AddRoles<TimesynqRole>()
-    .AddEntityFrameworkStores<TimesynqDbContext>()
-    .AddUserStore<UserStore<TimesynqUser, TimesynqRole, TimesynqDbContext, Guid>>()
-    .AddErrorDescriber<CustomIdentityErrorDescriber>()
-    .AddApiEndpoints();
+        var problemDetails = problemDetailsFactory.CreateValidationProblemDetails(
+            context.HttpContext,
+            context.ModelState,
+            statusCode: StatusCodes.Status400BadRequest,
+            title: "One or more validation errors occurred.");
 
-builder.Services.AddTransient<IEmailSender<TimesynqUser>, EmailSender<TimesynqUser>>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IFollowRepository, FollowRepository>();
-
-builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-builder.Services.AddAWSService<IAmazonSimpleEmailService>();
-builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection(EmailSenderOptions.ConfigurationSection));
-
-builder.Services.AddSignalR();
-
-builder.AddRedisClient("Redis");
+        return new BadRequestObjectResult(problemDetails)
+        {
+            ContentTypes = { "application/problem+json" }
+        };
+    };
+});
 
 var app = builder.Build();
 
@@ -97,7 +60,7 @@ app.UseMiddleware<EmailNotConfirmedMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapTimesynqIdentityApi<TimesynqUser>();
+app.AddIdentityEndpoints();
 
 app.MapHub<TrackerHub>("hub");
 

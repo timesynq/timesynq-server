@@ -5,6 +5,16 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesynqServer", "TimesynqServer\TimesynqServer.csproj", "{0A2663BB-8EB2-47D3-833F-25BB99424558}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesynqServer.Persistence", "TimesynqServer.Persistence\TimesynqServer.Persistence.csproj", "{94F0916C-813F-4875-BF49-1D826C3E6439}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesynqServer.Common", "TimesynqServer.Common\TimesynqServer.Common.csproj", "{B6DCDEB0-B9BB-4DB6-9F29-B48509C03210}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesynqServer.Application", "TimesynqServer.Application\TimesynqServer.Application.csproj", "{01D05A17-E2AA-40F5-9398-1A7A49A2E1C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesynqServer.Domain", "TimesynqServer.Domain\TimesynqServer.Domain.csproj", "{9C24D2B6-63A7-4486-BBEE-E78648983CC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesynqServer.Infrastructure", "TimesynqServer.Infrastructure\TimesynqServer.Infrastructure.csproj", "{764955C3-0EDD-4A2C-A1DA-8491BA76C86A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +25,26 @@ Global
 		{0A2663BB-8EB2-47D3-833F-25BB99424558}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A2663BB-8EB2-47D3-833F-25BB99424558}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A2663BB-8EB2-47D3-833F-25BB99424558}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94F0916C-813F-4875-BF49-1D826C3E6439}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94F0916C-813F-4875-BF49-1D826C3E6439}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94F0916C-813F-4875-BF49-1D826C3E6439}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94F0916C-813F-4875-BF49-1D826C3E6439}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6DCDEB0-B9BB-4DB6-9F29-B48509C03210}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6DCDEB0-B9BB-4DB6-9F29-B48509C03210}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6DCDEB0-B9BB-4DB6-9F29-B48509C03210}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6DCDEB0-B9BB-4DB6-9F29-B48509C03210}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01D05A17-E2AA-40F5-9398-1A7A49A2E1C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01D05A17-E2AA-40F5-9398-1A7A49A2E1C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01D05A17-E2AA-40F5-9398-1A7A49A2E1C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01D05A17-E2AA-40F5-9398-1A7A49A2E1C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C24D2B6-63A7-4486-BBEE-E78648983CC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C24D2B6-63A7-4486-BBEE-E78648983CC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C24D2B6-63A7-4486-BBEE-E78648983CC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C24D2B6-63A7-4486-BBEE-E78648983CC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{764955C3-0EDD-4A2C-A1DA-8491BA76C86A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{764955C3-0EDD-4A2C-A1DA-8491BA76C86A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{764955C3-0EDD-4A2C-A1DA-8491BA76C86A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{764955C3-0EDD-4A2C-A1DA-8491BA76C86A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

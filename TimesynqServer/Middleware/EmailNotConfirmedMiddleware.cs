@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Security.Claims;
-using System.Text.Json;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Models.DTO;
+using TimesynqServer.Application.Service.UserService;
 
 namespace TimesynqServer.Middleware
 {
@@ -18,12 +15,12 @@ namespace TimesynqServer.Middleware
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context, UserManager<TimesynqUser> userManager)
+        public async Task InvokeAsync(HttpContext context, IUserService userService, ProblemDetailsFactory problemDetailsFactory)
         {
 
             ClaimsPrincipal user = context.User;
 
-            if(user?.Identity?.IsAuthenticated == false)
+            if (user?.Identity?.IsAuthenticated == false)
             {
                 await _next(context);
                 return;
@@ -32,8 +29,8 @@ namespace TimesynqServer.Middleware
             //we can use the null-forgiving operator as long as LogAuthorizedUserIdMiddleware is before EmailNotConfirmedMiddleware in the pipeline
             string callerId = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value!;
 
-            TimesynqUser? timesynqUser = await userManager.FindByIdAsync(callerId);
-            if(timesynqUser?.EmailConfirmed == true)
+            bool isEmailConfirmed = await userService.IsUserConfirmed(Guid.Parse(callerId));
+            if (isEmailConfirmed)
             {
                 await _next(context);
                 return;
@@ -42,7 +39,7 @@ namespace TimesynqServer.Middleware
             Endpoint? endpoint = context.GetEndpoint();
             IReadOnlyList<AuthorizeAttribute>? authorizeAttributes = endpoint?.Metadata.GetOrderedMetadata<AuthorizeAttribute>();
 
-            if(authorizeAttributes == null)
+            if (authorizeAttributes == null)
             {
                 await _next(context);
                 return;
@@ -60,19 +57,18 @@ namespace TimesynqServer.Middleware
                 return;
             }
 
-            var response = new ResponseDTO<object>
-            {
-                StatusCode = StatusCodes.Status403Forbidden,
-                Errors = ["Confirm your email to access this."],
-                Result = null,
-            };
+            var problemDetails = problemDetailsFactory.CreateProblemDetails(
+                    httpContext: context,
+                    statusCode: StatusCodes.Status403Forbidden,
+                    title: "Forbidden.",
+                    type: "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+                    detail: "Confirm your email to access this."
+                );
 
-            string serializedResponse = JsonSerializer.Serialize(response);
-
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/problem+json";
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
 
-            await context.Response.WriteAsync(serializedResponse);
+            await context.Response.WriteAsJsonAsync(problemDetails);
         }
 
     }

@@ -1,47 +1,40 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using TimesynqServer.Database.Entities;
-using TimesynqServer.Extensions;
-using TimesynqServer.Models.DTO;
-using TimesynqServer.Services.Repository.UserRepository;
+using TimesynqServer.Application.DTO;
+using TimesynqServer.Application.Service.UserService;
+using TimesynqServer.Common;
 
 namespace TimesynqServer.Controllers
 {
     [Route("users")]
     [ApiController]
-    public class UserController : TimesynqController
+    public class UserController : AuthorizedController
     {
 
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
 
-        public UserController(IUserRepository userRepository)
+        public UserController(IUserService userService)
         {
-            _userRepository = userRepository;
+            _userService = userService;
         }
 
         [HttpGet("me")]
         [Authorize]
-        [ProducesResponseType(typeof(ResponseDTO<UserDTO>), StatusCodes.Status200OK)]
-        [ProducesErrorResponseType(typeof(ResponseDTO<object>))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Me()
         {
-            string? callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (callerId == null)
+            UserDTO? userDTO = await _userService.GetUserAsync(CallerGuid);
+            if (userDTO == null)
             {
-                return ErrorResponse(StatusCodes.Status401Unauthorized, "Invalid token");
-            }
-            Guid callerGuid = Guid.Parse(callerId);
-
-            TimesynqUser? user = await _userRepository.GetByIdAsync(callerGuid);
-            if (user == null)
-            {
-                return ErrorResponse(StatusCodes.Status404NotFound, "User not found");
+                return Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    detail: DomainErrors.User.NotFound.Message
+                );
             }
 
-            return OkResponse(StatusCodes.Status200OK, user.ToUserDTO());
+            return Ok(userDTO);
         }
 
 
