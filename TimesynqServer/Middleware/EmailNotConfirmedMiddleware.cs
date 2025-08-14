@@ -27,9 +27,9 @@ namespace TimesynqServer.Middleware
             }
 
             //we can use the null-forgiving operator as long as LogAuthorizedUserIdMiddleware is before EmailNotConfirmedMiddleware in the pipeline
-            string callerId = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value!;
+            string callerIdString = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value!;
 
-            bool isEmailConfirmed = await userService.IsUserConfirmed(Guid.Parse(callerId));
+            bool isEmailConfirmed = await userService.IsUserConfirmed(Guid.Parse(callerIdString));
             if (isEmailConfirmed)
             {
                 await _next(context);
