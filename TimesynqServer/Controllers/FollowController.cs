@@ -25,9 +25,9 @@ namespace TimesynqServer.Controllers
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetFollow(Guid followeeGuid)
+        public async Task<IActionResult> GetFollow(Guid followeeId)
         {
-            Result<FollowDTO> getFollowResult = await _followService.GetFollowAsync(CallerGuid, followeeGuid);
+            Result<FollowDTO> getFollowResult = await _followService.GetFollowAsync(CallerId, followeeId);
             return getFollowResult.Match
             (
                 onSuccess: Ok,
@@ -64,12 +64,12 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> FollowUser([FromBody] FollowRequestDTO followRequest)
         {
-            Result<FollowDTO> followResult = await _followService.FollowAsync(CallerGuid, followRequest.FolloweeGuid);
+            Result<FollowDTO> followResult = await _followService.FollowAsync(CallerId, followRequest.FolloweeId);
             return followResult.Match
             (
                 onSuccess: followDTO =>
                 {
-                    string resourceUri = $"{Request.Scheme}://{Request.Host}{Request.Path}{followRequest.FolloweeGuid}";
+                    string resourceUri = $"{Request.Scheme}://{Request.Host}{Request.Path}{followRequest.FolloweeId}";
                     return Created(resourceUri, followDTO);
                 },
                 onFailure: error => Problem(
@@ -88,7 +88,7 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UnfollowUser([FromBody] UnfollowRequestDTO unfollowRequest)
         {
-            Result unfollowResult = await _followService.UnfollowAsync(CallerGuid, unfollowRequest.FolloweeGuid);
+            Result unfollowResult = await _followService.UnfollowAsync(CallerId, unfollowRequest.FolloweeId);
             return unfollowResult.Match<IActionResult>
             (
                 onSuccess: NoContent,

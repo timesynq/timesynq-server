@@ -161,10 +161,10 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         });
 
         routeGroup.MapGet("/confirmEmail", async Task<Results<ContentHttpResult, UnauthorizedHttpResult>>
-            ([FromQuery] string userId, [FromQuery] string code, [FromQuery] string? changedEmail, [FromServices] IServiceProvider sp) =>
+            ([FromQuery] string userIdString, [FromQuery] string code, [FromQuery] string? changedEmail, [FromServices] IServiceProvider sp) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
-            if (await userManager.FindByIdAsync(userId) is not { } user)
+            if (await userManager.FindByIdAsync(userIdString) is not { } user)
             {
                 // We could respond with a 404 instead of a 401 like Identity UI, but that feels like unnecessary information.
                 return TypedResults.Unauthorized();
@@ -425,10 +425,10 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 : await userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-            var userId = await userManager.GetUserIdAsync(user);
+            var userIdString = await userManager.GetUserIdAsync(user);
             var routeValues = new RouteValueDictionary()
             {
-                ["userId"] = userId,
+                ["userId"] = userIdString,
                 ["code"] = code,
             };
 

@@ -25,7 +25,7 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Me()
         {
-            UserDTO? userDTO = await _userService.GetUserAsync(CallerGuid);
+            UserDTO? userDTO = await _userService.GetUserAsync(CallerId);
             if (userDTO == null)
             {
                 return Problem(

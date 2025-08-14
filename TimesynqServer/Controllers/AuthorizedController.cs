@@ -6,7 +6,7 @@ namespace TimesynqServer.Controllers
     [ApiController]
     public class AuthorizedController : ControllerBase
     {
-        public Guid CallerGuid => Guid.Parse(
+        public Guid CallerId => Guid.Parse(
             User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new InvalidOperationException("Caller ID is missing.")
         );
     }

@@ -32,17 +32,17 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return;
             }
 
-            Guid callerGuid = Guid.Parse(Context.UserIdentifier);
+            Guid callerId = Guid.Parse(Context.UserIdentifier);
 
-            Connection? connection = await _trackerHubCache.GetConnectionAsync(callerGuid);
+            Connection? connection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (connection == null)
             {
                 return;
             }
-            await _trackerHubCache.RemoveConnectionAsync(callerGuid, connection.RoomCode);
+            await _trackerHubCache.RemoveConnectionAsync(callerId, connection.RoomCode);
 
             string roomCode = connection.RoomCode;
-            UserDTO? userDTO = await _userService.GetUserAsync(callerGuid);
+            UserDTO? userDTO = await _userService.GetUserAsync(callerId);
             if (userDTO == null)
             {
                 return;
@@ -59,7 +59,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             //if the user that disconnected is the owner of a room, wait 30s before closing the room
             await Task.Delay(30 * 1000);
 
-            Connection? ownerConnection = await _trackerHubCache.GetConnectionAsync(callerGuid, roomCode);
+            Connection? ownerConnection = await _trackerHubCache.GetConnectionAsync(callerId, roomCode);
             if (ownerConnection != null)
             {
                 return;
@@ -81,9 +81,9 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return;
             }
 
-            Guid callerGuid = Guid.Parse(Context.UserIdentifier);
+            Guid callerId = Guid.Parse(Context.UserIdentifier);
 
-            Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, callerGuid);
+            Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, callerId);
             if (ownedRoom == null)
             {
                 return;
@@ -106,9 +106,9 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return;
             }
 
-            Guid callerGuid = Guid.Parse(Context.UserIdentifier);
+            Guid callerId = Guid.Parse(Context.UserIdentifier);
 
-            Connection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerGuid);
+            Connection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection != null)
             {
                 return;
@@ -123,7 +123,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             var newRoom = new Room
             {
                 RoomCode = roomCode,
-                OwnerId = callerGuid,
+                OwnerId = callerId,
             };
 
             bool isRoomCached = await _trackerHubCache.SetRoomAsync(roomCode, newRoom);
@@ -147,9 +147,9 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return;
             }
 
-            Guid callerGuid = Guid.Parse(Context.UserIdentifier);
+            Guid callerId = Guid.Parse(Context.UserIdentifier);
 
-            Connection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerGuid);
+            Connection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection != null)
             {
                 return;
@@ -159,10 +159,10 @@ namespace TimesynqServer.Hubs.TrackerHub
             {
                 ConnectionId = Context.ConnectionId,
                 RoomCode = roomCode,
-                UserId = callerGuid,
+                UserId = callerId,
             };
 
-            bool isConnectionCached = await _trackerHubCache.SetConnectionAsync(callerGuid, newConnection);
+            bool isConnectionCached = await _trackerHubCache.SetConnectionAsync(callerId, newConnection);
             if (!isConnectionCached)
             {
                 return;
@@ -170,7 +170,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-            UserDTO? userDTO = await _userService.GetUserAsync(callerGuid);
+            UserDTO? userDTO = await _userService.GetUserAsync(callerId);
             if (userDTO == null)
             {
                 return;
