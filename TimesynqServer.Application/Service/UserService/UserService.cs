@@ -1,4 +1,7 @@
-﻿using TimesynqServer.Application.DTO;
+﻿using Microsoft.AspNetCore.Http;
+using TimesynqServer.Application.DTO;
+using TimesynqServer.Application.Pagination;
+using TimesynqServer.Common.Extensions;
 using TimesynqServer.Persistence.Projections;
 using TimesynqServer.Persistence.Repository.UserRepository;
 
@@ -27,6 +30,36 @@ namespace TimesynqServer.Application.Service.UserService
         public async Task<bool> IsUserConfirmed(Guid userId)
         {
             return await _userRepository.GetConfirmedUserByIdAsync(userId);
+        }
+
+        public async Task<PagedResult<UserDTO>> SearchUsers(string searchString, int pageNumber, int pageSize, HttpRequest httpRequest)
+        {
+
+            if(searchString.Length < 3)
+            {
+                return PagedResult<UserDTO>.CreateEmpty();
+            }
+
+            searchString = searchString.Truncate(24);
+
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            int totalUsersContainingSearchString = await _userRepository.GetTotalUsersContainingSearchStringAsync(searchString);
+
+            int totalPages = (int)Math.Ceiling((double)totalUsersContainingSearchString / pageSize);
+
+            if (totalPages <= 0)
+            {
+                return PagedResult<UserDTO>.CreateEmpty();
+            }
+
+            pageNumber = Math.Clamp(pageNumber, 1, totalPages);
+
+            IEnumerable<UserProjection> users = await _userRepository.GetUsersContainingSearchStringAsync(searchString, pageNumber, pageSize);
+
+            IEnumerable<UserDTO> userDTOs = users.Select(UserDTO.FromProjection);
+
+            return new PagedResult<UserDTO>(userDTOs, pageNumber, pageSize, totalUsersContainingSearchString, totalPages, httpRequest);
         }
     }
 }

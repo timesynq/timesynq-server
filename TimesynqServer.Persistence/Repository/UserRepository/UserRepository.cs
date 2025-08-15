@@ -37,5 +37,30 @@ namespace TimesynqServer.Persistence.Repository.UserRepository
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<int> GetTotalUsersContainingSearchStringAsync(string searchString)
+        {
+            return await _dbContext.Users
+                .AsNoTracking()
+                .Where(u => u.UserName!.StartsWith(searchString))
+                .CountAsync();
+        }
+
+        public async Task<IEnumerable<UserProjection>> GetUsersContainingSearchStringAsync(string searchString, int pageNumber, int pageSize)
+        {
+            return await _dbContext.Users
+                .AsNoTracking()
+                .Where(u => u.UserName!.StartsWith(searchString))
+                .OrderBy(u => u.CreatedOnUTC)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new UserProjection
+                (
+                    u.Id,
+                    u.UserName!,
+                    u.ProfilePicture,
+                    u.CreatedOnUTC
+                ))
+                .ToListAsync();
+        }
     }
 }
