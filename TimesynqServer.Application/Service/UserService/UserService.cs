@@ -1,18 +1,24 @@
 ﻿using Microsoft.AspNetCore.Http;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
+using TimesynqServer.Common;
 using TimesynqServer.Common.Extensions;
+using TimesynqServer.Common.Result;
+using TimesynqServer.Domain.Entities;
 using TimesynqServer.Persistence.Projections;
 using TimesynqServer.Persistence.Repository.UserRepository;
+using TimesynqServer.Persistence.UnitOfWork;
 
 namespace TimesynqServer.Application.Service.UserService
 {
     public class UserService : IUserService
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _userRepository;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUnitOfWork unitOfWork, IUserRepository userRepository)
         {
+            _unitOfWork = unitOfWork;
             _userRepository = userRepository;
         }
 
@@ -61,5 +67,41 @@ namespace TimesynqServer.Application.Service.UserService
 
             return new PagedResult<UserDTO>(userDTOs, pageNumber, pageSize, totalUsersContainingSearchString, totalPages, httpRequest);
         }
+
+        public async Task<Result> ChangeUserName(Guid userId, string newUserName)
+        {
+            TimesynqUser? user = await _userRepository.GetTrackedUserByIdAsync(userId);
+            if (user == null)
+            {
+                return Result.Failure(DomainErrors.User.NotFound);
+            }
+
+            bool isUserNameChangeCooldownOver = user.LastUpdatedUserNameUTC <= DateTime.UtcNow.AddDays(-30);
+
+            if(!isUserNameChangeCooldownOver)
+            {
+                return Result.Failure(DomainErrors.User.UserNameChangeOnCooldown);
+            }
+
+            UserProjection? userWithExistingUserName = await _userRepository.GetByUserNameAsync(newUserName);
+            bool userNameIsTaken = userWithExistingUserName != null && userId != userWithExistingUserName.Id; 
+            if (userNameIsTaken)
+            {
+                return Result.Failure(DomainErrors.User.UserNameTaken);
+            }
+
+            Result changeUserNameResult = user.ChangeUserName(newUserName);
+            return await changeUserNameResult.Match
+            (
+                onSuccess: async () =>
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                    return Result.Success();
+                },
+                onFailure: error => Task.FromResult(Result.Failure(error))
+            );
+        }
+
+
     }
 }

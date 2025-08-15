@@ -4,6 +4,8 @@ using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
 using TimesynqServer.Application.Service.UserService;
 using TimesynqServer.Common;
+using TimesynqServer.Common.Result;
+using TimesynqServer.DTO.Request.User;
 
 namespace TimesynqServer.Controllers
 {
@@ -63,6 +65,28 @@ namespace TimesynqServer.Controllers
         public async Task<IActionResult> Search(string searchString, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             return Ok(await _userService.SearchUsers(searchString, pageNumber, pageSize, Request));
+        }
+
+        [HttpPost("username")]
+        [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> ChangeUserName([FromBody] ChangeUserNameRequestDTO changeUserNameRequestDTO)
+        {
+            Result changeUserNameResult = await _userService.ChangeUserName(CallerId, changeUserNameRequestDTO.NewUserName);
+            return changeUserNameResult.Match<IActionResult>
+            (
+                onSuccess: NoContent,
+                onFailure: error => Problem(
+                    statusCode: error.Code,
+                    detail: error.Message
+                )
+            );
         }
 
     }

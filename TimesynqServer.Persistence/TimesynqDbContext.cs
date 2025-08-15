@@ -37,6 +37,26 @@ namespace TimesynqServer.Persistence
             };
             builder.Entity<TimesynqRole>().HasData(roles);
 
+            //i'm putting this here because ef keeps renaming CreatedOnUTC and ProfilePicture instead of adding new columns
+            builder.Entity<TimesynqUser>()
+                .Property(u => u.SavedUserName)
+                .HasColumnName("SavedUserName");
+            builder.Entity<TimesynqUser>()
+                .Property(u => u.NormalizedSavedUserName)
+                .HasColumnName("NormalizedSavedUserName");
+            builder.Entity<TimesynqUser>()
+                .Property(u => u.ProfilePicture)
+                .HasColumnName("ProfilePicture");
+            builder.Entity<TimesynqUser>()
+                .Property(u => u.CreatedOnUTC)
+                .HasColumnName("CreatedOnUTC");
+            builder.Entity<TimesynqUser>()
+                .Property(u => u.LastUpdatedOnUTC)
+                .HasColumnName("LastUpdatedOnUTC");
+            builder.Entity<TimesynqUser>()
+                .Property(u => u.LastUpdatedUserNameUTC)
+                .HasColumnName("LastUpdatedUserNameUTC");
+
             builder.Entity<Follow>().HasKey(f => new { f.FollowerId, f.FolloweeId });
             builder.Entity<Follow>()
                 .HasOne(f => f.Follower)

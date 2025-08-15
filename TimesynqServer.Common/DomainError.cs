@@ -18,7 +18,11 @@ namespace TimesynqServer.Common
     {
         public static class User
         {
+            public static DomainError InvalidUserName => new(StatusCodes.Status400BadRequest, "Username length must be between 3 and 24 characters long.");
+            public static DomainError UserNameChangeOnCooldown => new(StatusCodes.Status400BadRequest, "Username change is on cooldown.");
             public static DomainError NotFound => new(StatusCodes.Status404NotFound, "User not found.");
+            public static DomainError UserNameConflict => new(StatusCodes.Status409Conflict, "Already using username.");
+            public static DomainError UserNameTaken => new(StatusCodes.Status409Conflict, "Username already taken.");
         }
         public static class Follow
         {

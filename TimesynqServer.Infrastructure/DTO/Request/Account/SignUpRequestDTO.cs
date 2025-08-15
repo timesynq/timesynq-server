@@ -10,7 +10,7 @@ namespace TimesynqServer.Infrastructure.DTO.Request.Account
         /// <summary>
         /// The user's unique display name.
         /// </summary>
-        public required string Username { get; init; }
+        public required string UserName { get; init; }
 
         /// <summary>
         /// The user's email address. Is only allowed one associated account, and will receive confirmation emails and password reset links/codes.

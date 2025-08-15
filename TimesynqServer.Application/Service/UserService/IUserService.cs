@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
+using TimesynqServer.Common.Result;
 
 namespace TimesynqServer.Application.Service.UserService
 {
@@ -9,5 +10,6 @@ namespace TimesynqServer.Application.Service.UserService
         public Task<UserDTO?> GetUserAsync(Guid userId);
         public Task<bool> IsUserConfirmed(Guid userId);
         public Task<PagedResult<UserDTO>> SearchUsers(string searchString, int pageNumber, int pageSize, HttpRequest httpRequest);
+        public Task<Result> ChangeUserName(Guid userId, string newUserName);
     }
 }

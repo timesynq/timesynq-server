@@ -53,7 +53,7 @@ namespace TimesynqServer.Infrastructure
 
             string? dbConnectionString = configuration.GetConnectionString("SqlServerDatabase");
 
-            services.AddDbContext<TimesynqDbContext>(options => options.UseSqlServer(dbConnectionString));
+            services.AddDbContext<TimesynqDbContext>(options => options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("TimesynqServer.Persistence")));
 
             services.AddIdentityCore<TimesynqUser>(options =>
             {
