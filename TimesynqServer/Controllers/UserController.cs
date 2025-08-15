@@ -69,7 +69,7 @@ namespace TimesynqServer.Controllers
 
         [HttpPost("username")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -78,10 +78,10 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> ChangeUserName([FromBody] ChangeUserNameRequestDTO changeUserNameRequestDTO)
         {
-            Result changeUserNameResult = await _userService.ChangeUserName(CallerId, changeUserNameRequestDTO.NewUserName);
+            Result<UserDTO> changeUserNameResult = await _userService.ChangeUserName(CallerId, changeUserNameRequestDTO.NewUserName);
             return changeUserNameResult.Match<IActionResult>
             (
-                onSuccess: NoContent,
+                onSuccess: Ok,
                 onFailure: error => Problem(
                     statusCode: error.Code,
                     detail: error.Message

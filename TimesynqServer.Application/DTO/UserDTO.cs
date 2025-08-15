@@ -1,4 +1,5 @@
-﻿using TimesynqServer.Persistence.Projections;
+﻿using TimesynqServer.Domain.Entities;
+using TimesynqServer.Persistence.Projections;
 
 namespace TimesynqServer.Application.DTO
 {
@@ -54,6 +55,24 @@ namespace TimesynqServer.Application.DTO
             ArgumentNullException.ThrowIfNull(projection);
 
             return new UserDTO(projection.Id, projection.UserName, projection.ProfilePicture, projection.CreatedOnUTC);
+        }
+
+        /// <summary>
+        /// Converts a <see cref="TimesynqUser"/> to a <see cref="UserDTO"/>.
+        /// </summary>
+        /// <param name="timesynqUser">The <see cref="TimesynqUser"/> instance to convert.</param>
+        /// <returns>
+        /// A <see cref="UserDTO"/> object containing the mapped values from the specified <see cref="TimesynqUser"/>.
+        /// </returns>
+        /// <remarks>
+        /// Throws an <see cref="ArgumentNullException"/> if <paramref name="timesynqUser"/> is null.
+        /// This method is used for standardized instantiation of <see cref="UserDTO"/>.
+        /// </remarks>
+        public static UserDTO FromTimesynqUser(TimesynqUser timesynqUser)
+        {
+            ArgumentNullException.ThrowIfNull(timesynqUser);
+
+            return new UserDTO(timesynqUser.Id, timesynqUser.UserName!, timesynqUser.ProfilePicture, timesynqUser.CreatedOnUTC);
         }
 
     }

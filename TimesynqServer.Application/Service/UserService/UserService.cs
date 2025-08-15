@@ -68,26 +68,26 @@ namespace TimesynqServer.Application.Service.UserService
             return new PagedResult<UserDTO>(userDTOs, pageNumber, pageSize, totalUsersContainingSearchString, totalPages, httpRequest);
         }
 
-        public async Task<Result> ChangeUserName(Guid userId, string newUserName)
+        public async Task<Result<UserDTO>> ChangeUserName(Guid userId, string newUserName)
         {
             TimesynqUser? user = await _userRepository.GetTrackedUserByIdAsync(userId);
             if (user == null)
             {
-                return Result.Failure(DomainErrors.User.NotFound);
+                return Result<UserDTO>.Failure(DomainErrors.User.NotFound);
             }
 
             bool isUserNameChangeCooldownOver = user.LastUpdatedUserNameUTC <= DateTime.UtcNow.AddDays(-30);
 
             if(!isUserNameChangeCooldownOver)
             {
-                return Result.Failure(DomainErrors.User.UserNameChangeOnCooldown);
+                return Result<UserDTO>.Failure(DomainErrors.User.UserNameChangeOnCooldown);
             }
 
             UserProjection? userWithExistingUserName = await _userRepository.GetByUserNameAsync(newUserName);
             bool userNameIsTaken = userWithExistingUserName != null && userId != userWithExistingUserName.Id; 
             if (userNameIsTaken)
             {
-                return Result.Failure(DomainErrors.User.UserNameTaken);
+                return Result<UserDTO>.Failure(DomainErrors.User.UserNameTaken);
             }
 
             Result changeUserNameResult = user.ChangeUserName(newUserName);
@@ -96,9 +96,9 @@ namespace TimesynqServer.Application.Service.UserService
                 onSuccess: async () =>
                 {
                     await _unitOfWork.SaveChangesAsync();
-                    return Result.Success();
+                    return Result<UserDTO>.Success(UserDTO.FromTimesynqUser(user));
                 },
-                onFailure: error => Task.FromResult(Result.Failure(error))
+                onFailure: error => Task.FromResult(Result<UserDTO>.Failure(error))
             );
         }
 
