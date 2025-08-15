@@ -23,6 +23,7 @@ namespace TimesynqServer.Common
             public static DomainError NotFound => new(StatusCodes.Status404NotFound, "User not found.");
             public static DomainError UserNameConflict => new(StatusCodes.Status409Conflict, "Already using username.");
             public static DomainError UserNameTaken => new(StatusCodes.Status409Conflict, "Username already taken.");
+            public static DomainError AccountAlreadyDeleted => new(StatusCodes.Status409Conflict, "Account has already been deleted.");
         }
         public static class Follow
         {

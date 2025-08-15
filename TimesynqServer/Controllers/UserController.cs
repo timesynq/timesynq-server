@@ -89,5 +89,24 @@ namespace TimesynqServer.Controllers
             );
         }
 
+        [HttpDelete]
+        [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            Result deleteAccountResult = await _userService.DeleteAccount(CallerId);
+            return deleteAccountResult.Match<IActionResult>
+            (
+                onSuccess: NoContent,
+                onFailure: error => Problem(
+                    statusCode: error.Code,
+                    detail: error.Message
+                )
+            );
+        }
+
     }
 }

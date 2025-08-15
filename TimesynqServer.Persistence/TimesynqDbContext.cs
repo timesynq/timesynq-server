@@ -56,6 +56,9 @@ namespace TimesynqServer.Persistence
             builder.Entity<TimesynqUser>()
                 .Property(u => u.LastUpdatedUserNameUTC)
                 .HasColumnName("LastUpdatedUserNameUTC");
+            builder.Entity<TimesynqUser>()
+                .Property(u => u.DeletedOnUTC)
+                .HasColumnName("DeletedOnUTC");
 
             builder.Entity<Follow>().HasKey(f => new { f.FollowerId, f.FolloweeId });
             builder.Entity<Follow>()
@@ -69,6 +72,10 @@ namespace TimesynqServer.Persistence
                 .HasForeignKey(f => f.FolloweeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<TimesynqUser>()
+                .HasQueryFilter(b => b.DeletedOnUTC == null);
+            builder.Entity<Follow>()
+                .HasQueryFilter(b => b.Follower!.DeletedOnUTC == null && b.Followee!.DeletedOnUTC == null);
         }
 
     }

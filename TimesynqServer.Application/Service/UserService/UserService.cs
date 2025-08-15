@@ -102,6 +102,25 @@ namespace TimesynqServer.Application.Service.UserService
             );
         }
 
+        public async Task<Result> DeleteAccount(Guid userId)
+        {
+            TimesynqUser? user = await _userRepository.GetTrackedUserByIdAsync(userId);
+            if (user == null)
+            {
+                return Result.Failure(DomainErrors.User.NotFound);
+            }
+
+            Result softDeleteResult = user.SoftDelete();
+            return await softDeleteResult.Match
+            (
+                onSuccess: async () =>
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                    return Result.Success();
+                },
+                onFailure: error => Task.FromResult(Result.Failure(error))
+            );
+        }
 
     }
 }

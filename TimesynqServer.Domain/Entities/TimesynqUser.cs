@@ -53,6 +53,16 @@ namespace TimesynqServer.Domain.Entities
         public DateTime LastUpdatedUserNameUTC { get; private set; } = DateTime.UtcNow;
 
         /// <summary>
+        /// The date when the user deleted their account.
+        /// </summary>
+        public DateTime? DeletedOnUTC { get; private set; }
+
+        /// <summary>
+        /// Shortcut for determining if a user's account has been deleted.
+        /// </summary>
+        public bool IsDeleted => DeletedOnUTC.HasValue;
+
+        /// <summary>
         /// Navigation property for all users that are following this user.
         /// </summary>
         public ICollection<Follow> Followers { get; private set; } = [];
@@ -83,6 +93,17 @@ namespace TimesynqServer.Domain.Entities
             LastUpdatedOnUTC = now;
             LastUpdatedUserNameUTC = now;
 
+            return Result.Success();
+        }
+
+        public Result SoftDelete()
+        {
+            if (IsDeleted)
+            {
+                return Result.Failure(DomainErrors.User.AccountAlreadyDeleted);
+            }
+
+            DeletedOnUTC = DateTime.UtcNow;
             return Result.Success();
         }
 
