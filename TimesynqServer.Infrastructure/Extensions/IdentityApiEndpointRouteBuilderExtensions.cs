@@ -66,7 +66,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
             var userStore = sp.GetRequiredService<IUserStore<TUser>>();
             var emailStore = (IUserEmailStore<TUser>)userStore;
-            var userName = signUpRequestDTO.Username;
+            var userName = signUpRequestDTO.UserName;
             var email = signUpRequestDTO.Email;
 
             if (string.IsNullOrEmpty(userName) || userName.Length < 3 || userName.Length > 24)
@@ -82,13 +82,6 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var user = new TUser();
             await userStore.SetUserNameAsync(user, userName, CancellationToken.None);
             await emailStore.SetEmailAsync(user, email, CancellationToken.None);
-
-            if (user is TimesynqUser timesynqUser)
-            {
-                timesynqUser.ProfilePicture = TimesynqRandomizer.GenerateIdenticon();
-                timesynqUser.CreatedOnUTC = DateTime.UtcNow;
-                timesynqUser.LastUpdatedOnUTC = DateTime.UtcNow;
-            }
 
             var result = await userManager.CreateAsync(user, signUpRequestDTO.Password!);
 
@@ -117,7 +110,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var isPersistent = (useCookies == true) && (useSessionCookies != true);
             signInManager.AuthenticationScheme = useCookieScheme ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
 
-            var result = await signInManager.PasswordSignInAsync(login.Username, login.Password, isPersistent, lockoutOnFailure: true);
+            var result = await signInManager.PasswordSignInAsync(login.UserName, login.Password, isPersistent, lockoutOnFailure: true);
 
             if (result.RequiresTwoFactor)
             {

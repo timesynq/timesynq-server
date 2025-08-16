@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesynqServer.Persistence;
 
@@ -11,9 +12,11 @@ using TimesynqServer.Persistence;
 namespace TimesynqServer.Migrations
 {
     [DbContext(typeof(TimesynqDbContext))]
-    partial class TimesynqDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250815045122_ChangeUserName")]
+    partial class ChangeUserName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,10 +210,6 @@ namespace TimesynqServer.Migrations
                     b.Property<DateTime>("CreatedOnUTC")
                         .HasColumnType("datetime2")
                         .HasColumnName("CreatedOnUTC");
-
-                    b.Property<DateTime?>("DeletedOnUTC")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletedOnUTC");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)

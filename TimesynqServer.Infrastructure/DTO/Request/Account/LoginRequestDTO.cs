@@ -9,7 +9,7 @@
         /// <summary>
         /// The user's username.
         /// </summary>
-        public required string Username { get; init; }
+        public required string UserName { get; init; }
 
         /// <summary>
         /// The user's password.
