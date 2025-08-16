@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using TimesynqServer.Common;
 
 namespace TimesynqServer.Infrastructure.Extensions
 {
@@ -9,7 +10,7 @@ namespace TimesynqServer.Infrastructure.Extensions
             return new IdentityError
             {
                 Code = nameof(InvalidUserName),
-                Description = $"Username '{userName}' is invalid. Username length must be between 3 and 24 characters long."
+                Description = $"Username '{userName}' is invalid. Username length must be between {UserConstants.MinUserNameLength} and {UserConstants.MaxUserNameLength} characters long."
             };
         }
     }

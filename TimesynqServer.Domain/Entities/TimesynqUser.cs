@@ -74,7 +74,7 @@ namespace TimesynqServer.Domain.Entities
 
         public Result ChangeUserName(string newUserName)
         {
-            if (string.IsNullOrEmpty(newUserName) || newUserName.Length < 3 || newUserName.Length > 24)
+            if (string.IsNullOrEmpty(newUserName) || newUserName.Length < UserConstants.MinUserNameLength || newUserName.Length > UserConstants.MinUserNameLength)
             {
                 return Result.Failure(DomainErrors.User.InvalidUserName);
             }

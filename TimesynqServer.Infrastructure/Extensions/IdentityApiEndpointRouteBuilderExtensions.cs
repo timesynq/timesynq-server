@@ -69,7 +69,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var userName = signUpRequestDTO.UserName;
             var email = signUpRequestDTO.Email;
 
-            if (string.IsNullOrEmpty(userName) || userName.Length < 3 || userName.Length > 24)
+            if (string.IsNullOrEmpty(userName) || userName.Length < UserConstants.MinUserNameLength || userName.Length > UserConstants.MaxUserNameLength)
             {
                 return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidUserName(userName)));
             }

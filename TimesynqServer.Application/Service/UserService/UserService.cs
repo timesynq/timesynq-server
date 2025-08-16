@@ -41,14 +41,14 @@ namespace TimesynqServer.Application.Service.UserService
         public async Task<PagedResult<UserDTO>> SearchUsers(string searchString, int pageNumber, int pageSize, HttpRequest httpRequest)
         {
 
-            if(searchString.Length < 3)
+            if(searchString.Length < UserConstants.MinUserNameLength)
             {
                 return PagedResult<UserDTO>.CreateEmpty();
             }
 
-            searchString = searchString.Truncate(24);
+            searchString = searchString.Truncate(UserConstants.MaxUserNameLength);
 
-            pageSize = Math.Clamp(pageSize, 1, 100);
+            pageSize = Math.Clamp(pageSize, PaginationConstants.MinPageSize, PaginationConstants.MaxPageSize);
 
             int totalUsersContainingSearchString = await _userRepository.GetTotalUsersContainingSearchStringAsync(searchString);
 
@@ -76,7 +76,7 @@ namespace TimesynqServer.Application.Service.UserService
                 return Result<UserDTO>.Failure(DomainErrors.User.NotFound);
             }
 
-            bool isUserNameChangeCooldownOver = user.LastUpdatedUserNameUTC <= DateTime.UtcNow.AddDays(-30);
+            bool isUserNameChangeCooldownOver = user.LastUpdatedUserNameUTC <= DateTime.UtcNow.AddDays(UserConstants.UserNameChangeCooldownDays * -1);
 
             if(!isUserNameChangeCooldownOver)
             {

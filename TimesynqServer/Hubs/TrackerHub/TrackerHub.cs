@@ -57,7 +57,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             }
 
             //if the user that disconnected is the owner of a room, wait 30s before closing the room
-            await Task.Delay(30 * 1000);
+            await Task.Delay(TrackerHubConstants.SecondsBeforeRoomClose * 1000);
 
             Connection? ownerConnection = await _trackerHubCache.GetConnectionAsync(callerId, roomCode);
             if (ownerConnection != null)
