@@ -62,7 +62,7 @@ namespace TimesynqServer.Controllers
         [HttpGet("search/{searchString}")]
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Search(string searchString, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
+        public async Task<IActionResult> Search(string searchString, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginationConstants.DefaultPageSize)
         {
             return Ok(await _userService.SearchUsers(searchString, pageNumber, pageSize, Request));
         }

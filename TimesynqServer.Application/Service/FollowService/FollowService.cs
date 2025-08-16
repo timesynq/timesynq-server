@@ -35,7 +35,7 @@ namespace TimesynqServer.Application.Service.FollowService
 
         public async Task<PagedResult<UserDTO>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize, HttpRequest httpRequest)
         {
-            pageSize = Math.Clamp(pageSize, 1, 100);
+            pageSize = Math.Clamp(pageSize, PaginationConstants.MinPageSize, PaginationConstants.MaxPageSize);
 
             int totalFollowers = await _followRepository.GetFollowersCountAsync(followeeId);
 
@@ -57,7 +57,7 @@ namespace TimesynqServer.Application.Service.FollowService
 
         public async Task<PagedResult<UserDTO>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize, HttpRequest httpRequest)
         {
-            pageSize = Math.Clamp(pageSize, 1, 100);
+            pageSize = Math.Clamp(pageSize, PaginationConstants.MinPageSize, PaginationConstants.MaxPageSize);
 
             int totalFollowees = await _followRepository.GetFolloweesCountAsync(followerId);
 

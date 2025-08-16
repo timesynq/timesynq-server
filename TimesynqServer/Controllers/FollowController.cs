@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
 using TimesynqServer.Application.Service.FollowService;
+using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
 using TimesynqServer.DTO.Request.Follow;
 
@@ -41,7 +42,7 @@ namespace TimesynqServer.Controllers
         [HttpGet("{userId}/followers")]
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetFollowers(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
+        public async Task<IActionResult> GetFollowers(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginationConstants.DefaultPageSize)
         {
             return Ok(await _followService.GetFollowersAsync(userId, pageNumber, pageSize, Request));
         }
@@ -49,7 +50,7 @@ namespace TimesynqServer.Controllers
         [HttpGet("{userId}/followees")]
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetFollowees(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
+        public async Task<IActionResult> GetFollowees(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginationConstants.DefaultPageSize)
         {
             return Ok(await _followService.GetFolloweesAsync(userId, pageNumber, pageSize, Request));
         }

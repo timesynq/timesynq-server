@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
+using TimesynqServer.Common;
 using TimesynqServer.Domain.Entities;
 using TimesynqServer.Infrastructure.Email;
 using TimesynqServer.Infrastructure.Extensions;
@@ -61,7 +62,7 @@ namespace TimesynqServer.Infrastructure
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 12;
+                options.Password.RequiredLength = UserConstants.MinPasswordLength;
 
                 options.SignIn.RequireConfirmedAccount = false;
             })
