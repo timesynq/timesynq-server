@@ -39,12 +39,21 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
+//todo: add ProdCorsPolicy
+string DevCorsPolicy = "_DevCorsPolicy";
+builder.Services.AddCors(p => p.AddPolicy(DevCorsPolicy, builder =>
+{
+    builder.WithOrigins("https://localhost:5173").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+}));
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    app.UseCors(DevCorsPolicy);
 
     app.ApplyMigrations();
 }
