@@ -12,7 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
 builder.Services.AddPersistenceServices();
-builder.Services.AddApplicationServices();
 builder.AddInfrastructure();
 
 builder.Services.AddControllers();

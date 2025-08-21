@@ -8,11 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
+using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Domain.Entities;
 using TimesynqServer.Infrastructure.Email;
 using TimesynqServer.Infrastructure.Extensions;
 using TimesynqServer.Infrastructure.Logging;
+using TimesynqServer.Infrastructure.Service.FollowService;
+using TimesynqServer.Infrastructure.Service.UserService;
 using TimesynqServer.Persistence;
 
 namespace TimesynqServer.Infrastructure
@@ -79,6 +82,9 @@ namespace TimesynqServer.Infrastructure
             services.Configure<EmailSenderOptions>(configuration.GetSection(EmailSenderOptions.ConfigurationSection));
 
             services.AddSignalR();
+
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IFollowService, FollowService>();
 
             return services;
         }

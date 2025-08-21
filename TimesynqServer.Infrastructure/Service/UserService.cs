@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
+using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Extensions;
 using TimesynqServer.Common.Result;
@@ -9,7 +10,7 @@ using TimesynqServer.Persistence.Projections;
 using TimesynqServer.Persistence.Repository.UserRepository;
 using TimesynqServer.Persistence.UnitOfWork;
 
-namespace TimesynqServer.Application.Service.UserService
+namespace TimesynqServer.Infrastructure.Service.UserService
 {
     public class UserService : IUserService
     {
