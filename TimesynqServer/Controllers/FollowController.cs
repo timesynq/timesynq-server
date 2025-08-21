@@ -5,7 +5,7 @@ using TimesynqServer.Application.Pagination;
 using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
-using TimesynqServer.DTO.Request.Follow;
+using TimesynqServer.Contracts.RequestDTO.Follow;
 
 namespace TimesynqServer.Controllers
 {
