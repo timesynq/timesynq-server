@@ -11,6 +11,7 @@ using Serilog.Sinks.OpenTelemetry;
 using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Domain.Entities;
+using TimesynqServer.Domain.Entities.Users;
 using TimesynqServer.Infrastructure.Email;
 using TimesynqServer.Infrastructure.Extensions;
 using TimesynqServer.Infrastructure.Logging;

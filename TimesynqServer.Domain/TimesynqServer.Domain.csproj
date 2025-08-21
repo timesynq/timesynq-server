@@ -10,6 +10,7 @@
 	
   <ItemGroup>
     <ProjectReference Include="..\TimesynqServer.Common\TimesynqServer.Common.csproj" />
+    <ProjectReference Include="..\TimesynqServer.Contracts\TimesynqServer.Contracts.csproj" />
 	<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.6" />
   </ItemGroup>
 

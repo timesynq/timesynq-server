@@ -1,6 +1,4 @@
-﻿using TimesynqServer.Domain.Entities;
-
-namespace TimesynqServer.Persistence.Projections
+﻿namespace TimesynqServer.Contracts.Projections
 {
     /// <summary>
     /// Represents only the Follow fields we need to retrieve from the database.
@@ -28,19 +26,11 @@ namespace TimesynqServer.Persistence.Projections
         /// <param name="followerId">The unique identifier of the user who is following another user.</param>
         /// <param name="followeeId">The unique identifier of the user who is being followed by another user.</param>
         /// <param name="createdOnUTC">The date when the following occurred.</param>
-        internal FollowProjection(Guid followerId, Guid followeeId, DateTime createdOnUTC)
+        public FollowProjection(Guid followerId, Guid followeeId, DateTime createdOnUTC)
         {
             FollowerId = followerId;
             FolloweeId = followeeId;
             CreatedOnUTC = createdOnUTC;
         }
-
-        internal FollowProjection(Follow follow)
-        {
-            FollowerId = follow.FollowerId;
-            FolloweeId = follow.FolloweeId;
-            CreatedOnUTC = follow.CreatedOnUTC;
-        }
-
     }
 }

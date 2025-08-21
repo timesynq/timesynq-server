@@ -1,7 +1,8 @@
 ﻿using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
+using TimesynqServer.Domain.Entities.Users;
 
-namespace TimesynqServer.Domain.Entities
+namespace TimesynqServer.Domain.Entities.Follows
 {
     /// <summary>
     /// Represents a follower-following relationship between two users.

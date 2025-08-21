@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TimesynqServer.Persistence.Repository.FollowRepository;
-using TimesynqServer.Persistence.Repository.UserRepository;
+using TimesynqServer.Domain.Entities.Follows;
+using TimesynqServer.Domain.Entities.Users;
+using TimesynqServer.Persistence.Repository;
 using TimesynqServer.Persistence.UnitOfWork;
 
 namespace TimesynqServer.Persistence

@@ -5,9 +5,8 @@ using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Extensions;
 using TimesynqServer.Common.Result;
-using TimesynqServer.Domain.Entities;
-using TimesynqServer.Persistence.Projections;
-using TimesynqServer.Persistence.Repository.UserRepository;
+using TimesynqServer.Domain.Entities.Users;
+using TimesynqServer.Contracts.Projections;
 using TimesynqServer.Persistence.UnitOfWork;
 
 namespace TimesynqServer.Infrastructure.Service.UserService
