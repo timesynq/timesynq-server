@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
-using TimesynqServer.Application.Service.UserService;
+using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
-using TimesynqServer.DTO.Request.User;
+using TimesynqServer.Contracts.RequestDTO.User;
 
 namespace TimesynqServer.Controllers
 {

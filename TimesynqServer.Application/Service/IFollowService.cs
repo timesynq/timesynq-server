@@ -3,7 +3,7 @@ using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
 using TimesynqServer.Common.Result;
 
-namespace TimesynqServer.Application.Service.FollowService
+namespace TimesynqServer.Application.Service
 {
     public interface IFollowService
     {

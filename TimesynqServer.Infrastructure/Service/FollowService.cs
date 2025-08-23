@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
+using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
-using TimesynqServer.Domain.Entities;
-using TimesynqServer.Persistence.Projections;
-using TimesynqServer.Persistence.Repository.FollowRepository;
-using TimesynqServer.Persistence.Repository.UserRepository;
+using TimesynqServer.Domain.Entities.Follows;
+using TimesynqServer.Contracts.Projections;
+using TimesynqServer.Domain.Entities.Users;
 
-namespace TimesynqServer.Application.Service.FollowService
+namespace TimesynqServer.Infrastructure.Service.FollowService
 {
     public class FollowService : IFollowService
     {

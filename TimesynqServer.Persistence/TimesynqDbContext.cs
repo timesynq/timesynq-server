@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TimesynqServer.Domain.Entities;
+using TimesynqServer.Domain.Entities.Follows;
+using TimesynqServer.Domain.Entities.Users;
 
 namespace TimesynqServer.Persistence
 {

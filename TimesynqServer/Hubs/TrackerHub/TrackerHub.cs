@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using TimesynqServer.Application.DTO;
-using TimesynqServer.Application.Service.UserService;
+using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Domain.Cache;
 using TimesynqServer.Infrastructure.Cache.TrackerHubCache;

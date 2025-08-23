@@ -1,5 +1,5 @@
-﻿using TimesynqServer.Domain.Entities;
-using TimesynqServer.Persistence.Projections;
+﻿using TimesynqServer.Domain.Entities.Users;
+using TimesynqServer.Contracts.Projections;
 
 namespace TimesynqServer.Application.DTO
 {

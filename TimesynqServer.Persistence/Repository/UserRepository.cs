@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TimesynqServer.Domain.Entities;
-using TimesynqServer.Persistence.Projections;
+using TimesynqServer.Domain.Entities.Users;
+using TimesynqServer.Contracts.Projections;
 
-namespace TimesynqServer.Persistence.Repository.UserRepository
+namespace TimesynqServer.Persistence.Repository
 {
     public class UserRepository : IUserRepository
     {

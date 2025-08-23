@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Security.Claims;
-using TimesynqServer.Application.Service.UserService;
+using TimesynqServer.Application.Service;
 
 namespace TimesynqServer.Middleware
 {

@@ -17,8 +17,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using TimesynqServer.Common;
-using TimesynqServer.Domain.Entities;
-using TimesynqServer.Infrastructure.DTO.Request.Account;
+using TimesynqServer.Contracts.RequestDTO.User;
 
 namespace Microsoft.AspNetCore.Routing;
 

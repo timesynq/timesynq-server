@@ -2,8 +2,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
+using TimesynqServer.Domain.Entities.Follows;
 
-namespace TimesynqServer.Domain.Entities
+namespace TimesynqServer.Domain.Entities.Users
 {
     /// <summary>
     /// Represents a user of Timesynq

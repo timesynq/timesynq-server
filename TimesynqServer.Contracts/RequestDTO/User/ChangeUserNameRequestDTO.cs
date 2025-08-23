@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.DTO.Request.User
+﻿namespace TimesynqServer.Contracts.RequestDTO.User
 {
     public sealed class ChangeUserNameRequestDTO
     {
