@@ -32,7 +32,6 @@ namespace TimesynqServer.Infrastructure
 
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddLogging(configuration);
             services.AddDatabase(configuration);
             services.AddAuth();
 
@@ -76,7 +75,7 @@ namespace TimesynqServer.Infrastructure
 
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            string? dbConnectionString = configuration.GetConnectionString("SqlServerDatabase");
+            string? dbConnectionString = configuration.GetConnectionString("timesynq-db");
             services.AddDbContext<TimesynqDbContext>(options => options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("TimesynqServer.Persistence")));
             return services;
         }
