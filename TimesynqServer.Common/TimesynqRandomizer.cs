@@ -16,15 +16,18 @@ namespace TimesynqServer.Common
         private const string _characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 
         /// <summary>
-        /// Generates a unique, 21 character identicon string consisting of a hex color code followed by a series of pixel values.
+        /// Generates a unique, 11 character identicon string consisting of a hex color code followed by a hex-encoded series of pixel values.
         /// </summary>
         /// <remarks>
-        /// First 6 chars = hex color;
-        /// Next 15 = 5x5 grid (binary), mirrored:
-        /// Cols 1=5, 2=4. '1' = color, '0' = white.
+        /// The first 6 characters represent a hex color code.
+        /// The 7th character is a period delimiter.
+        /// The last 4 characters are a hex code encoding 15 bits of information. The most significant bit is always 0, so the highest possible value for the first hex digit is 7.
+        /// These 15 bits are decoded into a 5x5 grid (binary), mirrored:
+        /// Columns 1 and 2 are mapped to 5 and 4, respectively.
+        /// In the grid, '1' represents the color (from the hex code), and '0' represents no color.
         /// </remarks>
         /// <returns>
-        /// A string containing a 6-character hexadecimal color code, followed by a sequence of characters representing the identicon's pixels.
+        /// A string containing a 6-character hexadecimal color code, followed by a hex-encoded sequence of bits representing the identicon's pixels.
         /// </returns>
         public static string GenerateIdenticon()
         {
@@ -33,13 +36,15 @@ namespace TimesynqServer.Common
             string color = string.Format("{0:X6}", _random.Next(0x1000000));
             sb.Append(color);
 
-            var identiconPixels = new char[_pixelsLength];
-            for (int i = 0; i < _pixelsLength; i++)
+            sb.Append('.');
+
+            int pixels = 0;
+            for(int i = 0; i < _pixelsLength; i++)
             {
-                int randomIndex = _random.Next(_pixelVals.Length);
-                identiconPixels[i] = _pixelVals[randomIndex];
+                pixels = (pixels << 1) | _random.Next(2);
             }
-            sb.Append(new string(identiconPixels));
+
+            sb.Append($"{pixels:X4}");
 
             return sb.ToString();
         }

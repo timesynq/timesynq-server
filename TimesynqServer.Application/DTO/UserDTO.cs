@@ -19,10 +19,13 @@ namespace TimesynqServer.Application.DTO
         public string UserName { get; }
 
         /// <summary>
-        /// A 21 character string representing an identicon.
-        /// First 6 chars = hex color;
-        /// Next 15 = 5x5 grid (binary), mirrored:
-        /// Cols 1=5, 2=4. '1' = color, '0' = white.
+        /// An 11 character string representing an identicon.
+        /// The first 6 characters represent a hex color code.
+        /// The 7th character is a period delimiter.
+        /// The last 4 characters are a hex code encoding 15 bits of information. The most significant bit is always 0, so the highest possible value for the first hex digit is 7.
+        /// These 15 bits are decoded into a 5x5 grid (binary), mirrored:
+        /// Columns 1 and 2 are mapped to 5 and 4, respectively.
+        /// In the grid, '1' represents the color (from the hex code), and '0' represents no color.
         /// </summary>
         public string ProfilePicture { get; }
 
