@@ -41,7 +41,7 @@ namespace TimesynqServer.Common
             int pixels = 0;
             for(int i = 0; i < _pixelsLength; i++)
             {
-                pixels = (pixels << 1) | _random.Next(2);
+                pixels = (pixels << 1) | (_random.Next(4) % 2 == 0 ? 1 : 0); //ratio of 1s to 0s is 3:2 instead of 1:1
             }
 
             sb.Append($"{pixels:X4}");
