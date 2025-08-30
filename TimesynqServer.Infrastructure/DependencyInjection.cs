@@ -32,7 +32,25 @@ namespace TimesynqServer.Infrastructure
 
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddDatabase(configuration);
+            services.AddAuth();
 
+            services.AddTransient<IEmailSender<TimesynqUser>, EmailSender<TimesynqUser>>();
+
+            services.AddDefaultAWSOptions(configuration.GetAWSOptions());
+            services.AddAWSService<IAmazonSimpleEmailService>();
+            services.Configure<EmailSenderOptions>(configuration.GetSection(EmailSenderOptions.ConfigurationSection));
+
+            services.AddSignalR();
+
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IFollowService, FollowService>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddLogging(this IServiceCollection services, IConfiguration configuration)
+        {
             SerilogOptions serilogOptions = configuration.GetSection(SerilogOptions.ConfigurationSection).Get<SerilogOptions>()!;
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
@@ -52,13 +70,20 @@ namespace TimesynqServer.Infrastructure
                 .CreateLogger();
 
             services.AddSerilog();
+            return services;
+        }
 
+        public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
+        {
+            string? dbConnectionString = configuration.GetConnectionString("timesynq-db");
+            services.AddDbContext<TimesynqDbContext>(options => options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("TimesynqServer.Persistence")));
+            return services;
+        }
+
+        public static IServiceCollection AddAuth(this IServiceCollection services)
+        {
             services.AddAuthorization();
             services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
-
-            string? dbConnectionString = configuration.GetConnectionString("SqlServerDatabase");
-
-            services.AddDbContext<TimesynqDbContext>(options => options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("TimesynqServer.Persistence")));
 
             services.AddIdentityCore<TimesynqUser>(options =>
             {
@@ -75,17 +100,6 @@ namespace TimesynqServer.Infrastructure
                 .AddUserStore<UserStore<TimesynqUser, TimesynqRole, TimesynqDbContext, Guid>>()
                 .AddErrorDescriber<CustomIdentityErrorDescriber>()
                 .AddApiEndpoints();
-
-            services.AddTransient<IEmailSender<TimesynqUser>, EmailSender<TimesynqUser>>();
-
-            services.AddDefaultAWSOptions(configuration.GetAWSOptions());
-            services.AddAWSService<IAmazonSimpleEmailService>();
-            services.Configure<EmailSenderOptions>(configuration.GetSection(EmailSenderOptions.ConfigurationSection));
-
-            services.AddSignalR();
-
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IFollowService, FollowService>();
 
             return services;
         }

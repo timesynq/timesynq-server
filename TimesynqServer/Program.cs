@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using StackExchange.Redis;
 using TimesynqServer.Application;
 using TimesynqServer.Extensions;
 using TimesynqServer.Hubs.TrackerHub;
@@ -10,6 +11,8 @@ using TimesynqServer.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
+
+builder.AddServiceDefaults();
 
 builder.Services.AddPersistenceServices();
 builder.AddInfrastructure();
@@ -47,6 +50,8 @@ builder.Services.AddCors(p => p.AddPolicy(DevCorsPolicy, builder =>
 
 var app = builder.Build();
 
+app.MapDefaultEndpoints();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -76,6 +81,13 @@ app.MapGet("ping", (ILogger<Program> logger) =>
 {
     logger.LogInformation("pong");
     return "pong";
+});
+
+app.MapPost("redis", async (IConnectionMultiplexer redis) =>
+{
+    IDatabase db = redis.GetDatabase();
+    await db.StringSetAsync("testkey", "testvalue");
+    return "success";
 });
 
 app.Run();

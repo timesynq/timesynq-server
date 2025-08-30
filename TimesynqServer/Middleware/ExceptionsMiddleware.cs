@@ -58,7 +58,7 @@ namespace TimesynqServer.Middleware
 
                 var problemDetails = problemDetailsFactory.CreateProblemDetails(
                     httpContext: context,
-                    statusCode: StatusCodes.Status401Unauthorized,
+                    statusCode: StatusCodes.Status500InternalServerError,
                     title: "Invalid Operation",
                     type: "https://datatracker.ietf.org/doc/html/rfc7235#section-3.1",
                     detail: "Invalid operation."
