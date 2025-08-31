@@ -19,19 +19,20 @@ namespace TimesynqServer.Application.DTO
         public string UserName { get; }
 
         /// <summary>
-        /// A 21 character string representing an identicon.
-        /// First 6 chars = hex color;
-        /// Next 15 = 5x5 grid (binary), mirrored:
-        /// Cols 1=5, 2=4. '1' = color, '0' = white.
+        /// An unsigned 32 bit integer, which encodes an identicon
+        /// Bit 0 is ignored.
+        /// Bit 1-15 = 5x5 grid (binary), mirroed:
+        /// Bits 16 - 31 encodes an RGB565 color
+        /// The bits for the color are read in reverse since it's more convenient that way and the order is not relevant
         /// </summary>
-        public string ProfilePicture { get; }
+        public uint ProfilePicture { get; }
 
         /// <summary>
         /// The date when the user registered their account.
         /// </summary>
         public DateTime CreatedOnUTC { get; }
 
-        private UserDTO(Guid id, string userName, string profilePicture, DateTime createdOnUTC)
+        private UserDTO(Guid id, string userName, uint profilePicture, DateTime createdOnUTC)
         {
             Id = id;
             UserName = userName;
