@@ -9,39 +9,24 @@ namespace TimesynqServer.Common
     {
         private static readonly Random _random = new();
 
-        private const int _pixelsLength = 15;
-        private const string _pixelVals = "00111";
-
         private const int _randomCodeLength = 8;
         private const string _characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 
         /// <summary>
-        /// Generates a unique, 21 character identicon string consisting of a hex color code followed by a series of pixel values.
+        /// Generates a random unsigned 32 bit integer, which encodes an identicon.
         /// </summary>
         /// <remarks>
-        /// First 6 chars = hex color;
-        /// Next 15 = 5x5 grid (binary), mirrored:
-        /// Cols 1=5, 2=4. '1' = color, '0' = white.
+        /// Bit 0 is ignored.
+        /// Bit 1-15 = 5x5 grid (binary), mirroed:
+        /// Bits 16 - 31 encodes an RGB565 color
+        /// The bits for the color are read in reverse since it's more convenient that way and the order is not relevant
         /// </remarks>
         /// <returns>
-        /// A string containing a 6-character hexadecimal color code, followed by a sequence of characters representing the identicon's pixels.
+        /// An unsigned 32 bit integer in the range 1,000,000,000 and 4,294,967,295 
         /// </returns>
-        public static string GenerateIdenticon()
+        public static uint GenerateIdenticon()
         {
-            var sb = new StringBuilder();
-
-            string color = string.Format("{0:X6}", _random.Next(0x1000000));
-            sb.Append(color);
-
-            var identiconPixels = new char[_pixelsLength];
-            for (int i = 0; i < _pixelsLength; i++)
-            {
-                int randomIndex = _random.Next(_pixelVals.Length);
-                identiconPixels[i] = _pixelVals[randomIndex];
-            }
-            sb.Append(new string(identiconPixels));
-
-            return sb.ToString();
+            return (uint)_random.NextInt64(1000000000, uint.MaxValue);
         }
 
         /// <summary>
