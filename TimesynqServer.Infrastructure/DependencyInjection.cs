@@ -87,6 +87,8 @@ namespace TimesynqServer.Infrastructure
 
             services.AddIdentityCore<TimesynqUser>(options =>
             {
+                options.User.RequireUniqueEmail = true;
+
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;

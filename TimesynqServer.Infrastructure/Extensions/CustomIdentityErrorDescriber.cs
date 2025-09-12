@@ -10,7 +10,7 @@ namespace TimesynqServer.Infrastructure.Extensions
             return new IdentityError
             {
                 Code = nameof(InvalidUserName),
-                Description = $"Username '{userName}' is invalid. Username length must be between {UserConstants.MinUserNameLength} and {UserConstants.MaxUserNameLength} characters long."
+                Description = $"Username '{userName}' is invalid. Username length must be between {UserConstants.MinUserNameLength} and {UserConstants.MaxUserNameLength} characters long and contain only letters numbers and underscores."
             };
         }
     }
