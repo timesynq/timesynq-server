@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 using TimesynqServer.Common;
 using TimesynqServer.Contracts.RequestDTO.User;
 
@@ -67,8 +68,15 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var emailStore = (IUserEmailStore<TUser>)userStore;
             var userName = signUpRequestDTO.UserName;
             var email = signUpRequestDTO.Email;
+            var password = signUpRequestDTO.Password;
 
-            if (string.IsNullOrEmpty(userName) || userName.Length < UserConstants.MinUserNameLength || userName.Length > UserConstants.MaxUserNameLength)
+            if 
+            (
+                string.IsNullOrEmpty(userName) || 
+                userName.Length < UserConstants.MinUserNameLength || 
+                userName.Length > UserConstants.MaxUserNameLength ||
+                !Regex.IsMatch(userName, @"^[a-zA-Z0-9_]+$")
+            )
             {
                 return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidUserName(userName)));
             }
@@ -78,11 +86,26 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidEmail(email)));
             }
 
+            if (string.IsNullOrEmpty(password) || !Regex.IsMatch(password, @"^[\x21-\x7E]*$"))
+            {
+                return CreateValidationProblem
+                (
+                    IdentityResult.Failed
+                    (
+                        new IdentityError
+                        {
+                            Code = "Invalid Password",
+                            Description = "Password contains invalid characters."
+                        }
+                    )
+                );
+            }
+
             var user = new TUser();
             await userStore.SetUserNameAsync(user, userName, CancellationToken.None);
             await emailStore.SetEmailAsync(user, email, CancellationToken.None);
 
-            var result = await userManager.CreateAsync(user, signUpRequestDTO.Password!);
+            var result = await userManager.CreateAsync(user, password);
 
             if (!result.Succeeded)
             {
