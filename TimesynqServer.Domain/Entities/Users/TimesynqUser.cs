@@ -72,7 +72,7 @@ namespace TimesynqServer.Domain.Entities.Users
         /// <summary>
         /// Navigation property for all users that this user is following.
         /// </summary>
-        public ICollection<Follow> Following { get; private set; } = [];
+        public ICollection<Follow> Followees { get; private set; } = [];
 
         public Result ChangeUserName(string newUserName)
         {

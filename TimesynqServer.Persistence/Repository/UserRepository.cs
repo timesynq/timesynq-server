@@ -24,7 +24,9 @@ namespace TimesynqServer.Persistence.Repository
                     u.Id,
                     u.UserName!,
                     u.ProfilePicture,
-                    u.CreatedOnUTC
+                    u.CreatedOnUTC,
+                    u.Followers.Count,
+                    u.Followees.Count
                 ))
                 .FirstOrDefaultAsync();
         }
@@ -54,7 +56,9 @@ namespace TimesynqServer.Persistence.Repository
                     u.Id,
                     u.UserName!,
                     u.ProfilePicture,
-                    u.CreatedOnUTC
+                    u.CreatedOnUTC,
+                    u.Followers.Count,
+                    u.Followees.Count
                 ))
                 .FirstOrDefaultAsync();
         }
@@ -80,7 +84,9 @@ namespace TimesynqServer.Persistence.Repository
                     u.Id,
                     u.UserName!,
                     u.ProfilePicture,
-                    u.CreatedOnUTC
+                    u.CreatedOnUTC,
+                    u.Followers.Count,
+                    u.Followees.Count
                 ))
                 .ToListAsync();
         }
