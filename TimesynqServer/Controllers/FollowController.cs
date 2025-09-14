@@ -20,7 +20,7 @@ namespace TimesynqServer.Controllers
             _followService = followService;
         }
 
-        [HttpGet("{followeeGuid}")]
+        [HttpGet("{followeeId}")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(typeof(FollowDTO), StatusCodes.Status200OK)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]

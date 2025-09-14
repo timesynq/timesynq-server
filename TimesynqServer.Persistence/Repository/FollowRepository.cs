@@ -57,7 +57,9 @@ namespace TimesynqServer.Persistence.Repository
                     f.Follower!.Id,
                     f.Follower.UserName!,
                     f.Follower.ProfilePicture!,
-                    f.Follower.CreatedOnUTC
+                    f.Follower.CreatedOnUTC,
+                    f.Follower.Followers.Count,
+                    f.Follower.Followees.Count
                 ))
                 .ToListAsync();
         }
@@ -75,7 +77,9 @@ namespace TimesynqServer.Persistence.Repository
                     f.Followee!.Id,
                     f.Followee.UserName!,
                     f.Followee.ProfilePicture!,
-                    f.Followee.CreatedOnUTC
+                    f.Followee.CreatedOnUTC,
+                    f.Followee.Followers.Count,
+                    f.Followee.Followees.Count
                 ))
                 .ToListAsync();
         }

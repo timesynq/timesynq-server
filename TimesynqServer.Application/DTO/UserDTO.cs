@@ -32,12 +32,24 @@ namespace TimesynqServer.Application.DTO
         /// </summary>
         public DateTime CreatedOnUTC { get; }
 
-        private UserDTO(Guid id, string userName, uint profilePicture, DateTime createdOnUTC)
+        /// <summary>
+        /// The number of people following this user.
+        /// </summary>
+        public int FollowerCount { get; }
+
+        /// <summary>
+        /// The number of people this user is following.
+        /// </summary>
+        public int FolloweeCount { get; }
+
+        private UserDTO(Guid id, string userName, uint profilePicture, DateTime createdOnUTC, int followerCount, int followeeCount)
         {
             Id = id;
             UserName = userName;
             ProfilePicture = profilePicture;
             CreatedOnUTC = createdOnUTC;
+            FollowerCount = followerCount;
+            FolloweeCount = followeeCount;
         }
 
         /// <summary>
@@ -55,7 +67,7 @@ namespace TimesynqServer.Application.DTO
         {
             ArgumentNullException.ThrowIfNull(projection);
 
-            return new UserDTO(projection.Id, projection.UserName, projection.ProfilePicture, projection.CreatedOnUTC);
+            return new UserDTO(projection.Id, projection.UserName, projection.ProfilePicture, projection.CreatedOnUTC, projection.FollowerCount, projection.FolloweeCount);
         }
 
         /// <summary>
@@ -73,7 +85,7 @@ namespace TimesynqServer.Application.DTO
         {
             ArgumentNullException.ThrowIfNull(timesynqUser);
 
-            return new UserDTO(timesynqUser.Id, timesynqUser.UserName!, timesynqUser.ProfilePicture, timesynqUser.CreatedOnUTC);
+            return new UserDTO(timesynqUser.Id, timesynqUser.UserName!, timesynqUser.ProfilePicture, timesynqUser.CreatedOnUTC, timesynqUser.Followers.Count, timesynqUser.Followees.Count);
         }
 
     }

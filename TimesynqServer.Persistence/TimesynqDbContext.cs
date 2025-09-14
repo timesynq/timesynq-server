@@ -65,7 +65,7 @@ namespace TimesynqServer.Persistence
             builder.Entity<Follow>().HasKey(f => new { f.FollowerId, f.FolloweeId });
             builder.Entity<Follow>()
                 .HasOne(f => f.Follower)
-                .WithMany(u => u.Following)
+                .WithMany(u => u.Followees)
                 .HasForeignKey(f => f.FollowerId)
                 .OnDelete(DeleteBehavior.Restrict);
             builder.Entity<Follow>()

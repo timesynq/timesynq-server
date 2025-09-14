@@ -30,18 +30,30 @@
         public DateTime CreatedOnUTC { get; }
 
         /// <summary>
+        /// The number of people following this user.
+        /// </summary>
+        public int FollowerCount { get; }
+
+        /// <summary>
+        /// The number of people this user is following.
+        /// </summary>
+        public int FolloweeCount { get; }
+
+        /// <summary>
         /// Constructs a <see cref="UserProjection"/> instance from TimesynqUser information. Used for filtering columns in queries.
         /// </summary>
         /// <param name="id">The unique identifier of the user.</param>
         /// <param name="userName">The user's unique username.</param>
         /// <param name="profilePicture">An unsigned 32 bit integer, which encodes an identicon.</param>
         /// <param name="createdOnUTC">The date when the user registered their account.</param>
-        public UserProjection(Guid id, string userName, uint profilePicture, DateTime createdOnUTC)
+        public UserProjection(Guid id, string userName, uint profilePicture, DateTime createdOnUTC, int followerCount, int followeeCount)
         {
             Id = id;
             UserName = userName;
             ProfilePicture = profilePicture;
             CreatedOnUTC = createdOnUTC;
+            FollowerCount = followerCount;
+            FolloweeCount = followeeCount;
         }
 
     }
