@@ -33,6 +33,17 @@ namespace TimesynqServer.Infrastructure.Service.UserService
             return UserDTO.FromProjection(userProjection);
         }
 
+        public async Task<ProfileDTO?> GetProfileAsync(Guid callerId, Guid userId)
+        {
+            ProfileProjection? profileProjection = await _userRepository.GetProfileByIdAsync(callerId, userId);
+            if (profileProjection == null)
+            {
+                return null;
+            }
+
+            return ProfileDTO.FromProjection(profileProjection);
+        }
+
         public async Task<bool> IsUserConfirmed(Guid userId)
         {
             return await _userRepository.GetConfirmedUserByIdAsync(userId);

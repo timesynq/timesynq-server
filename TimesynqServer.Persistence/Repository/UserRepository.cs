@@ -14,6 +14,14 @@ namespace TimesynqServer.Persistence.Repository
             _dbContext = dbContext;
         }
 
+        public async Task<bool> UserExistsAsync(Guid userId)
+        {
+            return await _dbContext.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .AnyAsync();
+        }
+
         public async Task<UserProjection?> GetByIdAsync(Guid userId)
         {
             return await _dbContext.Users
@@ -27,6 +35,25 @@ namespace TimesynqServer.Persistence.Repository
                     u.CreatedOnUTC,
                     u.Followers.Count,
                     u.Followees.Count
+                ))
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<ProfileProjection?> GetProfileByIdAsync(Guid callerId, Guid userId)
+        {
+            return await _dbContext.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => new ProfileProjection(
+                    new UserProjection(
+                        u.Id,
+                        u.UserName!,
+                        u.ProfilePicture,
+                        u.CreatedOnUTC,
+                        u.Followers.Count,
+                        u.Followees.Count
+                    ),
+                    _dbContext.Follows.Any(f => f.FollowerId == callerId && f.FolloweeId == userId)
                 ))
                 .FirstOrDefaultAsync();
         }

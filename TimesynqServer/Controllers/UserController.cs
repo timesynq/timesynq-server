@@ -59,6 +59,25 @@ namespace TimesynqServer.Controllers
             return Ok(userDTO);
         }
 
+        [HttpGet("{userId}/profile")]
+        [Authorize]
+        [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetUserProfile(Guid userId)
+        {
+            ProfileDTO? profileDTO = await _userService.GetProfileAsync(CallerId, userId);
+            if (profileDTO == null)
+            {
+                return Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    detail: DomainErrors.User.NotFound.Message
+                );
+            }
+
+            return Ok(profileDTO);
+        }
+
         [HttpGet("search/{searchString}")]
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]

@@ -8,6 +8,7 @@ namespace TimesynqServer.Application.Service
     public interface IUserService
     {
         public Task<UserDTO?> GetUserAsync(Guid userId);
+        public Task<ProfileDTO?> GetProfileAsync(Guid callerId, Guid userId);
         public Task<bool> IsUserConfirmed(Guid userId);
         public Task<PagedResult<UserDTO>> SearchUsers(string searchString, int pageNumber, int pageSize, HttpRequest httpRequest);
         public Task<Result<UserDTO>> ChangeUserName(Guid userId, string newUserName);
