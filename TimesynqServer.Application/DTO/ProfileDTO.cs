@@ -6,13 +6,13 @@ namespace TimesynqServer.Application.DTO
     public class ProfileDTO
     {
         [JsonPropertyName("user")]
-        public UserProjection UserProjection { get; }
+        public UserDTO UserDTO { get; }
 
         public bool IsFollowing { get; }
 
-        public ProfileDTO(UserProjection userProjection, bool isFollowing)
+        public ProfileDTO(UserDTO userDTO, bool isFollowing)
         {
-            UserProjection = userProjection;
+            UserDTO = userDTO;
             IsFollowing = isFollowing;
         }
 
@@ -20,7 +20,7 @@ namespace TimesynqServer.Application.DTO
         {
             ArgumentNullException.ThrowIfNull(projection);
 
-            return new ProfileDTO(projection.UserProjection, projection.IsFollowing);
+            return new ProfileDTO(UserDTO.FromProjection(projection.UserProjection), projection.IsFollowing);
         }
     }
 }
