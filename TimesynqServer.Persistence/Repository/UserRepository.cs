@@ -14,6 +14,14 @@ namespace TimesynqServer.Persistence.Repository
             _dbContext = dbContext;
         }
 
+        public async Task<bool> UserExistsAsync(Guid userId)
+        {
+            return await _dbContext.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .AnyAsync();
+        }
+
         public async Task<UserProjection?> GetByIdAsync(Guid userId)
         {
             return await _dbContext.Users

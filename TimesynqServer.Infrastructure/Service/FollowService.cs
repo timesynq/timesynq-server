@@ -79,14 +79,12 @@ namespace TimesynqServer.Infrastructure.Service.FollowService
 
         public async Task<Result<FollowDTO>> FollowAsync(Guid followerId, Guid followeeId)
         {
-            UserProjection? followerProjection = await _userRepository.GetByIdAsync(followerId);
-            if (followerProjection == null)
+            if (!await _userRepository.UserExistsAsync(followerId))
             {
                 return Result<FollowDTO>.Failure(DomainErrors.User.NotFound);
             }
 
-            UserProjection? followeeProjection = await _userRepository.GetByIdAsync(followeeId);
-            if (followeeProjection == null)
+            if(!await _userRepository.UserExistsAsync(followeeId))
             {
                 return Result<FollowDTO>.Failure(DomainErrors.User.NotFound);
             }
