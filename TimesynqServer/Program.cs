@@ -46,9 +46,10 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 
 //todo: add ProdCorsPolicy
 string DevCorsPolicy = "_DevCorsPolicy";
+string? clientUrl = builder.Configuration["Client:Url"] ?? throw new NullReferenceException("Client URL not specified.");
 builder.Services.AddCors(p => p.AddPolicy(DevCorsPolicy, builder =>
 {
-    builder.WithOrigins("https://localhost:5173").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+    builder.WithOrigins(clientUrl).AllowAnyMethod().AllowAnyHeader().AllowCredentials();
 }));
 
 var app = builder.Build();

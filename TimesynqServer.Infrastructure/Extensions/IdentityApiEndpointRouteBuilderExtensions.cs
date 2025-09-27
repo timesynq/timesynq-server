@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
@@ -175,8 +176,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             return TypedResults.SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
         });
 
-        routeGroup.MapGet("/confirmEmail", async Task<Results<ContentHttpResult, UnauthorizedHttpResult>>
-            ([FromQuery] string userId, [FromQuery] string code, [FromQuery] string? changedEmail, [FromServices] IServiceProvider sp) =>
+        routeGroup.MapGet("/confirmEmail", async Task<Results<ContentHttpResult, RedirectHttpResult, UnauthorizedHttpResult>>
+            ([FromQuery] string userId, [FromQuery] string code, [FromQuery] string? changedEmail, [FromServices] IServiceProvider sp, [FromServices] IConfiguration configuration) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
             if (await userManager.FindByIdAsync(userId) is not { } user)
@@ -222,7 +223,10 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.Unauthorized();
             }
 
-            return TypedResults.Text("Thank you for confirming your email.");
+            string? clientUrl = configuration["Client:Url"];
+            return clientUrl == null
+                ? throw new NullReferenceException("Cannot redirect because client URL is not specified.")
+                : (Results<ContentHttpResult, RedirectHttpResult, UnauthorizedHttpResult>)TypedResults.Redirect($"{clientUrl}/email-confirmed");
         })
         .Add(endpointBuilder =>
         {
