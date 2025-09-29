@@ -26,7 +26,7 @@ namespace TimesynqServer.Middleware
                     string? callerIdString = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                     if (callerIdString.IsNullOrEmpty())
                     {
-                        _logger.LogWarning("User with missing name identifier called endpoint {Endpoint}", endpoint.DisplayName);
+                        _logger.LogInformation("User with missing name identifier called endpoint {Endpoint}", endpoint.DisplayName);
                     }
                     else
                     {
