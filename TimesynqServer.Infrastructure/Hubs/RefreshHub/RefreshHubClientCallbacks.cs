@@ -2,6 +2,6 @@
 {
     public static class RefreshHubClientCallbacks
     {
-        public const string Refresh = nameof(Refresh);
+        public const string NotifyRefresh = nameof(NotifyRefresh);
     }
 }

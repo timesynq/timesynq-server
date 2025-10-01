@@ -225,7 +225,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.Unauthorized();
             }
 
-            await hubContext.Clients.User(userId).SendAsync("NotifyRefresh");
+            await hubContext.Clients.User(userId).SendAsync(RefreshHubClientCallbacks.NotifyRefresh);
 
             string? clientUrl = configuration["Client:Url"];
             return clientUrl == null
