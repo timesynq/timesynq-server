@@ -1,7 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Text.Json;
-using TimesynqServer.Domain.Cache;
+using TimesynqServer.Domain.Cache.Tracker;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 {
@@ -19,7 +19,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
-        public async Task<Connection?> GetConnectionAsync(Guid userId)
+        public async Task<TrackerConnection?> GetConnectionAsync(Guid userId)
         {
             string key = $"{TrackerHubCachePrefixes.Connection}:{userId}";
 
@@ -31,11 +31,11 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 return null;
             }
 
-            return JsonSerializer.Deserialize<Connection>(stringResult!);
+            return JsonSerializer.Deserialize<TrackerConnection>(stringResult!);
         }
 
         /// <inheritdoc/>
-        public async Task<Connection?> GetConnectionAsync(Guid userId, string roomCode)
+        public async Task<TrackerConnection?> GetConnectionAsync(Guid userId, string roomCode)
         {
             string key = $"{TrackerHubCachePrefixes.Connection}:{userId}";
 
@@ -47,7 +47,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 return null;
             }
 
-            Connection? connection = JsonSerializer.Deserialize<Connection?>(stringResult!);
+            TrackerConnection? connection = JsonSerializer.Deserialize<TrackerConnection?>(stringResult!);
             if (connection == null || connection.RoomCode != roomCode)
             {
                 return null;
@@ -57,7 +57,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
-        public async Task<bool> SetConnectionAsync(Guid userId, Connection connection)
+        public async Task<bool> SetConnectionAsync(Guid userId, TrackerConnection connection)
         {
             string key = $"{TrackerHubCachePrefixes.Connection}:{userId}";
 

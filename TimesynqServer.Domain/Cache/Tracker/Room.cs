@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Domain.Cache
+﻿namespace TimesynqServer.Domain.Cache.Tracker
 {
     /// <summary>
     /// Represents a SignalR room.

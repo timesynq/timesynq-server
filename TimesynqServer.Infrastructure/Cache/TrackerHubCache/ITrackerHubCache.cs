@@ -1,4 +1,4 @@
-﻿using TimesynqServer.Domain.Cache;
+﻿using TimesynqServer.Domain.Cache.Tracker;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 {
@@ -13,9 +13,9 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// </summary>
         /// <param name="userId">The connected user's unique identifier.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the user's <see cref="Connection"/> if found; otherwise, <c>null</c>.
+        /// A task representing the asynchronous operation. The task result contains the user's <see cref="TrackerConnection"/> if found; otherwise, <c>null</c>.
         /// </returns>
-        public Task<Connection?> GetConnectionAsync(Guid userId);
+        public Task<TrackerConnection?> GetConnectionAsync(Guid userId);
 
         /// <summary>
         /// Retrieves the connection information for a specified user in a specific room.
@@ -23,20 +23,20 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// <param name="userId">The connected user's unique identifier.</param>
         /// <param name="roomCode">The room's unique identifier.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the user's <see cref="Connection"/> if found; otherwise <c>null</c>.
+        /// A task representing the asynchronous operation. The task result contains the user's <see cref="TrackerConnection"/> if found; otherwise <c>null</c>.
         /// </returns>
-        public Task<Connection?> GetConnectionAsync(Guid userId, string roomCode);
+        public Task<TrackerConnection?> GetConnectionAsync(Guid userId, string roomCode);
 
         /// <summary>
         /// Stores the connection information for a specified user.
         /// </summary>
         /// <param name="userId">The connected user's unique identifier.</param>
-        /// <param name="connection">The <see cref="Connection"/> object to associate with the user.</param>
+        /// <param name="connection">The <see cref="TrackerConnection"/> object to associate with the user.</param>
         /// <returns>
         /// A task representing the asynchronous operation.
         /// The task result indicates whether the operation was successful.
         /// </returns>
-        public Task<bool> SetConnectionAsync(Guid userId, Connection connection);
+        public Task<bool> SetConnectionAsync(Guid userId, TrackerConnection connection);
 
         /// <summary>
         /// Removes the connection information for a specified user in a specific room.

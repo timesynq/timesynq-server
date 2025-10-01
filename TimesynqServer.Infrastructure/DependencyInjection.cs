@@ -1,4 +1,5 @@
 ﻿using Amazon.SimpleEmail;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Routing;
@@ -12,6 +13,8 @@ using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Domain.Entities;
 using TimesynqServer.Domain.Entities.Users;
+using TimesynqServer.Hubs.RefreshHub;
+using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Infrastructure.Email;
 using TimesynqServer.Infrastructure.Extensions;
 using TimesynqServer.Infrastructure.Logging;
@@ -109,6 +112,12 @@ namespace TimesynqServer.Infrastructure
         public static void AddIdentityEndpoints(this IEndpointRouteBuilder app)
         {
             app.MapTimesynqIdentityApi<TimesynqUser>();
+        }
+
+        public static void AddHubs(this IEndpointRouteBuilder app)
+        {
+            app.MapHub<TrackerHub>("tracker-hub");
+            app.MapHub<RefreshHub>("refresh-hub");
         }
 
     }
