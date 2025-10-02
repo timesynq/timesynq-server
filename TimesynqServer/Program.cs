@@ -2,11 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using StackExchange.Redis;
-using TimesynqServer.Application;
-using TimesynqServer.Application.DTO;
 using TimesynqServer.Domain.Entities.Users;
 using TimesynqServer.Extensions;
-using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Infrastructure;
 using TimesynqServer.Middleware;
 using TimesynqServer.Persistence;
@@ -79,24 +76,8 @@ app.UseAuthorization();
 app.MapControllers();
 app.AddIdentityEndpoints();
 
-app.MapHub<TrackerHub>("hub");
+app.AddHubs();
 
-app.MapPost("logout", async (SignInManager<TimesynqUser> signInManager) =>
-{
-    await signInManager.SignOutAsync().ConfigureAwait(false);
-});
-
-app.MapGet("ping", (ILogger<Program> logger) =>
-{
-    logger.LogInformation("pong");
-    return "pong";
-});
-
-app.MapPost("redis", async (IConnectionMultiplexer redis) =>
-{
-    IDatabase db = redis.GetDatabase();
-    await db.StringSetAsync("testkey", "testvalue");
-    return "success";
-});
+app.MapMinimalApiEndpoints();
 
 app.Run();

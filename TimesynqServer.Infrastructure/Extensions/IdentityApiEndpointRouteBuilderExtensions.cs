@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using TimesynqServer.Common;
 using TimesynqServer.Contracts.RequestDTO.User;
+using TimesynqServer.Hubs.RefreshHub;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -177,7 +179,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         });
 
         routeGroup.MapGet("/confirmEmail", async Task<Results<ContentHttpResult, RedirectHttpResult, UnauthorizedHttpResult>>
-            ([FromQuery] string userId, [FromQuery] string code, [FromQuery] string? changedEmail, [FromServices] IServiceProvider sp, [FromServices] IConfiguration configuration) =>
+            ([FromQuery] string userId, [FromQuery] string code, [FromQuery] string? changedEmail, [FromServices] IServiceProvider sp, [FromServices] IConfiguration configuration, [FromServices] IHubContext<RefreshHub> hubContext) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
             if (await userManager.FindByIdAsync(userId) is not { } user)
@@ -222,6 +224,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             {
                 return TypedResults.Unauthorized();
             }
+
+            await hubContext.Clients.User(userId).SendAsync(RefreshHubClientCallbacks.NotifyRefresh);
 
             string? clientUrl = configuration["Client:Url"];
             return clientUrl == null

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
-using TimesynqServer.Domain.Cache;
+using TimesynqServer.Domain.Cache.Tracker;
 using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
 
 namespace TimesynqServer.Hubs.TrackerHub
@@ -34,7 +34,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             Guid callerId = Guid.Parse(Context.UserIdentifier);
 
-            Connection? connection = await _trackerHubCache.GetConnectionAsync(callerId);
+            TrackerConnection? connection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (connection == null)
             {
                 return;
@@ -59,7 +59,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             //if the user that disconnected is the owner of a room, wait 30s before closing the room
             await Task.Delay(TrackerHubConstants.SecondsBeforeRoomClose * 1000);
 
-            Connection? ownerConnection = await _trackerHubCache.GetConnectionAsync(callerId, roomCode);
+            TrackerConnection? ownerConnection = await _trackerHubCache.GetConnectionAsync(callerId, roomCode);
             if (ownerConnection != null)
             {
                 return;
@@ -108,7 +108,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             Guid callerId = Guid.Parse(Context.UserIdentifier);
 
-            Connection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
+            TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection != null)
             {
                 return;
@@ -149,13 +149,13 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             Guid callerId = Guid.Parse(Context.UserIdentifier);
 
-            Connection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
+            TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection != null)
             {
                 return;
             }
 
-            var newConnection = new Connection
+            var newConnection = new TrackerConnection
             {
                 ConnectionId = Context.ConnectionId,
                 RoomCode = roomCode,
