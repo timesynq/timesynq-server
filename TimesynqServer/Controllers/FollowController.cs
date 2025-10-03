@@ -42,17 +42,29 @@ namespace TimesynqServer.Controllers
         [HttpGet("{userId}/followers")]
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetFollowers(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginationConstants.DefaultPageSize)
+        public async Task<IActionResult> GetFollowers(
+            Guid userId, 
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
+            [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
+            [FromQuery] string sortBy = PaginationConstants.DefaultFollowSearchSortBy
+        )
         {
-            return Ok(await _followService.GetFollowersAsync(userId, pageNumber, pageSize, Request));
+            return Ok(await _followService.GetFollowersAsync(userId, pageNumber, pageSize, sortOrder, sortBy, Request));
         }
 
         [HttpGet("{userId}/followees")]
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetFollowees(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginationConstants.DefaultPageSize)
+        public async Task<IActionResult> GetFollowees(
+            Guid userId, 
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
+            [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
+            [FromQuery] string sortBy = PaginationConstants.DefaultFollowSearchSortBy
+        )
         {
-            return Ok(await _followService.GetFolloweesAsync(userId, pageNumber, pageSize, Request));
+            return Ok(await _followService.GetFolloweesAsync(userId, pageNumber, pageSize, sortOrder, sortBy, Request));
         }
 
         [HttpPost]

@@ -16,6 +16,8 @@
         public const string DefaultSortOrder = "default";
 
         public const string DefaultUserSearchSortBy = "username";
+
+        public const string DefaultFollowSearchSortBy = "followers";
     }
 
     public class TrackerHubConstants
