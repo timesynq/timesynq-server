@@ -1,4 +1,5 @@
-﻿using TimesynqServer.Contracts.Projections;
+﻿using TimesynqServer.Common.Enums;
+using TimesynqServer.Contracts.Projections;
 
 namespace TimesynqServer.Domain.Entities.Users
 {
@@ -11,6 +12,6 @@ namespace TimesynqServer.Domain.Entities.Users
         public Task<bool> GetConfirmedUserByIdAsync(Guid userId);
         public Task<UserProjection?> GetByUserNameAsync(string userName);
         public Task<int> GetTotalUsersContainingSearchStringAsync(string searchString);
-        public Task<IEnumerable<UserProjection>> GetUsersContainingSearchStringAsync(string searchString, int pageNumber, int pageSize);
+        public Task<IEnumerable<UserProjection>> GetUsersContainingSearchStringAsync(string searchString, int pageNumber, int pageSize, SortOrder sortOrder, UserSortBy sortBy);
     }
 }
