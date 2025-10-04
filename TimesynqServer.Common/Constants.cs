@@ -13,6 +13,11 @@
         public const int MinPageSize = 1;
         public const int MaxPageSize = 100;
         public const int DefaultPageSize = 50;
+        public const string DefaultSortOrder = "default";
+
+        public const string DefaultUserSearchSortBy = "username";
+
+        public const string DefaultFollowSearchSortBy = "followers";
     }
 
     public class TrackerHubConstants

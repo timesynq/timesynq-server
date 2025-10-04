@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TimesynqServer.Domain.Entities.Users;
 using TimesynqServer.Contracts.Projections;
+using TimesynqServer.Common.Enums;
 
 namespace TimesynqServer.Persistence.Repository
 {
@@ -98,12 +99,27 @@ namespace TimesynqServer.Persistence.Repository
                 .CountAsync();
         }
 
-        public async Task<IEnumerable<UserProjection>> GetUsersContainingSearchStringAsync(string searchString, int pageNumber, int pageSize)
+        public async Task<IEnumerable<UserProjection>> GetUsersContainingSearchStringAsync(string searchString, int pageNumber, int pageSize, SortOrder sortOrder, UserSortBy sortBy)
         {
-            return await _dbContext.Users
+            var query = _dbContext.Users
                 .AsNoTracking()
-                .Where(u => u.UserName!.StartsWith(searchString))
-                .OrderBy(u => u.CreatedOnUTC)
+                .Where(u => u.UserName!.StartsWith(searchString));
+
+            query = (sortOrder, sortBy) switch
+            {
+                (SortOrder.Default, UserSortBy.UserName) => query.OrderBy(u => u.UserName),
+                (SortOrder.Reverse,  UserSortBy.UserName) => query.OrderByDescending(u => u.UserName),
+
+                (SortOrder.Default, UserSortBy.Followers) => query.OrderByDescending(u => u.Followers.Count),
+                (SortOrder.Reverse, UserSortBy.Followers) => query.OrderBy(u => u.Followers.Count),
+
+                (SortOrder.Default, UserSortBy.AccountAge) => query.OrderBy(u => u.CreatedOnUTC),
+                (SortOrder.Reverse, UserSortBy.AccountAge) => query.OrderByDescending(u => u.CreatedOnUTC),
+
+                _ => query.OrderBy(u => u.UserName)
+            };
+
+            return await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Select(u => new UserProjection

@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TimesynqServer.Domain.Entities.Follows;
+using TimesynqServer.Common.Enums;
 using TimesynqServer.Contracts.Projections;
+using TimesynqServer.Domain.Entities.Follows;
+using TimesynqServer.Domain.Entities.Users;
 
 namespace TimesynqServer.Persistence.Repository
 {
@@ -44,12 +46,27 @@ namespace TimesynqServer.Persistence.Repository
                 .CountAsync();
         }
 
-        public async Task<IEnumerable<UserProjection>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize)
+        public async Task<IEnumerable<UserProjection>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize, SortOrder sortOrder, FollowSortBy sortBy)
         {
-            return await _dbContext.Follows
+            var query = _dbContext.Follows
                 .AsNoTracking()
-                .Where(f => f.FolloweeId == followeeId)
-                .OrderBy(f => f.CreatedOnUTC)
+                .Where(f => f.FolloweeId == followeeId);
+
+            query = (sortOrder, sortBy) switch
+            {
+                (SortOrder.Default, FollowSortBy.UserName) => query.OrderBy(f => f.Follower!.UserName),
+                (SortOrder.Reverse, FollowSortBy.UserName) => query.OrderByDescending(f => f.Follower!.UserName),
+
+                (SortOrder.Default, FollowSortBy.Followers) => query.OrderByDescending(f => f.Follower!.Followers.Count),
+                (SortOrder.Reverse, FollowSortBy.Followers) => query.OrderBy(f => f.Follower!.Followers.Count),
+
+                (SortOrder.Default, FollowSortBy.AccountAge) => query.OrderBy(f => f.Follower!.CreatedOnUTC),
+                (SortOrder.Reverse, FollowSortBy.AccountAge) => query.OrderByDescending(f => f.Follower!.CreatedOnUTC),
+
+                _ => query.OrderBy(f => f.Follower!.UserName)
+            };
+
+            return await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Select(f => new UserProjection
@@ -64,12 +81,27 @@ namespace TimesynqServer.Persistence.Repository
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<UserProjection>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize)
+        public async Task<IEnumerable<UserProjection>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize, SortOrder sortOrder, FollowSortBy sortBy)
         {
-            return await _dbContext.Follows
+            var query = _dbContext.Follows
                 .AsNoTracking()
-                .Where(f => f.FollowerId == followerId)
-                .OrderBy(f => f.CreatedOnUTC)
+                .Where(f => f.FollowerId == followerId);
+
+            query = (sortOrder, sortBy) switch
+            {
+                (SortOrder.Default, FollowSortBy.UserName) => query.OrderBy(f => f.Followee!.UserName),
+                (SortOrder.Reverse, FollowSortBy.UserName) => query.OrderByDescending(f => f.Followee!.UserName),
+
+                (SortOrder.Default, FollowSortBy.Followers) => query.OrderByDescending(f => f.Followee!.Followers.Count),
+                (SortOrder.Reverse, FollowSortBy.Followers) => query.OrderBy(f => f.Followee!.Followers.Count),
+
+                (SortOrder.Default, FollowSortBy.AccountAge) => query.OrderBy(f => f.Followee!.CreatedOnUTC),
+                (SortOrder.Reverse, FollowSortBy.AccountAge) => query.OrderByDescending(f => f.Followee!.CreatedOnUTC),
+
+                _ => query.OrderBy(f => f.Followee!.UserName)
+            };
+
+            return await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Select(f => new UserProjection

@@ -84,7 +84,6 @@ namespace TimesynqServer.Application.Pagination
             {
                 NameValueCollection query = HttpUtility.ParseQueryString(request.QueryString.ToString());
                 query.Set(nameof(pageNumber), targetPage.ToString());
-                query.Set(nameof(pageSize), pageSize.ToString());
                 return $"{baseUrl}?{query}";
             }
             ;

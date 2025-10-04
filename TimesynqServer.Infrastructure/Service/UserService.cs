@@ -8,6 +8,7 @@ using TimesynqServer.Common.Result;
 using TimesynqServer.Domain.Entities.Users;
 using TimesynqServer.Contracts.Projections;
 using TimesynqServer.Persistence.UnitOfWork;
+using TimesynqServer.Common.Enums;
 
 namespace TimesynqServer.Infrastructure.Service.UserService
 {
@@ -49,7 +50,7 @@ namespace TimesynqServer.Infrastructure.Service.UserService
             return await _userRepository.GetConfirmedUserByIdAsync(userId);
         }
 
-        public async Task<PagedResult<UserDTO>> SearchUsers(string searchString, int pageNumber, int pageSize, HttpRequest httpRequest)
+        public async Task<PagedResult<UserDTO>> SearchUsers(string searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
         {
 
             if(searchString.Length < UserConstants.MinUserNameLength)
@@ -72,7 +73,17 @@ namespace TimesynqServer.Infrastructure.Service.UserService
 
             pageNumber = Math.Clamp(pageNumber, 1, totalPages);
 
-            IEnumerable<UserProjection> users = await _userRepository.GetUsersContainingSearchStringAsync(searchString, pageNumber, pageSize);
+            if(!Enum.TryParse<SortOrder>(sortOrder, true, out var parsedSortOrder))
+            {
+                parsedSortOrder = SortOrder.Default;
+            }
+
+            if(!Enum.TryParse<UserSortBy>(sortBy, true, out var parsedSortBy))
+            {
+                parsedSortBy = UserSortBy.UserName;
+            }
+
+            IEnumerable<UserProjection> users = await _userRepository.GetUsersContainingSearchStringAsync(searchString, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
 
             IEnumerable<UserDTO> userDTOs = users.Select(UserDTO.FromProjection);
 
