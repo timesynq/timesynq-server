@@ -23,6 +23,16 @@ namespace TimesynqServer.Infrastructure.Service.UserService
             _userRepository = userRepository;
         }
 
+        public async Task<Result<MeDTO>> GetMeAsync(Guid userId)
+        {
+            MeProjection? meProjection = await _userRepository.GetMeByIdAsync(userId);
+            if(meProjection == null)
+            {
+                return Result<MeDTO>.Failure(DomainErrors.User.NotFound);
+            }
+            return Result<MeDTO>.Success(MeDTO.FromProjection(meProjection));
+        }
+
         public async Task<UserDTO?> GetUserAsync(Guid userId)
         {
             UserProjection? userProjection = await _userRepository.GetByIdAsync(userId);
