@@ -23,6 +23,24 @@ namespace TimesynqServer.Persistence.Repository
                 .AnyAsync();
         }
 
+        public async Task<MeProjection?> GetMeByIdAsync(Guid userId)
+        {
+            return await _dbContext.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => new MeProjection(
+                    u.Id,
+                    u.UserName!,
+                    u.ProfilePicture,
+                    u.CreatedOnUTC,
+                    u.Followers.Count,
+                    u.Followees.Count,
+                    u.Email!,
+                    u.EmailConfirmed
+                ))
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<UserProjection?> GetByIdAsync(Guid userId)
         {
             return await _dbContext.Users

@@ -7,6 +7,7 @@ namespace TimesynqServer.Application.Service
 {
     public interface IUserService
     {
+        public Task<Result<MeDTO>> GetMeAsync(Guid userId);
         public Task<UserDTO?> GetUserAsync(Guid userId);
         public Task<ProfileDTO?> GetProfileAsync(Guid callerId, Guid userId);
         public Task<bool> IsUserConfirmed(Guid userId);

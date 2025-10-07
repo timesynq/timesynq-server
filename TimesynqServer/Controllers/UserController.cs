@@ -23,21 +23,20 @@ namespace TimesynqServer.Controllers
 
         [HttpGet("me")]
         [Authorize]
-        [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(MeDTO), StatusCodes.Status200OK)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Me()
         {
-            UserDTO? userDTO = await _userService.GetUserAsync(CallerId);
-            if (userDTO == null)
-            {
-                return Problem(
-                    statusCode: StatusCodes.Status404NotFound,
-                    detail: DomainErrors.User.NotFound.Message
-                );
-            }
-
-            return Ok(userDTO);
+            Result<MeDTO> getMeResult = await _userService.GetMeAsync(CallerId);
+            return getMeResult.Match<IActionResult>
+            (
+                onSuccess: Ok,
+                onFailure: error => Problem(
+                    statusCode: error.Code,
+                    detail: error.Message
+                )
+            );
         }
 
         [HttpGet("{userId}")]
