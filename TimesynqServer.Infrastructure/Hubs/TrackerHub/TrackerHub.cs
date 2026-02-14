@@ -96,14 +96,13 @@ namespace TimesynqServer.Hubs.TrackerHub
             }
 
             await Clients.Group(ownedRoom.RoomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
-
         }
 
-        public async Task CreateRoom(Guid? wipId = null)
+        public async Task<string?> CreateRoom(Guid? wipId)
         {
             if (Context.UserIdentifier == null)
             {
-                return;
+                return null;
             }
 
             Guid callerId = Guid.Parse(Context.UserIdentifier);
@@ -111,7 +110,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection != null)
             {
-                return;
+                return null;
             }
 
             string roomCode = TimesynqRandomizer.GenerateRoomCode();
@@ -129,15 +128,14 @@ namespace TimesynqServer.Hubs.TrackerHub
             bool isRoomCached = await _trackerHubCache.SetRoomAsync(roomCode, newRoom);
             if (!isRoomCached)
             {
-                return;
+                return null;
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
             //todo: tracker info initialization
 
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveRoomCode);
-
+            return roomCode;
         }
 
         public async Task JoinRoom(string roomCode)
@@ -176,10 +174,7 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return;
             }
 
-            //todo: tracker info initialization
-
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, userDTO);
-
         }
 
     }
