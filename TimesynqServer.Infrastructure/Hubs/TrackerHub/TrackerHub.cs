@@ -5,6 +5,7 @@ using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Domain.Cache.Tracker;
 using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
+using TimesynqServer.Infrastructure.Hubs.TrackerHub;
 
 namespace TimesynqServer.Hubs.TrackerHub
 {
@@ -74,11 +75,11 @@ namespace TimesynqServer.Hubs.TrackerHub
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
         }
 
-        public async Task DisbandRoom(string roomCode)
+        public async Task<TrackerHubResult> DisbandRoom(string roomCode)
         {
             if (Context.UserIdentifier == null)
             {
-                return;
+                return TrackerHubResult.Failure(TrackerHubError.UserNotFound);
             }
 
             Guid callerId = Guid.Parse(Context.UserIdentifier);
@@ -86,23 +87,24 @@ namespace TimesynqServer.Hubs.TrackerHub
             Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, callerId);
             if (ownedRoom == null)
             {
-                return;
+                return TrackerHubResult.Failure(TrackerHubError.NotAnOwner);
             }
 
             bool isRoomClosed = await _trackerHubCache.RemoveRoomAsync(roomCode);
             if (!isRoomClosed)
             {
-                return;
+                return TrackerHubResult.Failure(TrackerHubError.FailedToCloseRoom);
             }
 
             await Clients.Group(ownedRoom.RoomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
+            return TrackerHubResult.Success();
         }
 
-        public async Task<string?> CreateRoom(Guid? wipId)
+        public async Task<TrackerHubResult<string>> CreateRoom(Guid? wipId)
         {
             if (Context.UserIdentifier == null)
             {
-                return null;
+                return TrackerHubResult<string>.Failure(TrackerHubError.UserNotFound);
             }
 
             Guid callerId = Guid.Parse(Context.UserIdentifier);
@@ -110,7 +112,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection != null)
             {
-                return null;
+                return TrackerHubResult<string>.Failure(TrackerHubError.AlreadyConnectedToARoom);
             }
 
             string roomCode = TimesynqRandomizer.GenerateRoomCode();
@@ -128,7 +130,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             bool isRoomCached = await _trackerHubCache.SetRoomAsync(roomCode, newRoom);
             if (!isRoomCached)
             {
-                return null;
+                return TrackerHubResult<string>.Failure(TrackerHubError.FailedToOpenRoom);
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
@@ -138,11 +140,11 @@ namespace TimesynqServer.Hubs.TrackerHub
             return roomCode;
         }
 
-        public async Task JoinRoom(string roomCode)
+        public async Task<TrackerHubResult<object>> JoinRoom(string roomCode)
         {
             if (Context.UserIdentifier == null)
             {
-                return;
+                return TrackerHubResult<object>.Failure(TrackerHubError.UserNotFound);
             }
 
             Guid callerId = Guid.Parse(Context.UserIdentifier);
@@ -150,7 +152,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection != null)
             {
-                return;
+                return TrackerHubResult<object>.Failure(TrackerHubError.AlreadyConnectedToARoom);
             }
 
             var newConnection = new TrackerConnection
@@ -163,7 +165,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             bool isConnectionCached = await _trackerHubCache.SetConnectionAsync(callerId, newConnection);
             if (!isConnectionCached)
             {
-                return;
+                return TrackerHubResult<object>.Failure(TrackerHubError.FailedToJoinRoom);
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
@@ -171,10 +173,11 @@ namespace TimesynqServer.Hubs.TrackerHub
             UserDTO? userDTO = await _userService.GetUserAsync(callerId);
             if (userDTO == null)
             {
-                return;
+                return TrackerHubResult<object>.Failure(TrackerHubError.UserNotFound);
             }
 
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, userDTO);
+            return new object();
         }
 
     }
