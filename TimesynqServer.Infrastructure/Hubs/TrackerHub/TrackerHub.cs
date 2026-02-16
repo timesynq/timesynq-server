@@ -155,6 +155,12 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return TrackerHubResult<object>.Failure(TrackerHubError.AlreadyConnectedToARoom);
             }
 
+            Room? room = await _trackerHubCache.GetRoomAsync(roomCode);
+            if (room == null)
+            {
+                return TrackerHubResult<object>.Failure(TrackerHubError.RoomNotFound);
+            }
+
             var newConnection = new TrackerConnection
             {
                 ConnectionId = Context.ConnectionId,
@@ -178,6 +184,40 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, userDTO);
             return new object();
+        }
+
+        public async Task<TrackerHubResult> LeaveRoom()
+        {
+            if (Context.UserIdentifier == null)
+            {
+                return TrackerHubResult.Failure(TrackerHubError.UserNotFound);
+            }
+
+            Guid callerId = Guid.Parse(Context.UserIdentifier);
+
+            TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
+            if (existingConnection == null)
+            {
+                return TrackerHubResult.Failure(TrackerHubError.NotConnected);
+            }
+
+            Room? room = await _trackerHubCache.GetRoomAsync(existingConnection.RoomCode);
+            if (room != null && room.OwnerId == callerId)
+            {
+                return TrackerHubResult.Failure(TrackerHubError.OwnerMustDisband);
+            }
+
+            bool isLeaveSuccessful = await _trackerHubCache.RemoveConnectionAsync(existingConnection.UserId, existingConnection.RoomCode);
+            if (!isLeaveSuccessful)
+            {
+                return TrackerHubResult.Failure(TrackerHubError.FailedToLeaveRoom);
+            }
+
+            UserDTO? userDTO = await _userService.GetUserAsync(callerId);
+            if (room != null && userDTO != null)
+                await Clients.Group(room.RoomCode).SendAsync(TrackerHubClientCallbacks.UserLeftRoom, userDTO);
+
+            return TrackerHubResult.Success();
         }
 
     }

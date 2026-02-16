@@ -8,5 +8,6 @@
         public const string DisbandRoom = nameof(DisbandRoom);
         public const string RemoveProfilePicture = nameof(RemoveProfilePicture);
         public const string ReceiveUserInfo = nameof(ReceiveUserInfo);
+        public const string UserLeftRoom = nameof(UserLeftRoom);
     }
 }
