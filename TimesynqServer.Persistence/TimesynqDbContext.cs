@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TimesynqServer.Common;
 using TimesynqServer.Domain.Entities;
 using TimesynqServer.Domain.Entities.Follows;
 using TimesynqServer.Domain.Entities.Users;
+using TimesynqServer.Domain.Entities.Wips;
 
 namespace TimesynqServer.Persistence
 {
@@ -11,6 +13,7 @@ namespace TimesynqServer.Persistence
         public TimesynqDbContext(DbContextOptions<TimesynqDbContext> options) : base(options) { }
 
         public DbSet<Follow> Follows { get; set; }
+        public DbSet<Wip> Wips { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -74,10 +77,22 @@ namespace TimesynqServer.Persistence
                 .HasForeignKey(f => f.FolloweeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<Wip>().HasKey(w => w.Id);
+            builder.Entity<Wip>()
+                .HasOne(w => w.Owner)
+                .WithMany(u => u.Wips)
+                .HasForeignKey(w => w.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Wip>()
+                .Property(w => w.Name)
+                .HasMaxLength(WipConstants.MaxNameLength);
+
             builder.Entity<TimesynqUser>()
                 .HasQueryFilter(b => b.DeletedOnUTC == null);
             builder.Entity<Follow>()
                 .HasQueryFilter(b => b.Follower!.DeletedOnUTC == null && b.Followee!.DeletedOnUTC == null);
+            builder.Entity<Wip>()
+                .HasQueryFilter(b => b.DeletedOnUTC == null);
         }
 
     }

@@ -18,6 +18,14 @@
         public const string DefaultUserSearchSortBy = "username";
 
         public const string DefaultFollowSearchSortBy = "followers";
+
+        public const string DefaultWipSortBy = "lastopened";
+    }
+
+    public class WipConstants
+    {
+        public const int MinNameLength = 1;
+        public const int MaxNameLength = 100;
     }
 
     public class TrackerHubConstants
