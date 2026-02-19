@@ -34,12 +34,13 @@ namespace TimesynqServer.Hubs.TrackerHub
 
         public async Task<TrackerHubResult<WipDTO>> JoinRoom(Guid wipId)
         {
-            if (Context.UserIdentifier == null)
+            if (
+                Context.UserIdentifier == null ||
+                !Guid.TryParse(Context.UserIdentifier, out Guid callerId)
+                )
             {
                 return TrackerHubResult<WipDTO>.Failure(TrackerHubError.UserNotFound);
             }
-
-            Guid callerId = Guid.Parse(Context.UserIdentifier);
 
             TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection != null)
@@ -98,12 +99,13 @@ namespace TimesynqServer.Hubs.TrackerHub
 
         public async Task<TrackerHubResult> LeaveRoom()
         {
-            if (Context.UserIdentifier == null)
+            if (
+                Context.UserIdentifier == null ||
+                !Guid.TryParse(Context.UserIdentifier, out Guid callerId)
+                )
             {
                 return TrackerHubResult.Failure(TrackerHubError.UserNotFound);
             }
-
-            Guid callerId = Guid.Parse(Context.UserIdentifier);
 
             TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection == null)
@@ -134,6 +136,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             string roomCode = room.WipId.ToString();
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserLeftRoom, callerId);
+
             return TrackerHubResult.Success();
         }
 
