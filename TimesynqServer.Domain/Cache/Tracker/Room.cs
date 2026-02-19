@@ -12,7 +12,7 @@
         /// <summary>
         /// The room's unique identifier.
         /// </summary>
-        public required string RoomCode { get; set; }
+        public required Guid WipId { get; set; }
 
         /// <summary>
         /// The ID of the user who created the room and manages its permissions.

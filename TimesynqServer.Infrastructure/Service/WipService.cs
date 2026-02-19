@@ -25,16 +25,16 @@ namespace TimesynqServer.Infrastructure.Service
             _wipRepository = wipRepository;
         }
 
-        public async Task<Result<WipDTO>> GetWipAsync(Guid callerId, Guid wipId)
+        public async Task<WipDTO?> GetWipAsync(Guid callerId, Guid wipId)
         {
             WipProjection? wipProjection = await _wipRepository.GetWipByIdAsync(wipId);
 
             if (wipProjection == null || wipProjection.OwnerId != callerId)
             {
-                return Result<WipDTO>.Failure(DomainErrors.Wip.NotFound);
+                return null;
             }
 
-            return Result<WipDTO>.Success(WipDTO.FromProjection(wipProjection));
+            return WipDTO.FromProjection(wipProjection);
         }
 
         public async Task<PagedResult<WipDTO>> GetMyWipsAsync(Guid callerId, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)

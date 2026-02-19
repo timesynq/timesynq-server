@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Text.Json;
+using TimesynqServer.Common;
 using TimesynqServer.Domain.Cache.Tracker;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
@@ -45,7 +46,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
-        public async Task<TrackerConnection?> GetConnectionAsync(Guid userId, string roomCode)
+        public async Task<TrackerConnection?> GetConnectionAsync(Guid userId, Guid wipId)
         {
             string key = CacheKeyBuilder.ConnectionKey(userId);
 
@@ -58,7 +59,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             }
 
             TrackerConnection? connection = JsonSerializer.Deserialize<TrackerConnection?>(stringResult!);
-            if (connection == null || connection.RoomCode != roomCode)
+            if (connection == null || connection.WipId != wipId)
             {
                 return null;
             }
@@ -70,7 +71,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         public async Task<bool> SetConnectionAsync(Guid userId, TrackerConnection connection)
         {
             string key = CacheKeyBuilder.ConnectionKey(userId);
-            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(connection.RoomCode);
+            string roomKey = CacheKeyBuilder.RoomKey(connection.WipId.ToString());
+            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(connection.WipId.ToString());
 
             IDatabase db = _redis.GetDatabase();
             ITransaction tran = db.CreateTransaction();
@@ -78,6 +80,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             _ = tran.StringSetAsync(key, serializedConnection);
             _ = tran.SetAddAsync(roomConnectionsSetKey, $"{connection.UserId}");
+            _ = tran.KeyPersistAsync(roomKey);
 
             bool isTransactionSuccessful = await tran.ExecuteAsync();
 
@@ -85,9 +88,9 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
-        public async Task<bool> RemoveConnectionAsync(Guid userId, string roomCode)
+        public async Task<bool> RemoveConnectionAsync(Guid userId, Guid wipId)
         {
-            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(roomCode);
+            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(wipId.ToString());
 
             IDatabase db = _redis.GetDatabase();
             ITransaction tran = db.CreateTransaction();
@@ -101,9 +104,9 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
-        public async Task<Room?> GetRoomAsync(string roomCode)
+        public async Task<Room?> GetRoomAsync(Guid wipId)
         {
-            string key = CacheKeyBuilder.RoomKey(roomCode);
+            string key = CacheKeyBuilder.RoomKey(wipId.ToString());
 
             IDatabase db = _redis.GetDatabase();
             string? stringResult = await db.StringGetAsync(key);
@@ -117,31 +120,19 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
-        public async Task<Room?> GetRoomAsync(string roomCode, Guid ownerId)
+        public async Task<int> GetRoomUserCountAsync(Guid wipId)
         {
-            string key = CacheKeyBuilder.RoomKey(roomCode);
+            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(wipId.ToString());
 
             IDatabase db = _redis.GetDatabase();
-            string? stringResult = await db.StringGetAsync(key);
-
-            if (stringResult.IsNullOrEmpty())
-            {
-                return null;
-            }
-
-            Room? room = JsonSerializer.Deserialize<Room?>(stringResult!);
-            if (room == null || room.OwnerId != ownerId)
-            {
-                return null;
-            }
-
-            return room;
+            long length = await db.SetLengthAsync(roomConnectionsSetKey);
+            return (int)length;
         }
 
         /// <inheritdoc/>
-        public async Task<bool> SetRoomAsync(string roomCode, Room room)
+        public async Task<bool> SetRoomAsync(Room room)
         {
-            string key = CacheKeyBuilder.RoomKey(roomCode);
+            string key = CacheKeyBuilder.RoomKey(room.WipId.ToString());
 
             IDatabase db = _redis.GetDatabase();
             string serializedRoom = JsonSerializer.Serialize(room);
@@ -152,9 +143,10 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
-        public async Task<bool> RemoveRoomAsync(string roomCode)
+        public async Task<bool> RemoveRoomAsync(Guid wipId)
         {
-            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(roomCode);
+            string roomKey = CacheKeyBuilder.RoomKey(wipId.ToString());
+            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(wipId.ToString());
 
             IDatabase db = _redis.GetDatabase();
             RedisValue[] connectionUserIds = await db.SetMembersAsync(roomConnectionsSetKey);
@@ -162,7 +154,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             //todo: remove tracker info related to room
             ITransaction tran = db.CreateTransaction();
 
-            _ = tran.KeyDeleteAsync(CacheKeyBuilder.RoomKey(roomCode));
+            _ = tran.KeyExpireAsync(roomKey, TimeSpan.FromSeconds(TrackerHubConstants.SecondsBeforeRoomClose));
             _ = tran.KeyDeleteAsync(roomConnectionsSetKey);
             foreach (RedisValue connectionUserId in connectionUserIds)
             {

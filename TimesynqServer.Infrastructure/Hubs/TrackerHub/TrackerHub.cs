@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.SignalR;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Service;
-using TimesynqServer.Common;
 using TimesynqServer.Domain.Cache.Tracker;
 using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
 using TimesynqServer.Infrastructure.Hubs.TrackerHub;
@@ -14,11 +13,13 @@ namespace TimesynqServer.Hubs.TrackerHub
     {
         private readonly ITrackerHubCache _trackerHubCache;
         private readonly IUserService _userService;
+        private readonly IWipService _wipService;
 
-        public TrackerHub(ITrackerHubCache hubCacheService, IUserService userService)
+        public TrackerHub(ITrackerHubCache hubCacheService, IUserService userService, IWipService wipService)
         {
             _trackerHubCache = hubCacheService;
             _userService = userService;
+            _wipService = wipService;
         }
 
         public override Task OnConnectedAsync()
@@ -28,83 +29,14 @@ namespace TimesynqServer.Hubs.TrackerHub
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            if (Context.UserIdentifier == null)
-            {
-                return;
-            }
-
-            Guid callerId = Guid.Parse(Context.UserIdentifier);
-
-            TrackerConnection? connection = await _trackerHubCache.GetConnectionAsync(callerId);
-            if (connection == null)
-            {
-                return;
-            }
-            await _trackerHubCache.RemoveConnectionAsync(callerId, connection.RoomCode);
-
-            string roomCode = connection.RoomCode;
-            UserDTO? userDTO = await _userService.GetUserAsync(callerId);
-            if (userDTO == null)
-            {
-                return;
-            }
-
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.RemoveProfilePicture, userDTO);
-
-            Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, userDTO.Id);
-            if (ownedRoom == null)
-            {
-                return;
-            }
-
-            //if the user that disconnected is the owner of a room, wait 30s before closing the room
-            await Task.Delay(TrackerHubConstants.SecondsBeforeRoomClose * 1000);
-
-            TrackerConnection? ownerConnection = await _trackerHubCache.GetConnectionAsync(callerId, roomCode);
-            if (ownerConnection != null)
-            {
-                return;
-            }
-
-            bool isRoomClosed = await _trackerHubCache.RemoveRoomAsync(roomCode);
-            if (!isRoomClosed)
-            {
-                return;
-            }
-
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
+            await LeaveRoom();
         }
 
-        public async Task<TrackerHubResult> DisbandRoom(string roomCode)
+        public async Task<TrackerHubResult<WipDTO>> JoinRoom(Guid wipId)
         {
             if (Context.UserIdentifier == null)
             {
-                return TrackerHubResult.Failure(TrackerHubError.UserNotFound);
-            }
-
-            Guid callerId = Guid.Parse(Context.UserIdentifier);
-
-            Room? ownedRoom = await _trackerHubCache.GetRoomAsync(roomCode, callerId);
-            if (ownedRoom == null)
-            {
-                return TrackerHubResult.Failure(TrackerHubError.NotAnOwner);
-            }
-
-            bool isRoomClosed = await _trackerHubCache.RemoveRoomAsync(roomCode);
-            if (!isRoomClosed)
-            {
-                return TrackerHubResult.Failure(TrackerHubError.FailedToCloseRoom);
-            }
-
-            await Clients.Group(ownedRoom.RoomCode).SendAsync(TrackerHubClientCallbacks.DisbandRoom);
-            return TrackerHubResult.Success();
-        }
-
-        public async Task<TrackerHubResult<string>> CreateRoom(Guid? wipId)
-        {
-            if (Context.UserIdentifier == null)
-            {
-                return TrackerHubResult<string>.Failure(TrackerHubError.UserNotFound);
+                return TrackerHubResult<WipDTO>.Failure(TrackerHubError.UserNotFound);
             }
 
             Guid callerId = Guid.Parse(Context.UserIdentifier);
@@ -112,78 +44,56 @@ namespace TimesynqServer.Hubs.TrackerHub
             TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
             if (existingConnection != null)
             {
-                return TrackerHubResult<string>.Failure(TrackerHubError.AlreadyConnectedToARoom);
+                return TrackerHubResult<WipDTO>.Failure(TrackerHubError.AlreadyConnectedToARoom);
             }
 
-            string roomCode = TimesynqRandomizer.GenerateRoomCode();
-            while (await _trackerHubCache.GetRoomAsync(roomCode) != null)
+            // todo: this will fetch the joined tracker-init object and check that instead as if that object is null, the wip does not exist
+            WipDTO? wipDTO = await _wipService.GetWipAsync(callerId, wipId);
+            if (wipDTO == null)
             {
-                roomCode = TimesynqRandomizer.GenerateRoomCode();
+                return TrackerHubResult<WipDTO>.Failure(TrackerHubError.WipNotFound);
             }
 
-            var newRoom = new Room
-            {
-                RoomCode = roomCode,
-                OwnerId = callerId,
-            };
-
-            bool isRoomCached = await _trackerHubCache.SetRoomAsync(roomCode, newRoom);
-            if (!isRoomCached)
-            {
-                return TrackerHubResult<string>.Failure(TrackerHubError.FailedToOpenRoom);
-            }
-
-            await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
-
-            //todo: tracker info initialization
-
-            return roomCode;
-        }
-
-        public async Task<TrackerHubResult<object>> JoinRoom(string roomCode)
-        {
-            if (Context.UserIdentifier == null)
-            {
-                return TrackerHubResult<object>.Failure(TrackerHubError.UserNotFound);
-            }
-
-            Guid callerId = Guid.Parse(Context.UserIdentifier);
-
-            TrackerConnection? existingConnection = await _trackerHubCache.GetConnectionAsync(callerId);
-            if (existingConnection != null)
-            {
-                return TrackerHubResult<object>.Failure(TrackerHubError.AlreadyConnectedToARoom);
-            }
-
-            Room? room = await _trackerHubCache.GetRoomAsync(roomCode);
+            Room? room = await _trackerHubCache.GetRoomAsync(wipId);
             if (room == null)
             {
-                return TrackerHubResult<object>.Failure(TrackerHubError.RoomNotFound);
+                var newRoom = new Room
+                {
+                    OwnerId = wipDTO.OwnerId,
+                    WipId = wipId,
+                };
+
+                bool isRoomCached = await _trackerHubCache.SetRoomAsync(newRoom);
+                if (!isRoomCached)
+                {
+                    return TrackerHubResult<WipDTO>.Failure(TrackerHubError.FailedToJoinRoom);
+                }
             }
 
             var newConnection = new TrackerConnection
             {
                 ConnectionId = Context.ConnectionId,
-                RoomCode = roomCode,
+                WipId = wipId,
                 UserId = callerId,
             };
 
             bool isConnectionCached = await _trackerHubCache.SetConnectionAsync(callerId, newConnection);
             if (!isConnectionCached)
             {
-                return TrackerHubResult<object>.Failure(TrackerHubError.FailedToJoinRoom);
+                return TrackerHubResult<WipDTO>.Failure(TrackerHubError.FailedToJoinRoom);
             }
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
-
+            string roomCode = wipId.ToString();
             UserDTO? userDTO = await _userService.GetUserAsync(callerId);
             if (userDTO == null)
             {
-                return TrackerHubResult<object>.Failure(TrackerHubError.UserNotFound);
+                return TrackerHubResult<WipDTO>.Failure(TrackerHubError.UserNotFound);
             }
 
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.ReceiveUserInfo, userDTO);
-            return new object();
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserJoinedRoom, userDTO);
+
+            return wipDTO;
         }
 
         public async Task<TrackerHubResult> LeaveRoom()
@@ -201,22 +111,29 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return TrackerHubResult.Failure(TrackerHubError.NotConnected);
             }
 
-            Room? room = await _trackerHubCache.GetRoomAsync(existingConnection.RoomCode);
-            if (room != null && room.OwnerId == callerId)
+            bool isLeaveSuccessful;
+            Room? room = await _trackerHubCache.GetRoomAsync(existingConnection.WipId);
+            if (room == null)
             {
-                return TrackerHubResult.Failure(TrackerHubError.OwnerMustDisband);
+                isLeaveSuccessful = await _trackerHubCache.RemoveConnectionAsync(existingConnection.UserId, existingConnection.WipId);
+                return isLeaveSuccessful ?
+                    TrackerHubResult.Success() :
+                    TrackerHubResult.Failure(TrackerHubError.FailedToLeaveRoom);
             }
 
-            bool isLeaveSuccessful = await _trackerHubCache.RemoveConnectionAsync(existingConnection.UserId, existingConnection.RoomCode);
+            int usersInRoom = await _trackerHubCache.GetRoomUserCountAsync(existingConnection.WipId);
+            isLeaveSuccessful = usersInRoom > 1 ?
+                await _trackerHubCache.RemoveConnectionAsync(existingConnection.UserId, existingConnection.WipId) :
+                await _trackerHubCache.RemoveRoomAsync(existingConnection.WipId);
+
             if (!isLeaveSuccessful)
             {
                 return TrackerHubResult.Failure(TrackerHubError.FailedToLeaveRoom);
             }
 
-            UserDTO? userDTO = await _userService.GetUserAsync(callerId);
-            if (room != null && userDTO != null)
-                await Clients.Group(room.RoomCode).SendAsync(TrackerHubClientCallbacks.UserLeftRoom, userDTO);
-
+            string roomCode = room.WipId.ToString();
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserLeftRoom, callerId);
             return TrackerHubResult.Success();
         }
 

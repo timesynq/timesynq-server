@@ -28,15 +28,16 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetWip(Guid wipId)
         {
-            Result<WipDTO> getWipResult = await _wipService.GetWipAsync(CallerId, wipId);
-            return getWipResult.Match
-            (
-                onSuccess: Ok,
-                onFailure: error => Problem(
-                    statusCode: error.Code,
-                    detail: error.Message
-                )
-            );
+            WipDTO? wipDTO = await _wipService.GetWipAsync(CallerId, wipId);
+            if(wipDTO == null)
+            {
+                return Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    detail: DomainErrors.Wip.NotFound.Message
+                );
+            }
+
+            return Ok(wipDTO);
         }
 
         [HttpGet("all")]
