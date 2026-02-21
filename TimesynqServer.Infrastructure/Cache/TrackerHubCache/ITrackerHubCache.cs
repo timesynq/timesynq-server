@@ -1,4 +1,5 @@
 ﻿using TimesynqServer.Domain.Cache.Tracker;
+using TimesynqServer.Infrastructure.Hubs.TrackerHub;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 {
@@ -48,6 +49,10 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// The task result indicates whether the operation was successful.
         /// </returns>
         public Task<bool> RemoveConnectionAsync(Guid userId, Guid wipId);
+
+        public Task<TrackerHubResult> RemoveConnectionAndCleanupIfEmptyAsync(Guid userId, Guid wipId);
+
+        public Task<TrackerHubResult<Room>> GetOrCreateRoomAsync(Guid ownerId, Guid wipId);
 
         /// <summary>
         /// Retrieves the room information for a given room code.
