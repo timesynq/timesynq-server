@@ -1,9 +1,7 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using StackExchange.Redis;
-using System.Text.Json;
+﻿using StackExchange.Redis;
+using TimesynqServer.Application.DTO;
 using TimesynqServer.Common;
 using TimesynqServer.Domain.Cache.Tracker;
-using TimesynqServer.Infrastructure.Hubs.TrackerHub;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 {
@@ -22,17 +20,28 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
         private static class CacheKeyBuilder
         {
-            public static string ConnectionKey(Guid userId) 
-                => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Connection}:{userId}";
-            public static string RoomKey(Guid wipId)
-                => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Room}:{wipId}";
-            public static string RoomConnectionsSetKey(Guid wipId)
+            public static string ConnectionKey(Guid userId, string connectionId) 
+                => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Connection}:{userId}:{connectionId}";
+            public static string RoomIndexKey(Guid wipId)
+                => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Room}:{wipId}:index";
+            public static string RoomConnectionsKey(Guid wipId)
                 => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Room}:{wipId}:{TrackerHubCachePrefixes.Connections}";
+            public static string RoomInfoKey(Guid wipId)
+                => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Room}:{wipId}:info";
         }
 
         private static class LuaScripts
         {
-            public static readonly LuaScript RoomRemoveScript =
+            public static readonly LuaScript RoomJoinScript =
+                LuaScript.Prepare(
+                    File.ReadAllText(
+                        Path.Combine(
+                            AppContext.BaseDirectory, "Scripts/set_connection_and_create_room_if_empty.lua"
+                        )
+                    )
+                );
+
+            public static readonly LuaScript RoomLeaveScript =
                 LuaScript.Prepare(
                     File.ReadAllText(
                         Path.Combine(
@@ -40,205 +49,91 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                         )
                     )
                 );
+
+            public static readonly LuaScript RoomRemoveScript =
+                LuaScript.Prepare(
+                    File.ReadAllText(
+                        Path.Combine(
+                            AppContext.BaseDirectory, "Scripts/remove_room.lua"
+                        )
+                    )
+                );
         }
 
         /// <inheritdoc/>
-        public async Task<TrackerConnection?> GetConnectionAsync(Guid userId)
+        public async Task<bool> SetConnectionAndCreateRoomIfEmptyAsync(Guid userId, TrackerConnection connection, WipDTO wipDTO)
         {
-            string key = CacheKeyBuilder.ConnectionKey(userId);
-
-            IDatabase db = _redis.GetDatabase();
-            string? stringResult = await db.StringGetAsync(key);
-
-            if (stringResult.IsNullOrEmpty())
-            {
-                return null;
-            }
-
-            return JsonSerializer.Deserialize<TrackerConnection>(stringResult!);
-        }
-
-        /// <inheritdoc/>
-        public async Task<TrackerConnection?> GetConnectionAsync(Guid userId, Guid wipId)
-        {
-            string key = CacheKeyBuilder.ConnectionKey(userId);
-
-            IDatabase db = _redis.GetDatabase();
-            string? stringResult = await db.StringGetAsync(key);
-
-            if (stringResult.IsNullOrEmpty())
-            {
-                return null;
-            }
-
-            TrackerConnection? connection = JsonSerializer.Deserialize<TrackerConnection?>(stringResult!);
-            if (connection == null || connection.WipId != wipId)
-            {
-                return null;
-            }
-
-            return connection;
-        }
-
-        /// <inheritdoc/>
-        public async Task<bool> SetConnectionAsync(Guid userId, TrackerConnection connection)
-        {
-            string key = CacheKeyBuilder.ConnectionKey(userId);
-            string roomKey = CacheKeyBuilder.RoomKey(connection.WipId);
-            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(connection.WipId);
-
-            IDatabase db = _redis.GetDatabase();
-            ITransaction tran = db.CreateTransaction();
-            string serializedConnection = JsonSerializer.Serialize(connection);
-
-            _ = tran.StringSetAsync(key, serializedConnection);
-            _ = tran.SetAddAsync(roomConnectionsSetKey, $"{connection.UserId}");
-            _ = tran.KeyPersistAsync(roomKey);
-
-            bool isTransactionSuccessful = await tran.ExecuteAsync();
-
-            return isTransactionSuccessful;
-        }
-
-        /// <inheritdoc/>
-        public async Task<bool> RemoveConnectionAsync(Guid userId, Guid wipId)
-        {
-            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(wipId);
-
-            IDatabase db = _redis.GetDatabase();
-            ITransaction tran = db.CreateTransaction();
-
-            _ = tran.KeyDeleteAsync(CacheKeyBuilder.ConnectionKey(userId));
-            _ = tran.SetRemoveAsync(roomConnectionsSetKey, $"{userId}");
-
-            bool isTransactionSuccessful = await tran.ExecuteAsync();
-
-            return isTransactionSuccessful;
-        }
-
-        /// <inheritdoc/>
-        public async Task<TrackerHubResult> RemoveConnectionAndCleanupIfEmptyAsync(Guid userId, Guid wipId)
-        {
-            string connectionKey = CacheKeyBuilder.ConnectionKey(userId);
-            string roomKey = CacheKeyBuilder.RoomKey(wipId);
-            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(wipId);
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connection.ConnectionId);
+            string roomIndexKey = CacheKeyBuilder.RoomIndexKey(connection.WipId);
+            string RoomConnectionsKey = CacheKeyBuilder.RoomConnectionsKey(connection.WipId);
+            string roomInfoKey = CacheKeyBuilder.RoomInfoKey(connection.WipId);
 
             IDatabase db = _redis.GetDatabase();
 
             int result = (int)await db.ScriptEvaluateAsync(
-                LuaScripts.RoomRemoveScript,
+                LuaScripts.RoomJoinScript,
                 new
                 {
                     connectionKey = (RedisKey)connectionKey,
-                    roomKey = (RedisKey)roomKey,
-                    roomConnectionsSetKey = (RedisKey)roomConnectionsSetKey,
-                    userId = userId.ToString(),
+                    roomIndexKey = (RedisKey)roomIndexKey,
+                    RoomConnectionsKey = (RedisKey)RoomConnectionsKey,
+                    roomInfoKey = (RedisKey)roomInfoKey,
+                    wipId = connection.WipId,
+                    connectionId = connection.ConnectionId,
+                    wipNameFieldName = "wipId",
+                    wipName = wipDTO.Name,
+                    ownerIdFieldName = "ownerId",
+                    ownerId = wipDTO.OwnerId.ToString()
+                }
+            );
+
+            return result == 0;
+        }
+
+        /// <inheritdoc/>
+        public async Task<TrackerConnection?> RemoveConnectionAndCleanupIfEmptyAsync(Guid userId, string connectionId)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.RoomLeaveScript,
+                new
+                {
+                    connectionKey = (RedisKey)connectionKey,
                     ttlSeconds = TrackerHubConstants.SecondsBeforeRoomClose
                 }
             );
 
-            return result == 1 ?
-                TrackerHubResult.Success() :
-                TrackerHubResult.Failure(TrackerHubError.FailedToLeaveRoom);
-        }
-
-        /// <inheritdoc/>
-        public async Task<TrackerHubResult<Room>> GetOrCreateRoomAsync(Guid ownerId, Guid wipId)
-        {
-            string key = CacheKeyBuilder.RoomKey(wipId);
-            var newRoom = new Room
-            {
-                OwnerId = ownerId,
-                WipId = wipId,
-            };
-            string serializedRoom = JsonSerializer.Serialize(newRoom);
-
-            IDatabase db = _redis.GetDatabase();
-
-            bool roomCached = await db.StringSetAsync(key, serializedRoom, when: When.NotExists);
-            if (roomCached)
-            {
-                return newRoom;
-            }
-
-            string? stringResult = await db.StringGetAsync(key);
-
-            if (string.IsNullOrEmpty(stringResult))
-            {
-                return TrackerHubResult<Room>.Failure(TrackerHubError.FailedToReadRoom);
-            }
-
-            Room? room = JsonSerializer.Deserialize<Room>(stringResult);
-            if (room == null)
-            {
-                return TrackerHubResult<Room>.Failure(TrackerHubError.FailedToReadRoom);
-            }
-
-            return room;
-        }
-
-        /// <inheritdoc/>
-        public async Task<Room?> GetRoomAsync(Guid wipId)
-        {
-            string key = CacheKeyBuilder.RoomKey(wipId);
-
-            IDatabase db = _redis.GetDatabase();
-            string? stringResult = await db.StringGetAsync(key);
-
-            if (stringResult.IsNullOrEmpty())
-            {
+            if (result == null)
                 return null;
-            }
 
-            return JsonSerializer.Deserialize<Room>(stringResult!);
-        }
-
-        /// <inheritdoc/>
-        public async Task<int> GetRoomUserCountAsync(Guid wipId)
-        {
-            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(wipId);
-
-            IDatabase db = _redis.GetDatabase();
-            long length = await db.SetLengthAsync(roomConnectionsSetKey);
-            return (int)length;
-        }
-
-        /// <inheritdoc/>
-        public async Task<bool> SetRoomAsync(Room room)
-        {
-            string key = CacheKeyBuilder.RoomKey(room.WipId);
-
-            IDatabase db = _redis.GetDatabase();
-            string serializedRoom = JsonSerializer.Serialize(room);
-
-            bool isWriteSuccessful = await db.StringSetAsync(key, serializedRoom);
-
-            return isWriteSuccessful;
+            return new TrackerConnection
+            {
+                UserId = userId,
+                ConnectionId = connectionId,
+                WipId = Guid.Parse(result)
+            };
         }
 
         /// <inheritdoc/>
         public async Task<bool> RemoveRoomAsync(Guid wipId)
         {
-            string roomKey = CacheKeyBuilder.RoomKey(wipId);
-            string roomConnectionsSetKey = CacheKeyBuilder.RoomConnectionsSetKey(wipId);
+            string roomIndexKey = CacheKeyBuilder.RoomIndexKey(wipId);
+            string roomConnectionsKey = CacheKeyBuilder.RoomConnectionsKey(wipId);
 
             IDatabase db = _redis.GetDatabase();
-            RedisValue[] connectionUserIds = await db.SetMembersAsync(roomConnectionsSetKey);
+            int result = (int)await db.ScriptEvaluateAsync(
+                LuaScripts.RoomJoinScript,
+                new
+                {
+                    roomIndexKey = (RedisKey)roomIndexKey,
+                    roomConnectionsKey = (RedisKey)roomConnectionsKey,
+                }
+            );
 
-            //todo: remove tracker info related to room
-            ITransaction tran = db.CreateTransaction();
-
-            _ = tran.KeyExpireAsync(roomKey, TimeSpan.FromSeconds(TrackerHubConstants.SecondsBeforeRoomClose));
-            _ = tran.KeyDeleteAsync(roomConnectionsSetKey);
-            foreach (RedisValue connectionUserId in connectionUserIds)
-            {
-                Guid userId = Guid.Parse(connectionUserId.ToString());
-                _ = tran.KeyDeleteAsync(CacheKeyBuilder.ConnectionKey(userId));
-            }
-
-            bool isTransactionSuccessful = await tran.ExecuteAsync();
-
-            return isTransactionSuccessful;
+            return result == 0;
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using TimesynqServer.Domain.Cache.Tracker;
-using TimesynqServer.Infrastructure.Hubs.TrackerHub;
+﻿using TimesynqServer.Application.DTO;
+using TimesynqServer.Domain.Cache.Tracker;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 {
@@ -10,79 +10,29 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
     public interface ITrackerHubCache
     {
         /// <summary>
-        /// Retrieves the connection information for a specified user.
+        /// Adds a connection to a room, and initializes the room if it doesn't already exist.
+        /// Joining a room will prevent it from expiring.
         /// </summary>
-        /// <param name="userId">The connected user's unique identifier.</param>
-        /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the user's <see cref="TrackerConnection"/> if found; otherwise, <c>null</c>.
-        /// </returns>
-        public Task<TrackerConnection?> GetConnectionAsync(Guid userId);
-
-        /// <summary>
-        /// Retrieves the connection information for a specified user in a specific room.
-        /// </summary>
-        /// <param name="userId">The connected user's unique identifier.</param>
-        /// <param name="wipId">The room's unique identifier, taken from the unique identifier of the wip that the room was opened on.</param>
-        /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the user's <see cref="TrackerConnection"/> if found; otherwise <c>null</c>.
-        /// </returns>
-        public Task<TrackerConnection?> GetConnectionAsync(Guid userId, Guid wipId);
-
-        /// <summary>
-        /// Stores the connection information for a specified user.
-        /// </summary>
-        /// <param name="userId">The connected user's unique identifier.</param>
-        /// <param name="connection">The <see cref="TrackerConnection"/> object to associate with the user.</param>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connection">The new connection object to be stored in the cache.</param>
+        /// <param name="wipDTO">The room initialization information.</param>
         /// <returns>
         /// A task representing the asynchronous operation.
         /// The task result indicates whether the operation was successful.
         /// </returns>
-        public Task<bool> SetConnectionAsync(Guid userId, TrackerConnection connection);
-
+        public Task<bool> SetConnectionAndCreateRoomIfEmptyAsync(Guid userId, TrackerConnection connection, WipDTO wipDTO);
+     
         /// <summary>
-        /// Removes the connection information for a specified user in a specific room.
+        /// Removes a connection to a room, and sets the room to expire if this was the last person to leave the room.
         /// </summary>
-        /// <param name="userId">The connected user's unique identifier.</param>
-        /// <param name="wipId">The room's unique identifier, taken from the unique identifier of the wip that the room was opened on.</param>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
         /// <returns>
         /// A task representing the asynchronous operation.
-        /// The task result indicates whether the operation was successful.
+        /// The task result is null if there was no connection found matching the input.
+        /// The task result is non-null if all operations were completed successfully.
         /// </returns>
-        public Task<bool> RemoveConnectionAsync(Guid userId, Guid wipId);
-
-        public Task<TrackerHubResult> RemoveConnectionAndCleanupIfEmptyAsync(Guid userId, Guid wipId);
-
-        public Task<TrackerHubResult<Room>> GetOrCreateRoomAsync(Guid ownerId, Guid wipId);
-
-        /// <summary>
-        /// Retrieves the room information for a given room code.
-        /// </summary>
-        /// <param name="wipId">The room's unique identifier, taken from the unique identifier of the wip that the room was opened on.</param>
-        /// <returns>
-        /// A task representing the asynchronous operation.
-        /// The task result contains the <see cref="Room"/> if found; otherwise, <c>null</c>.
-        /// </returns>
-        public Task<Room?> GetRoomAsync(Guid wipId);
-
-        /// <summary>
-        /// Retrieves the number of users in a room for a given room code.
-        /// </summary>
-        /// <param name="wipId">The room's unique identifier, taken from the unique identifier of the wip that the room was opened on.</param>
-        /// <returns>
-        /// A task representing the asynchronous operation.
-        /// The task result contains the number of users in the room if it exists; otherwise, <c>0</c>.
-        /// </returns>
-        public Task<int> GetRoomUserCountAsync(Guid wipId);
-
-        /// <summary>
-        /// Stores the room information for a given room code.
-        /// </summary>
-        /// <param name="room">The <see cref="Room"/> object to store.</param>
-        /// <returns>
-        /// A task representing the asynchronous operation.
-        /// The task result indicates whether the operation was successful.
-        /// </returns>
-        public Task<bool> SetRoomAsync(Room room);
+        public Task<TrackerConnection?> RemoveConnectionAndCleanupIfEmptyAsync(Guid userId, string connectionId);
 
         /// <summary>
         /// Removes the room and all connections to it from the cache using the given room code.

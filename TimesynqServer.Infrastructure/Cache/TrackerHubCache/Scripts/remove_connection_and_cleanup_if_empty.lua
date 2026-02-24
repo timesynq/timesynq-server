@@ -1,18 +1,28 @@
-﻿-- KEYS[1] = connectionKey
--- KEYS[2] = roomKey
--- KEYS[3] = roomConnectionsSetKey
+﻿-- IMPORTANT: Because of how room info is stored, we cannot provide deterministic room keys to this script, instead opting to build them here.
+-- This means that this script is incompatible with Redis Cluster as we are accessing data across different hash slots.
 
--- ARGV[1] = userId
--- ARGV[2] = ttlSeconds
+-- KEYS[1] = connectionKey
 
-redis.call("DEL", KEYS[1])
-redis.call("SREM", KEYS[3], ARGV[1])
+-- ARGV[1] = ttlSeconds
 
-local remainingUsers = redis.call("SCARD", KEYS[3])
-
-if remainingUsers == 0 then
-	redis.call("EXPIRE", KEYS[2], tonumber(ARGV[2]))
-	return 1
+local wip_id = redis.call("GET", KEYS[1])
+if not wip_id then
+	return nil
 end
 
-return 0
+local room_connections_key = "tracker:room:" .. wip_id ..":connections"
+
+redis.call("DEL", KEYS[1])
+redis.call("SREM", room_connections_key, KEYS[1])
+
+local remaining_users = redis.call("SCARD", room_connections_key)
+
+if remaining_users == 0 then
+	local room_index_key = "tracker:room:" .. wip_id .. ":index"
+	local room_keys = redis.call("SMEMBERS", room_index_key)
+	for _, room_key in ipairs(room_keys) do
+		redis.call("EXPIRE", room_key, tonumber(ARGV[1]))
+	end
+end
+
+return wip_id
