@@ -1,4 +1,5 @@
 ﻿using StackExchange.Redis;
+using System.Reflection;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Common;
 using TimesynqServer.Domain.Cache.Tracker;
@@ -21,43 +22,36 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         private static class CacheKeyBuilder
         {
             public static string ConnectionKey(Guid userId, string connectionId) 
-                => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Connection}:{userId}:{connectionId}";
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Connection}:{userId}:{connectionId}";
             public static string RoomIndexKey(Guid wipId)
-                => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Room}:{wipId}:index";
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Index}";
             public static string RoomConnectionsKey(Guid wipId)
-                => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Room}:{wipId}:{TrackerHubCachePrefixes.Connections}";
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Connections}";
             public static string RoomInfoKey(Guid wipId)
-                => $"{CachePrefixes.Tracker}:{TrackerHubCachePrefixes.Room}:{wipId}:info";
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Info}";
         }
 
         private static class LuaScripts
         {
-            public static readonly LuaScript RoomJoinScript =
-                LuaScript.Prepare(
-                    File.ReadAllText(
-                        Path.Combine(
-                            AppContext.BaseDirectory, "Scripts/set_connection_and_create_room_if_empty.lua"
-                        )
-                    )
-                );
+            private static string LoadEmbeddedScript(string filename)
+            {
+                const string ScriptPathPrefix = "TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts";
+                string path = $"{ScriptPathPrefix}.{filename}";
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                using Stream? stream = assembly.GetManifestResourceStream(path) 
+                    ?? throw new Exception($"Resource not found: {path}");
+                using var reader = new StreamReader(stream);
+                return reader.ReadToEnd();
+            }
 
-            public static readonly LuaScript RoomLeaveScript =
-                LuaScript.Prepare(
-                    File.ReadAllText(
-                        Path.Combine(
-                            AppContext.BaseDirectory, "Scripts/remove_connection_and_cleanup_if_empty.lua"
-                        )
-                    )
-                );
+            public static readonly string RoomJoinScript =
+                    LoadEmbeddedScript("set_connection_and_create_room_if_empty.lua");
 
-            public static readonly LuaScript RoomRemoveScript =
-                LuaScript.Prepare(
-                    File.ReadAllText(
-                        Path.Combine(
-                            AppContext.BaseDirectory, "Scripts/remove_room.lua"
-                        )
-                    )
-                );
+            public static readonly string RoomLeaveScript =
+                    LoadEmbeddedScript("remove_connection_and_cleanup_if_empty.lua");
+
+            public static readonly string RoomRemoveScript =
+                    LoadEmbeddedScript("remove_room.lua");
         }
 
         /// <inheritdoc/>
@@ -72,19 +66,20 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             int result = (int)await db.ScriptEvaluateAsync(
                 LuaScripts.RoomJoinScript,
-                new
-                {
-                    connectionKey = (RedisKey)connectionKey,
-                    roomIndexKey = (RedisKey)roomIndexKey,
-                    RoomConnectionsKey = (RedisKey)RoomConnectionsKey,
-                    roomInfoKey = (RedisKey)roomInfoKey,
-                    wipId = connection.WipId,
-                    connectionId = connection.ConnectionId,
-                    wipNameFieldName = "wipId",
-                    wipName = wipDTO.Name,
-                    ownerIdFieldName = "ownerId",
-                    ownerId = wipDTO.OwnerId.ToString()
-                }
+                [
+                    connectionKey,
+                    roomIndexKey,
+                    RoomConnectionsKey,
+                    roomInfoKey,
+                ], 
+                [
+                    connection.WipId.ToString(),
+                    connection.ConnectionId,
+                    nameof(wipDTO.Name),
+                    wipDTO.Name,
+                    nameof(wipDTO.OwnerId),
+                    wipDTO.OwnerId.ToString()
+                ]
             );
 
             return result == 0;
@@ -99,11 +94,12 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.RoomLeaveScript,
-                new
-                {
-                    connectionKey = (RedisKey)connectionKey,
-                    ttlSeconds = TrackerHubConstants.SecondsBeforeRoomClose
-                }
+                [
+                    connectionKey,
+                ],
+                [
+                    TrackerHubConstants.SecondsBeforeRoomClose
+                ]
             );
 
             if (result == null)
@@ -126,11 +122,10 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             IDatabase db = _redis.GetDatabase();
             int result = (int)await db.ScriptEvaluateAsync(
                 LuaScripts.RoomJoinScript,
-                new
-                {
-                    roomIndexKey = (RedisKey)roomIndexKey,
-                    roomConnectionsKey = (RedisKey)roomConnectionsKey,
-                }
+                [
+                    roomIndexKey,
+                    roomConnectionsKey,
+                ]
             );
 
             return result == 0;

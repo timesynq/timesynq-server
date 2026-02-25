@@ -22,10 +22,12 @@ if room_exists == 0 then
 	redis.call("SADD", KEYS[2], KEYS[4])
 	-- create first frame info
 	-- add first frame info to room index
-	redis.call("SADD", KEYS[3], KEYS[1])
 end
 
+redis.call("SADD", KEYS[3], KEYS[1])
+
 local room_keys = redis.call("SMEMBERS", KEYS[2])
+redis.call("PERSIST", KEYS[2])
 for _, room_key in ipairs(room_keys) do
 	redis.call("PERSIST", room_key)
 end
