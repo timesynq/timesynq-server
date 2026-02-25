@@ -1,4 +1,4 @@
-﻿namespace TimesynqServer.Infrastructure.Hubs.TrackerHub
+﻿namespace TimesynqServer.Common.Result
 {
     public readonly struct TrackerHubResult
     {
