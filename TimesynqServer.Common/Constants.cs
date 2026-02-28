@@ -31,5 +31,7 @@
     public class TrackerHubConstants
     {
         public const int SecondsBeforeRoomClose = 30;
+        public const int MinMessageLength = 1;
+        public const int MaxMessageLength = 500;
     }
 }

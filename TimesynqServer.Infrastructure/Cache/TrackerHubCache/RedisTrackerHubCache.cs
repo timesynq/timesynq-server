@@ -55,6 +55,22 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
+        public async Task<Guid?> GetRoomCodeAsync(Guid userId, string connectionId)
+        {
+            string connectionkey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? roomCode = await db.StringGetAsync(connectionkey);
+            if (roomCode == null || !Guid.TryParse(roomCode, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> SetConnectionAndCreateRoomIfEmptyAsync(Guid userId, TrackerConnection connection, WipDTO wipDTO)
         {
             string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connection.ConnectionId);

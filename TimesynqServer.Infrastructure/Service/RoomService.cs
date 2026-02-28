@@ -1,10 +1,8 @@
-﻿using System.Text.RegularExpressions;
-using TimesynqServer.Application.DTO;
+﻿using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
 using TimesynqServer.Domain.Cache.Tracker;
-using TimesynqServer.Hubs.TrackerHub;
 using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
 
 namespace TimesynqServer.Infrastructure.Service
@@ -73,6 +71,36 @@ namespace TimesynqServer.Infrastructure.Service
 
             TrackerConnection? trackerConnection = await _trackerHubCache.RemoveConnectionAndCleanupIfEmptyAsync(callerId, connectionId);
             return trackerConnection ?? TrackerHubResult<TrackerConnection>.Failure(TrackerHubError.NoConnectionFound);
+        }
+
+        public async Task<TrackerHubResult<ChatMessageDTO>> SendChatMessage(string? userIdentifier, string connectionId, string? message)
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<ChatMessageDTO>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            Guid? wipId = await _trackerHubCache.GetRoomCodeAsync(callerId, connectionId);
+            if (wipId == null)
+            {
+                return TrackerHubResult<ChatMessageDTO>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            if 
+            (
+                string.IsNullOrEmpty(message) ||
+
+                message.Length < TrackerHubConstants.MinMessageLength || 
+                message.Length > TrackerHubConstants.MaxMessageLength
+            )
+            {
+                return TrackerHubResult<ChatMessageDTO>.Failure(TrackerHubError.InvalidMessage);
+            }
+
+            return new ChatMessageDTO(wipId.Value, callerId, message);
         }
     }
 }

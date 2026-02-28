@@ -10,6 +10,14 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
     public interface ITrackerHubCache
     {
         /// <summary>
+        /// Get's the room the requesting user is connected to.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> GetRoomCodeAsync(Guid userId, string connectionId);
+
+        /// <summary>
         /// Adds a connection to a room, and initializes the room if it doesn't already exist.
         /// Joining a room will prevent it from expiring.
         /// </summary>

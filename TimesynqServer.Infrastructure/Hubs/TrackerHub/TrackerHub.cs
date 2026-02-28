@@ -13,12 +13,10 @@ namespace TimesynqServer.Hubs.TrackerHub
     public class TrackerHub : Hub
     {
         private readonly IRoomService _roomService;
-        private readonly ITrackerHubCache _trackerHubCache;
 
-        public TrackerHub(IRoomService roomService, ITrackerHubCache hubCacheService)
+        public TrackerHub(IRoomService roomService)
         {
             _roomService = roomService;
-            _trackerHubCache = hubCacheService;
         }
 
         public override Task OnConnectedAsync()
@@ -39,12 +37,9 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return TrackerHubResult<WipDTO>.Failure(joinRoomResult.ErrorMessage ?? TrackerHubError.FailedToJoinRoom);
             }
 
-            if (joinRoomResult.IsSuccessful)
-            {
-                string roomCode = wipId.ToString();
-                await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
-                await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserJoinedRoom, joinRoomResult.Value.UserDTO);
-            }
+            string roomCode = wipId.ToString();
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserJoinedRoom, joinRoomResult.Value.UserDTO);
 
             return joinRoomResult.Value.WipDTO;
         }
@@ -57,12 +52,28 @@ namespace TimesynqServer.Hubs.TrackerHub
                 return TrackerHubResult.Failure(leaveRoomResult.ErrorMessage ?? TrackerHubError.FailedToLeaveRoom);
             }
 
-            if (leaveRoomResult.Value != null)
+            string roomCode = leaveRoomResult.Value.WipId.ToString();
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserLeftRoom, leaveRoomResult.Value.UserId);
+
+            return TrackerHubResult.Success();
+        }
+
+        public async Task<TrackerHubResult> SendChatMessage(string? message)
+        {
+            TrackerHubResult<ChatMessageDTO> sendChatMessageResult = await _roomService.SendChatMessage(Context.UserIdentifier, Context.ConnectionId, message);
+            if (!sendChatMessageResult.IsSuccessful || sendChatMessageResult.Value == null)
             {
-                string roomCode = leaveRoomResult.Value.WipId.ToString();
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
-                await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserLeftRoom, leaveRoomResult.Value.UserId);
+                return TrackerHubResult.Failure(sendChatMessageResult.ErrorMessage ?? TrackerHubError.FailedToSendMessage);
             }
+
+            ChatMessageDTO chatMessageDTO = sendChatMessageResult.Value;
+            string roomCode = chatMessageDTO.WipId.ToString();
+            await Clients.Group(roomCode).SendAsync(
+                TrackerHubClientCallbacks.MessageAddedToChat,
+                chatMessageDTO.UserId,
+                chatMessageDTO.Message
+            );
 
             return TrackerHubResult.Success();
         }
