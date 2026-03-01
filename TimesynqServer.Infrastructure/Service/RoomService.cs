@@ -59,18 +59,20 @@ namespace TimesynqServer.Infrastructure.Service
             return new RoomJoinedDTO(userDTO, wipDTO);
         }
 
-        public async Task<TrackerHubResult<TrackerConnection>> LeaveRoom(string? userIdentifier, string connectionId)
+        public async Task<TrackerHubResult<TrackerConnectionDTO>> LeaveRoom(string? userIdentifier, string connectionId)
         {
             if (
                 userIdentifier == null ||
                 !Guid.TryParse(userIdentifier, out Guid callerId)
                 )
             {
-                return TrackerHubResult<TrackerConnection>.Failure(TrackerHubError.UserNotFound);
+                return TrackerHubResult<TrackerConnectionDTO>.Failure(TrackerHubError.UserNotFound);
             }
 
             TrackerConnection? trackerConnection = await _trackerHubCache.RemoveConnectionAndCleanupIfEmptyAsync(callerId, connectionId);
-            return trackerConnection ?? TrackerHubResult<TrackerConnection>.Failure(TrackerHubError.NoConnectionFound);
+            return trackerConnection != null ?
+                TrackerConnectionDTO.FromDomainModel(trackerConnection) : 
+                TrackerHubResult<TrackerConnectionDTO>.Failure(TrackerHubError.NoConnectionFound);
         }
 
         public async Task<TrackerHubResult<ChatMessageDTO>> SendChatMessage(string? userIdentifier, string connectionId, string? message)

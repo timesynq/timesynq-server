@@ -4,8 +4,6 @@ using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
-using TimesynqServer.Domain.Cache.Tracker;
-using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
 
 namespace TimesynqServer.Hubs.TrackerHub
 {
@@ -46,7 +44,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
         public async Task<TrackerHubResult> LeaveRoom()
         {
-            TrackerHubResult<TrackerConnection> leaveRoomResult = await _roomService.LeaveRoom(Context.UserIdentifier, Context.ConnectionId);
+            TrackerHubResult<TrackerConnectionDTO> leaveRoomResult = await _roomService.LeaveRoom(Context.UserIdentifier, Context.ConnectionId);
             if (!leaveRoomResult.IsSuccessful || leaveRoomResult.Value == null)
             {
                 return TrackerHubResult.Failure(leaveRoomResult.ErrorMessage ?? TrackerHubError.FailedToLeaveRoom);
