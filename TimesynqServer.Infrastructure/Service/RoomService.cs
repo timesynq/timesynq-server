@@ -50,13 +50,17 @@ namespace TimesynqServer.Infrastructure.Service
                 UserId = callerId,
             };
 
-            bool isJoinSuccessful = await _trackerHubCache.SetConnectionAndCreateRoomIfEmptyAsync(callerId, newConnection, wipDTO);
-            if (!isJoinSuccessful)
+            TrackerHubResult<IEnumerable<RoomMember>> joinRoomResult = await _trackerHubCache.SetConnectionAndCreateRoomIfEmptyAsync(userDTO, newConnection, wipDTO);
+            if (!joinRoomResult.IsSuccessful || joinRoomResult.Value == null)
             {
-                return TrackerHubResult<RoomJoinedDTO>.Failure(TrackerHubError.FailedToJoinRoom);
+                return TrackerHubResult<RoomJoinedDTO>.Failure(joinRoomResult.ErrorMessage ?? TrackerHubError.FailedToJoinRoom);
             }
 
-            return new RoomJoinedDTO(userDTO, wipDTO);
+            return new RoomJoinedDTO(
+                wipDTO,
+                new RoomMemberDTO(userDTO, connectionId),
+                joinRoomResult.Value.Select(RoomMemberDTO.FromDomainModel)
+            );
         }
 
         public async Task<TrackerHubResult<TrackerConnectionDTO>> LeaveRoom(string? userIdentifier, string connectionId)

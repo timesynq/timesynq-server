@@ -1,4 +1,5 @@
 ﻿using TimesynqServer.Application.DTO;
+using TimesynqServer.Common.Result;
 using TimesynqServer.Domain.Cache.Tracker;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
@@ -21,14 +22,14 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// Adds a connection to a room, and initializes the room if it doesn't already exist.
         /// Joining a room will prevent it from expiring.
         /// </summary>
-        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="userDTO">The user's public information.</param>
         /// <param name="connection">The new connection object to be stored in the cache.</param>
         /// <param name="wipDTO">The room initialization information.</param>
         /// <returns>
         /// A task representing the asynchronous operation.
         /// The task result indicates whether the operation was successful.
         /// </returns>
-        public Task<bool> SetConnectionAndCreateRoomIfEmptyAsync(Guid userId, TrackerConnection connection, WipDTO wipDTO);
+        public Task<TrackerHubResult<IEnumerable<RoomMember>>> SetConnectionAndCreateRoomIfEmptyAsync(UserDTO userDTO, TrackerConnection connection, WipDTO wipDTO);
      
         /// <summary>
         /// Removes a connection to a room, and sets the room to expire if this was the last person to leave the room.

@@ -2,13 +2,15 @@
 {
     public sealed class RoomJoinedDTO
     {
-        public UserDTO UserDTO { get; }
         public WipDTO WipDTO { get; }
+        public RoomMemberDTO UserWhoJoined { get; }
+        public IEnumerable<RoomMemberDTO> AlreadyPresentMembers { get; }
 
-        public RoomJoinedDTO(UserDTO userDTO, WipDTO wipDTO)
+        public RoomJoinedDTO(WipDTO wipDTO, RoomMemberDTO userWhoJoined, IEnumerable<RoomMemberDTO> alreadyPresentMembers)
         {
-            UserDTO = userDTO;
             WipDTO = wipDTO;
+            UserWhoJoined = userWhoJoined;
+            AlreadyPresentMembers = alreadyPresentMembers;
         }
     }
 }

@@ -5,7 +5,7 @@
 
 -- ARGV[1] = ttlSeconds
 
-local wip_id = redis.call("GET", KEYS[1])
+local wip_id = redis.call("HGET", KEYS[1], "WipId")
 if not wip_id then
 	return nil
 end

@@ -37,7 +37,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             string roomCode = wipId.ToString();
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserJoinedRoom, joinRoomResult.Value.UserDTO);
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserJoinedRoom, joinRoomResult.Value.UserWhoJoined);
 
             return joinRoomResult.Value.WipDTO;
         }

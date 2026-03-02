@@ -1,7 +1,9 @@
 ﻿using StackExchange.Redis;
 using System.Reflection;
+using System.Text.Json;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Common;
+using TimesynqServer.Common.Result;
 using TimesynqServer.Domain.Cache.Tracker;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
@@ -57,11 +59,11 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// <inheritdoc/>
         public async Task<Guid?> GetRoomCodeAsync(Guid userId, string connectionId)
         {
-            string connectionkey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
 
             IDatabase db = _redis.GetDatabase();
 
-            string? roomCode = await db.StringGetAsync(connectionkey);
+            string? roomCode = await db.HashGetAsync(connectionKey, "WipId");
             if (roomCode == null || !Guid.TryParse(roomCode, out Guid wipId))
             {
                 return null;
@@ -71,16 +73,26 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
-        public async Task<bool> SetConnectionAndCreateRoomIfEmptyAsync(Guid userId, TrackerConnection connection, WipDTO wipDTO)
+        public async Task<TrackerHubResult<IEnumerable<RoomMember>>> SetConnectionAndCreateRoomIfEmptyAsync(UserDTO userDTO, TrackerConnection connection, WipDTO wipDTO)
         {
-            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connection.ConnectionId);
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userDTO.Id, connection.ConnectionId);
             string roomIndexKey = CacheKeyBuilder.RoomIndexKey(connection.WipId);
             string RoomConnectionsKey = CacheKeyBuilder.RoomConnectionsKey(connection.WipId);
             string roomInfoKey = CacheKeyBuilder.RoomInfoKey(connection.WipId);
 
+            string payload = JsonSerializer.Serialize(new
+            {
+                WipId = connection.WipId.ToString(),
+                ConnectionId = connection.ConnectionId,
+                UserId = userDTO.Id.ToString(),
+                UserName = userDTO.UserName,
+                WipName = wipDTO.Name,
+                OwnerId = wipDTO.OwnerId.ToString(),
+            });
+
             IDatabase db = _redis.GetDatabase();
 
-            int result = (int)await db.ScriptEvaluateAsync(
+            string? jsonResult = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.RoomJoinScript,
                 [
                     connectionKey,
@@ -89,16 +101,22 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                     roomInfoKey,
                 ], 
                 [
-                    connection.WipId.ToString(),
-                    connection.ConnectionId,
-                    nameof(wipDTO.Name),
-                    wipDTO.Name,
-                    nameof(wipDTO.OwnerId),
-                    wipDTO.OwnerId.ToString()
+                    payload
                 ]
             );
 
-            return result == 0;
+            if (jsonResult == null)
+            {
+                return TrackerHubResult<IEnumerable<RoomMember>>.Failure(TrackerHubError.FailedToJoinRoom);
+            }
+
+            IEnumerable<RoomMember>? roomMembers = JsonSerializer.Deserialize<IEnumerable<RoomMember>>(jsonResult);
+            if (roomMembers == null)
+            {
+                return TrackerHubResult<IEnumerable<RoomMember>>.Failure(TrackerHubError.FailedToJoinRoom);
+            }
+
+            return TrackerHubResult<IEnumerable<RoomMember>>.Success(roomMembers);
         }
 
         /// <inheritdoc/>
