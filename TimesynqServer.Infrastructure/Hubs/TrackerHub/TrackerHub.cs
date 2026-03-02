@@ -27,19 +27,19 @@ namespace TimesynqServer.Hubs.TrackerHub
             await LeaveRoom();
         }
 
-        public async Task<TrackerHubResult<WipDTO>> JoinRoom(Guid wipId)
+        public async Task<TrackerHubResult<RoomInitializerDTO>> JoinRoom(Guid wipId)
         {
             TrackerHubResult<RoomJoinedDTO> joinRoomResult = await _roomService.JoinRoom(Context.UserIdentifier, Context.ConnectionId, wipId);
             if (!joinRoomResult.IsSuccessful || joinRoomResult.Value == null)
             {
-                return TrackerHubResult<WipDTO>.Failure(joinRoomResult.ErrorMessage ?? TrackerHubError.FailedToJoinRoom);
+                return TrackerHubResult<RoomInitializerDTO>.Failure(joinRoomResult.ErrorMessage ?? TrackerHubError.FailedToJoinRoom);
             }
 
             string roomCode = wipId.ToString();
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserJoinedRoom, joinRoomResult.Value.UserWhoJoined);
 
-            return joinRoomResult.Value.WipDTO;
+            return new RoomInitializerDTO(joinRoomResult.Value.Wip, joinRoomResult.Value.AlreadyPresentMembers);
         }
 
         public async Task<TrackerHubResult> LeaveRoom()
