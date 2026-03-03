@@ -14,11 +14,11 @@ namespace TimesynqServer.Persistence.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<WipProjection?> GetWipByIdAsync(Guid wipId)
+        public async Task<WipProjection?> GetOwnedWipByIdAsync(Guid ownerId, Guid wipId)
         {
             return await _dbContext.Wips
                 .AsNoTracking()
-                .Where(w => w.Id == wipId)
+                .Where(w => w.Id == wipId && w.OwnerId == ownerId)
                 .Select(w => new WipProjection
                 (
                     w.Id,

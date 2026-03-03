@@ -1,6 +1,6 @@
 ﻿namespace TimesynqServer.Common
 {
-    public class UserConstants
+    public static class UserConstants
     {
         public const int MinUserNameLength = 3;
         public const int MaxUserNameLength = 24;
@@ -8,7 +8,7 @@
         public const int UserNameChangeCooldownDays = 30;
     }
 
-    public class PaginationConstants
+    public static class PaginationConstants
     {
         public const int MinPageSize = 1;
         public const int MaxPageSize = 100;
@@ -20,15 +20,17 @@
         public const string DefaultFollowSearchSortBy = "followers";
 
         public const string DefaultWipSortBy = "lastopened";
+
+        public const string DefaultShareSortBy = "shareage";
     }
 
-    public class WipConstants
+    public static class WipConstants
     {
         public const int MinNameLength = 1;
         public const int MaxNameLength = 100;
     }
 
-    public class TrackerHubConstants
+    public static class TrackerHubConstants
     {
         public const int SecondsBeforeRoomClose = 30;
         public const int MinMessageLength = 1;

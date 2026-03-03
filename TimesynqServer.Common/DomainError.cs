@@ -41,5 +41,13 @@ namespace TimesynqServer.Common
             public static DomainError WipDeleted => new(StatusCodes.Status409Conflict, "WIP has already been deleted.");
             public static DomainError NameContainsInvalidCharacters(string characters) => new(StatusCodes.Status400BadRequest, $"Name contains invalid characters: {characters}");
         }
+
+        public static class Share
+        {
+            public static DomainError MatchingId => new(StatusCodes.Status400BadRequest, "WipId and SharedWithId cannot be matching.");
+            public static DomainError NoSharesDeleted => new(StatusCodes.Status404NotFound, "No shares were deleted.");
+            public static DomainError CannotShareWithSelf => new(StatusCodes.Status409Conflict, "Cannot share wip with yourself.");
+            public static DomainError AlreadyShared => new(StatusCodes.Status409Conflict, "Already shared with this user.");
+        }
     }
 }

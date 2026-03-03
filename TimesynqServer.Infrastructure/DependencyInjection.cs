@@ -51,6 +51,7 @@ namespace TimesynqServer.Infrastructure
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IFollowService, FollowService>();
             services.AddScoped<IWipService, WipService>();
+            services.AddScoped<IShareService, ShareService>();
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<ITrackerHubCache, RedisTrackerHubCache>();
 

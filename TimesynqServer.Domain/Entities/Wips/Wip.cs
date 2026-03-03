@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
+using TimesynqServer.Domain.Entities.Shares;
 using TimesynqServer.Domain.Entities.Users;
 
 namespace TimesynqServer.Domain.Entities.Wips
@@ -46,6 +47,11 @@ namespace TimesynqServer.Domain.Entities.Wips
         /// Navigation property for the user who created the wip.
         /// </summary>
         public TimesynqUser? Owner { get; private set; }
+
+        /// <summary>
+        /// Navigation property for all users this wip has been shared with.
+        /// </summary>
+        public ICollection<Share> Shares { get; private set; } = [];
 
         private Wip() { }
 

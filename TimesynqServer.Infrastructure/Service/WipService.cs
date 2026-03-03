@@ -27,9 +27,9 @@ namespace TimesynqServer.Infrastructure.Service
 
         public async Task<WipDTO?> GetWipAsync(Guid callerId, Guid wipId)
         {
-            WipProjection? wipProjection = await _wipRepository.GetWipByIdAsync(wipId);
+            WipProjection? wipProjection = await _wipRepository.GetOwnedWipByIdAsync(callerId, wipId);
 
-            if (wipProjection == null || wipProjection.OwnerId != callerId)
+            if (wipProjection == null)
             {
                 return null;
             }

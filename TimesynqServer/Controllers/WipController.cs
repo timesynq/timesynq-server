@@ -14,10 +14,12 @@ namespace TimesynqServer.Controllers
     public class WipController : AuthorizedController
     {
         private readonly IWipService _wipService;
+        private readonly IShareService _shareService;
 
-        public WipController(IWipService wipServer)
+        public WipController(IWipService wipService, IShareService shareService)
         {
-            _wipService = wipServer;
+            _wipService = wipService;
+            _shareService = shareService;
         }
 
         [HttpGet("{wipId}")]
@@ -40,7 +42,7 @@ namespace TimesynqServer.Controllers
             return Ok(wipDTO);
         }
 
-        [HttpGet("all")]
+        [HttpGet]
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<WipDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetWips(
@@ -110,6 +112,97 @@ namespace TimesynqServer.Controllers
         {
             Result deleteWipResult = await _wipService.DeleteWipAsync(CallerId, deleteRequest.WipID);
             return deleteWipResult.Match<IActionResult>
+            (
+                onSuccess: NoContent,
+                onFailure: error => Problem(
+                    statusCode: error.Code,
+                    detail: error.Message
+                )
+            );
+        }
+
+        [HttpGet("{wipId}/shares")]
+        [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSharedWips(
+            Guid wipId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
+            [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
+            [FromQuery] string sortBy = PaginationConstants.DefaultShareSortBy
+        )
+        {
+            return Ok(await _shareService.GetSharedUsersAsync(CallerId, wipId, pageNumber, pageSize, sortOrder, sortBy, Request));
+        }
+
+        [HttpGet("shared")]
+        [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(typeof(PagedResult<WipDTO>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSharedWips(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
+            [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
+            [FromQuery] string sortBy = PaginationConstants.DefaultShareSortBy
+        )
+        {
+            return Ok(await _shareService.GetSharedWipsAsync(CallerId, pageNumber, pageSize, sortOrder, sortBy, Request));
+        }
+
+        [HttpPost("{wipId}/shares")]
+        [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(typeof(UserDTO), StatusCodes.Status201Created)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> ShareWip(Guid wipId, [FromBody] ShareWipRequestDTO shareWipRequestDTO)
+        {
+            Result<UserDTO> shareResult = await _shareService.ShareWipAsync(CallerId, wipId, shareWipRequestDTO.UserId);
+            return shareResult.Match
+            (
+                onSuccess: userDTO =>
+                {
+                    return Created((string?)null, userDTO);
+                },
+                onFailure: error => Problem(
+                    statusCode: error.Code,
+                    detail: error.Message
+                )
+            );
+        }
+
+        [HttpDelete("{wipId}/shares")]
+        [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UnshareOneFromWip(Guid wipId, [FromBody] UnshareFromWipRequestDTO unshareFromWipRequestDTO)
+        {
+            Result unshareResult = await _shareService.UnshareFromWipAsync(CallerId, wipId, unshareFromWipRequestDTO.UserId);
+            return unshareResult.Match<IActionResult>
+            (
+                onSuccess: NoContent,
+                onFailure: error => Problem(
+                    statusCode: error.Code,
+                    detail: error.Message
+                )
+            );
+        }
+
+        [HttpDelete("{wipId}/shares/all")]
+        [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UnshareAllFromWip(Guid wipId)
+        {
+            Result unshareResult = await _shareService.UnshareAllFromWipAsync(CallerId, wipId);
+            return unshareResult.Match<IActionResult>
             (
                 onSuccess: NoContent,
                 onFailure: error => Problem(
