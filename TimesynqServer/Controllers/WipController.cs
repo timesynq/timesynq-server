@@ -172,16 +172,16 @@ namespace TimesynqServer.Controllers
             );
         }
 
-        [HttpDelete("{wipId}/shares")]
+        [HttpDelete("{wipId}/shares/{userId}")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UnshareOneFromWip(Guid wipId, [FromBody] UnshareFromWipRequestDTO unshareFromWipRequestDTO)
+        public async Task<IActionResult> UnshareOneFromWip(Guid wipId, Guid userId)
         {
-            Result unshareResult = await _shareService.UnshareFromWipAsync(CallerId, wipId, unshareFromWipRequestDTO.UserId);
+            Result unshareResult = await _shareService.UnshareFromWipAsync(CallerId, wipId, userId);
             return unshareResult.Match<IActionResult>
             (
                 onSuccess: NoContent,
@@ -192,7 +192,7 @@ namespace TimesynqServer.Controllers
             );
         }
 
-        [HttpDelete("{wipId}/shares/all")]
+        [HttpDelete("{wipId}/shares")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
