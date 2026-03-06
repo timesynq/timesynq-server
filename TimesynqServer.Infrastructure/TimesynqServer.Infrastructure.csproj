@@ -7,6 +7,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Cache\TrackerHubCache\Scripts\remove_connection_and_cleanup_if_empty.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\remove_room.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\set_connection_and_create_room_if_empty.lua" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\remove_room.lua">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\set_connection_and_create_room_if_empty.lua">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\remove_connection_and_cleanup_if_empty.lua">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.10" />
 	<PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.2" />
 	<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.8" />

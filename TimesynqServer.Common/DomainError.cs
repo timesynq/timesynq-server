@@ -25,11 +25,29 @@ namespace TimesynqServer.Common
             public static DomainError UserNameTaken => new(StatusCodes.Status409Conflict, "Username already taken.");
             public static DomainError AccountAlreadyDeleted => new(StatusCodes.Status409Conflict, "Account has already been deleted.");
         }
+
         public static class Follow
         {
             public static DomainError NotFollowing => new(StatusCodes.Status404NotFound, "Not following this user.");
             public static DomainError CantFollowYourself => new(StatusCodes.Status409Conflict, "Can't follow yourself.");
             public static DomainError AlreadyFollowing => new(StatusCodes.Status409Conflict, "Already following this user.");
+        }
+
+        public static class Wip
+        {
+            public static DomainError InvalidName => new(StatusCodes.Status400BadRequest, "Name must be between 1 and 100 characters long.");
+            public static DomainError NotFound => new(StatusCodes.Status404NotFound, "Wip not found.");
+            public static DomainError NameConflict => new(StatusCodes.Status409Conflict, "Already using name.");
+            public static DomainError WipDeleted => new(StatusCodes.Status409Conflict, "WIP has already been deleted.");
+            public static DomainError NameContainsInvalidCharacters(string characters) => new(StatusCodes.Status400BadRequest, $"Name contains invalid characters: {characters}");
+        }
+
+        public static class Share
+        {
+            public static DomainError MatchingId => new(StatusCodes.Status400BadRequest, "WipId and SharedWithId cannot be matching.");
+            public static DomainError NoSharesDeleted => new(StatusCodes.Status404NotFound, "No shares were deleted.");
+            public static DomainError CannotShareWithSelf => new(StatusCodes.Status409Conflict, "Cannot share wip with yourself.");
+            public static DomainError AlreadyShared => new(StatusCodes.Status409Conflict, "Already shared with this user.");
         }
     }
 }

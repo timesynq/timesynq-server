@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimesynqServer.Persistence;
 
@@ -11,9 +12,11 @@ using TimesynqServer.Persistence;
 namespace TimesynqServer.Migrations
 {
     [DbContext(typeof(TimesynqDbContext))]
-    partial class TimesynqDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260218030533_InitWip")]
+    partial class InitWip
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,24 +144,6 @@ namespace TimesynqServer.Migrations
                     b.HasIndex("FolloweeId");
 
                     b.ToTable("Follows");
-                });
-
-            modelBuilder.Entity("TimesynqServer.Domain.Entities.Shares.Share", b =>
-                {
-                    b.Property<Guid>("WipId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SharedWithId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedOnUTC")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("WipId", "SharedWithId");
-
-                    b.HasIndex("SharedWithId");
-
-                    b.ToTable("Shares");
                 });
 
             modelBuilder.Entity("TimesynqServer.Domain.Entities.TimesynqRole", b =>
@@ -405,25 +390,6 @@ namespace TimesynqServer.Migrations
                     b.Navigation("Follower");
                 });
 
-            modelBuilder.Entity("TimesynqServer.Domain.Entities.Shares.Share", b =>
-                {
-                    b.HasOne("TimesynqServer.Domain.Entities.Users.TimesynqUser", "SharedWith")
-                        .WithMany("SharedWips")
-                        .HasForeignKey("SharedWithId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TimesynqServer.Domain.Entities.Wips.Wip", "Wip")
-                        .WithMany("Shares")
-                        .HasForeignKey("WipId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("SharedWith");
-
-                    b.Navigation("Wip");
-                });
-
             modelBuilder.Entity("TimesynqServer.Domain.Entities.Wips.Wip", b =>
                 {
                     b.HasOne("TimesynqServer.Domain.Entities.Users.TimesynqUser", "Owner")
@@ -441,14 +407,7 @@ namespace TimesynqServer.Migrations
 
                     b.Navigation("Followers");
 
-                    b.Navigation("SharedWips");
-
                     b.Navigation("Wips");
-                });
-
-            modelBuilder.Entity("TimesynqServer.Domain.Entities.Wips.Wip", b =>
-                {
-                    b.Navigation("Shares");
                 });
 #pragma warning restore 612, 618
         }

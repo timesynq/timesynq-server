@@ -15,9 +15,11 @@ using TimesynqServer.Domain.Entities;
 using TimesynqServer.Domain.Entities.Users;
 using TimesynqServer.Hubs.RefreshHub;
 using TimesynqServer.Hubs.TrackerHub;
+using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
 using TimesynqServer.Infrastructure.Email;
 using TimesynqServer.Infrastructure.Extensions;
 using TimesynqServer.Infrastructure.Logging;
+using TimesynqServer.Infrastructure.Service;
 using TimesynqServer.Infrastructure.Service.FollowService;
 using TimesynqServer.Infrastructure.Service.UserService;
 using TimesynqServer.Persistence;
@@ -48,6 +50,10 @@ namespace TimesynqServer.Infrastructure
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IFollowService, FollowService>();
+            services.AddScoped<IWipService, WipService>();
+            services.AddScoped<IShareService, ShareService>();
+            services.AddScoped<IRoomService, RoomService>();
+            services.AddScoped<ITrackerHubCache, RedisTrackerHubCache>();
 
             return services;
         }

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using TimesynqServer.Domain.Entities.Follows;
+using TimesynqServer.Domain.Entities.Shares;
 using TimesynqServer.Domain.Entities.Users;
+using TimesynqServer.Domain.Entities.Wips;
 using TimesynqServer.Persistence.Repository;
 using TimesynqServer.Persistence.UnitOfWork;
 
@@ -13,6 +15,8 @@ namespace TimesynqServer.Persistence
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IFollowRepository, FollowRepository>();
+            services.AddScoped<IWipRepository, WipRepository>();
+            services.AddScoped<IShareRepository, ShareRepository>();
             return services;
         }
     }

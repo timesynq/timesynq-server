@@ -3,6 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
 using TimesynqServer.Domain.Entities.Follows;
+using TimesynqServer.Domain.Entities.Shares;
+using TimesynqServer.Domain.Entities.Wips;
 
 namespace TimesynqServer.Domain.Entities.Users
 {
@@ -73,6 +75,16 @@ namespace TimesynqServer.Domain.Entities.Users
         /// Navigation property for all users that this user is following.
         /// </summary>
         public ICollection<Follow> Followees { get; private set; } = [];
+
+        /// <summary>
+        /// Navigation property for all wips that the user has saved.
+        /// </summary>
+        public ICollection<Wip> Wips { get; private set; } = [];
+
+        /// <summary>
+        /// Navigation property for all wips that have been shared with the user.
+        /// </summary>
+        public ICollection<Share> SharedWips { get; private set; } = [];
 
         public Result ChangeUserName(string newUserName)
         {

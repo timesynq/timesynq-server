@@ -12,6 +12,6 @@
         /// <summary>
         /// The code identifying the room the user is connected to.
         /// </summary>
-        public required string RoomCode { get; set; }
+        public required Guid WipId { get; set; }
     }
 }
