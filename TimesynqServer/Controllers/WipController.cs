@@ -127,26 +127,28 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetSharedWips(
             Guid wipId,
+            [FromQuery] string? searchString,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
             [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
             [FromQuery] string sortBy = PaginationConstants.DefaultShareSortBy
         )
         {
-            return Ok(await _shareService.GetSharedUsersAsync(CallerId, wipId, pageNumber, pageSize, sortOrder, sortBy, Request));
+            return Ok(await _shareService.GetSharedUsersAsync(CallerId, wipId, searchString, pageNumber, pageSize, sortOrder, sortBy, Request));
         }
 
         [HttpGet("shared")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(typeof(PagedResult<WipDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetSharedWips(
+            [FromQuery] string? searchString,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
             [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
             [FromQuery] string sortBy = PaginationConstants.DefaultShareSortBy
         )
         {
-            return Ok(await _shareService.GetSharedWipsAsync(CallerId, pageNumber, pageSize, sortOrder, sortBy, Request));
+            return Ok(await _shareService.GetSharedWipsAsync(CallerId, searchString, pageNumber, pageSize, sortOrder, sortBy, Request));
         }
 
         [HttpPost("{wipId}/shares")]

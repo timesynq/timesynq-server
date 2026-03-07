@@ -22,27 +22,38 @@ namespace TimesynqServer.Persistence.Repository
                 .AnyAsync();
         }
 
-        public async Task<int> GetSharedUserCountAsync(Guid wipId)
-        {
-            return await _dbContext.Shares
-                .AsNoTracking()
-                .Where(s => s.WipId == wipId)
-                .CountAsync();
-        }
-
-        public async Task<int> GetSharedWipCountAsync(Guid sharedWithId)
-        {
-            return await _dbContext.Shares
-                .AsNoTracking()
-                .Where(s => s.SharedWithId == sharedWithId)
-                .CountAsync();
-        }
-
-        public async Task<IEnumerable<UserProjection>> GetSharedUsersByWipAsync(Guid wipId, int pageNumber, int pageSize, SortOrder sortOrder, ShareSortBy sortBy)
+        public async Task<int> GetSharedUserCountAsync(Guid wipId, string? searchString)
         {
             var query = _dbContext.Shares
                 .AsNoTracking()
                 .Where(s => s.WipId == wipId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(s => s.SharedWith!.UserName!.StartsWith(searchString));
+
+            return await query.CountAsync();
+        }
+
+        public async Task<int> GetSharedWipCountAsync(Guid sharedWithId, string? searchString)
+        {
+            var query = _dbContext.Shares
+                .AsNoTracking()
+                .Where(s => s.SharedWithId == sharedWithId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(s => s.Wip!.Name.StartsWith(searchString));
+
+            return await query.CountAsync();
+        }
+
+        public async Task<IEnumerable<UserProjection>> GetSharedUsersByWipAsync(Guid wipId, string? searchString, int pageNumber, int pageSize, SortOrder sortOrder, ShareSortBy sortBy)
+        {
+            var query = _dbContext.Shares
+                .AsNoTracking()
+                .Where(s => s.WipId == wipId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(s => s.SharedWith!.UserName!.StartsWith(searchString));
 
             query = (sortOrder, sortBy) switch
             {
@@ -70,11 +81,14 @@ namespace TimesynqServer.Persistence.Repository
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<WipProjection>> GetSharedWipsByUserAsync(Guid sharedWithId, int pageNumber, int pageSize, SortOrder sortOrder, ShareSortBy sortBy)
+        public async Task<IEnumerable<WipProjection>> GetSharedWipsByUserAsync(Guid sharedWithId, string? searchString, int pageNumber, int pageSize, SortOrder sortOrder, ShareSortBy sortBy)
         {
             var query = _dbContext.Shares
                 .AsNoTracking()
                 .Where(s => s.SharedWithId == sharedWithId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(s => s.Wip!.Name.StartsWith(searchString));
 
             query = (sortOrder, sortBy) switch
             {

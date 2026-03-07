@@ -29,7 +29,7 @@ namespace TimesynqServer.Infrastructure.Service
             _userRepository = userRepository;
         }
 
-        public async Task<PagedResult<UserDTO>> GetSharedUsersAsync(Guid callerId, Guid wipId, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
+        public async Task<PagedResult<UserDTO>> GetSharedUsersAsync(Guid callerId, Guid wipId, string? searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
         {
             WipProjection? wip = await _wipRepository.GetOwnedWipByIdAsync(callerId, wipId);
             if (wip == null)
@@ -39,9 +39,9 @@ namespace TimesynqServer.Infrastructure.Service
 
             pageSize = Math.Clamp(pageSize, PaginationConstants.MinPageSize, PaginationConstants.MaxPageSize);
 
-            int totalWips = await _shareRepository.GetSharedUserCountAsync(wipId);
+            int totalShares = await _shareRepository.GetSharedUserCountAsync(wipId, searchString);
 
-            int totalPages = (int)Math.Ceiling((double)totalWips / pageSize);
+            int totalPages = (int)Math.Ceiling((double)totalShares / pageSize);
 
             if (totalPages <= 0)
             {
@@ -60,18 +60,18 @@ namespace TimesynqServer.Infrastructure.Service
                 parsedSortBy = ShareSortBy.ShareAge;
             }
 
-            IEnumerable<UserProjection> userProjections = await _shareRepository.GetSharedUsersByWipAsync(wipId, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
+            IEnumerable<UserProjection> userProjections = await _shareRepository.GetSharedUsersByWipAsync(wipId, searchString, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
 
             IEnumerable<UserDTO> userDTOs = userProjections.Select(UserDTO.FromProjection);
 
-            return new PagedResult<UserDTO>(userDTOs, pageNumber, pageSize, totalWips, totalPages, httpRequest);
+            return new PagedResult<UserDTO>(userDTOs, pageNumber, pageSize, totalShares, totalPages, httpRequest);
         }
 
-        public async Task<PagedResult<WipDTO>> GetSharedWipsAsync(Guid callerId, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
+        public async Task<PagedResult<WipDTO>> GetSharedWipsAsync(Guid callerId, string? searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
         {
             pageSize = Math.Clamp(pageSize, PaginationConstants.MinPageSize, PaginationConstants.MaxPageSize);
 
-            int totalWips = await _shareRepository.GetSharedWipCountAsync(callerId);
+            int totalWips = await _shareRepository.GetSharedWipCountAsync(callerId, searchString);
 
             int totalPages = (int)Math.Ceiling((double)totalWips / pageSize);
 
@@ -92,7 +92,7 @@ namespace TimesynqServer.Infrastructure.Service
                 parsedSortBy = ShareSortBy.ShareAge;
             }
 
-            IEnumerable<WipProjection> wipProjections = await _shareRepository.GetSharedWipsByUserAsync(callerId, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
+            IEnumerable<WipProjection> wipProjections = await _shareRepository.GetSharedWipsByUserAsync(callerId, searchString, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
 
             IEnumerable<WipDTO> wipDTOs = wipProjections.Select(WipDTO.FromProjection);
 

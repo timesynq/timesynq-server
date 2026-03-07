@@ -36,7 +36,7 @@ namespace TimesynqServer.Persistence.Repository
                 .AsNoTracking()
                 .Where(w => w.OwnerId == ownerId);
 
-            if (searchString != null)
+            if (!string.IsNullOrEmpty(searchString))
                 query = query.Where(w => w.Name.StartsWith(searchString));
 
             return await query.CountAsync();
@@ -48,7 +48,7 @@ namespace TimesynqServer.Persistence.Repository
                 .AsNoTracking()
                 .Where(w => w.OwnerId == ownerId);
 
-            if (searchString != null)
+            if (!string.IsNullOrEmpty(searchString))
                 query = query.Where(w => w.Name.StartsWith(searchString));
 
             query = (sortOrder, sortBy) switch
