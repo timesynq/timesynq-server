@@ -30,27 +30,38 @@ namespace TimesynqServer.Persistence.Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<int> GetFollowersCountAsync(Guid followeeId)
-        {
-            return await _dbContext.Follows
-                .AsNoTracking()
-                .Where(f => f.FolloweeId == followeeId)
-                .CountAsync();
-        }
-
-        public async Task<int> GetFolloweesCountAsync(Guid followerId)
-        {
-            return await _dbContext.Follows
-                .AsNoTracking()
-                .Where(f => f.FollowerId == followerId)
-                .CountAsync();
-        }
-
-        public async Task<IEnumerable<UserProjection>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize, SortOrder sortOrder, FollowSortBy sortBy)
+        public async Task<int> GetFollowersCountAsync(Guid followeeId, string? searchString)
         {
             var query = _dbContext.Follows
                 .AsNoTracking()
                 .Where(f => f.FolloweeId == followeeId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(f => f.Follower!.UserName!.StartsWith(searchString));
+
+            return await query.CountAsync();
+        }
+
+        public async Task<int> GetFolloweesCountAsync(Guid followerId, string? searchString)
+        {
+            var query = _dbContext.Follows
+                .AsNoTracking()
+                .Where(f => f.FollowerId == followerId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(f => f.Followee!.UserName!.StartsWith(searchString));
+
+            return await query.CountAsync();
+        }
+
+        public async Task<IEnumerable<UserProjection>> GetFollowersAsync(Guid followeeId, string? searchString, int pageNumber, int pageSize, SortOrder sortOrder, FollowSortBy sortBy)
+        {
+            var query = _dbContext.Follows
+                .AsNoTracking()
+                .Where(f => f.FolloweeId == followeeId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(f => f.Follower!.UserName!.StartsWith(searchString));
 
             query = (sortOrder, sortBy) switch
             {
@@ -81,11 +92,14 @@ namespace TimesynqServer.Persistence.Repository
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<UserProjection>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize, SortOrder sortOrder, FollowSortBy sortBy)
+        public async Task<IEnumerable<UserProjection>> GetFolloweesAsync(Guid followerId, string? searchString, int pageNumber, int pageSize, SortOrder sortOrder, FollowSortBy sortBy)
         {
             var query = _dbContext.Follows
                 .AsNoTracking()
                 .Where(f => f.FollowerId == followerId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(f => f.Followee!.UserName!.StartsWith(searchString));
 
             query = (sortOrder, sortBy) switch
             {
