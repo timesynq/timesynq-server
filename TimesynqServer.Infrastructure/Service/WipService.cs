@@ -37,11 +37,11 @@ namespace TimesynqServer.Infrastructure.Service
             return WipDTO.FromProjection(wipProjection);
         }
 
-        public async Task<PagedResult<WipDTO>> GetMyWipsAsync(Guid callerId, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
+        public async Task<PagedResult<WipDTO>> GetMyWipsAsync(Guid callerId, string? searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
         {
             pageSize = Math.Clamp(pageSize, PaginationConstants.MinPageSize, PaginationConstants.MaxPageSize);
 
-            int totalWips = await _wipRepository.GetWipCountAsync(callerId);
+            int totalWips = await _wipRepository.GetWipCountAsync(callerId, searchString);
 
             int totalPages = (int)Math.Ceiling((double)totalWips / pageSize);
 
@@ -62,7 +62,7 @@ namespace TimesynqServer.Infrastructure.Service
                 parsedSortBy = WipSortBy.LastOpened;
             }
 
-            IEnumerable<WipProjection> wipProjections = await _wipRepository.GetWipsByUserAsync(callerId, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
+            IEnumerable<WipProjection> wipProjections = await _wipRepository.GetWipsByUserAsync(callerId, searchString, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
 
             IEnumerable<WipDTO> wipDTOs = wipProjections.Select(WipDTO.FromProjection);
 

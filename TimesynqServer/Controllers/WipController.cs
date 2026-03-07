@@ -46,13 +46,14 @@ namespace TimesynqServer.Controllers
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<WipDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetWips(
+            [FromQuery] string? searchString,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
             [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
             [FromQuery] string sortBy = PaginationConstants.DefaultWipSortBy
         )
         {
-            return Ok(await _wipService.GetMyWipsAsync(CallerId, pageNumber, pageSize, sortOrder, sortBy, Request));
+            return Ok(await _wipService.GetMyWipsAsync(CallerId, searchString, pageNumber, pageSize, sortOrder, sortBy, Request));
         }
 
         [HttpPost]
