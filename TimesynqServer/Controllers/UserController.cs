@@ -77,11 +77,11 @@ namespace TimesynqServer.Controllers
             return Ok(profileDTO);
         }
 
-        [HttpGet("search/{searchString}")]
+        [HttpGet]
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Search(
-            string searchString, 
+            [FromQuery] string? searchString,
             [FromQuery] int pageNumber = 1, 
             [FromQuery] int pageSize = PaginationConstants.DefaultPageSize, 
             [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder, 

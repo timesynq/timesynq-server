@@ -60,10 +60,10 @@ namespace TimesynqServer.Infrastructure.Service.UserService
             return await _userRepository.GetConfirmedUserByIdAsync(userId);
         }
 
-        public async Task<PagedResult<UserDTO>> SearchUsers(string searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
+        public async Task<PagedResult<UserDTO>> SearchUsers(string? searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
         {
 
-            if(searchString.Length < UserConstants.MinUserNameLength)
+            if(string.IsNullOrEmpty(searchString) || searchString.Length < UserConstants.MinUserNameLength)
             {
                 return PagedResult<UserDTO>.CreateEmpty();
             }
