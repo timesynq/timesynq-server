@@ -102,16 +102,16 @@ namespace TimesynqServer.Controllers
             );
         }
 
-        [HttpDelete]
+        [HttpDelete("{wipId}")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteWip([FromBody] DeleteWipRequestDTO deleteRequest)
+        public async Task<IActionResult> DeleteWip(Guid wipId)
         {
-            Result deleteWipResult = await _wipService.DeleteWipAsync(CallerId, deleteRequest.WipID);
+            Result deleteWipResult = await _wipService.DeleteWipAsync(CallerId, wipId);
             return deleteWipResult.Match<IActionResult>
             (
                 onSuccess: NoContent,
