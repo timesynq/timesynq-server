@@ -94,16 +94,16 @@ namespace TimesynqServer.Controllers
             );
         }
 
-        [HttpDelete]
+        [HttpDelete("{followeeId}")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UnfollowUser([FromBody] UnfollowRequestDTO unfollowRequest)
+        public async Task<IActionResult> UnfollowUser(Guid followeeId)
         {
-            Result unfollowResult = await _followService.UnfollowAsync(CallerId, unfollowRequest.FolloweeId);
+            Result unfollowResult = await _followService.UnfollowAsync(CallerId, followeeId);
             return unfollowResult.Match<IActionResult>
             (
                 onSuccess: NoContent,
