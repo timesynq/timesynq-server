@@ -25,12 +25,12 @@ namespace TimesynqServer.Domain.Entities.Shares
         /// <summary>
         /// Navigation property for the wip that is being shared.
         /// </summary>
-        public Wip? Wip { get; private set; }
+        public Wip Wip { get; private set; } = null!;
 
         /// <summary>
         /// Navigation property for the user that the wip is being shared with.
         /// </summary>
-        public TimesynqUser? SharedWith { get; private set; }
+        public TimesynqUser SharedWith { get; private set; } = null!;
 
         private Share() { }
 

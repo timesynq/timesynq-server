@@ -27,12 +27,12 @@ namespace TimesynqServer.Domain.Entities.Follows
         /// <summary>
         /// Navigation property for the user who follows another user.
         /// </summary>
-        public TimesynqUser? Follower { get; private set; }
+        public TimesynqUser Follower { get; private set; } = null!;
 
         /// <summary>
         /// Navigation property for the user who is being followed by another user.
         /// </summary>
-        public TimesynqUser? Followee { get; private set; }
+        public TimesynqUser Followee { get; private set; } = null!;
 
         private Follow() { }
 

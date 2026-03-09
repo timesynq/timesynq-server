@@ -29,7 +29,7 @@ namespace TimesynqServer.Persistence.Repository
                 .Where(s => s.WipId == wipId);
 
             if (!string.IsNullOrEmpty(searchString))
-                query = query.Where(s => s.SharedWith!.UserName!.StartsWith(searchString));
+                query = query.Where(s => s.SharedWith.UserName!.StartsWith(searchString));
 
             return await query.CountAsync();
         }
@@ -41,7 +41,7 @@ namespace TimesynqServer.Persistence.Repository
                 .Where(s => s.SharedWithId == sharedWithId);
 
             if (!string.IsNullOrEmpty(searchString))
-                query = query.Where(s => s.Wip!.Name.StartsWith(searchString));
+                query = query.Where(s => s.Wip.Name.StartsWith(searchString));
 
             return await query.CountAsync();
         }
@@ -53,17 +53,17 @@ namespace TimesynqServer.Persistence.Repository
                 .Where(s => s.WipId == wipId);
 
             if (!string.IsNullOrEmpty(searchString))
-                query = query.Where(s => s.SharedWith!.UserName!.StartsWith(searchString));
+                query = query.Where(s => s.SharedWith.UserName!.StartsWith(searchString));
 
             query = (sortOrder, sortBy) switch
             {
-                (SortOrder.Default, ShareSortBy.Name) => query.OrderBy(s => s.SharedWith!.UserName),
-                (SortOrder.Reverse, ShareSortBy.Name) => query.OrderByDescending(s => s.SharedWith!.UserName),
+                (SortOrder.Default, ShareSortBy.Name) => query.OrderBy(s => s.SharedWith.UserName),
+                (SortOrder.Reverse, ShareSortBy.Name) => query.OrderByDescending(s => s.SharedWith.UserName),
 
                 (SortOrder.Default, ShareSortBy.ShareAge) => query.OrderByDescending(s => s.CreatedOnUTC),
                 (SortOrder.Reverse, ShareSortBy.ShareAge) => query.OrderBy(s => s.CreatedOnUTC),
 
-                _ => query.OrderBy(s => s.SharedWith!.UserName)
+                _ => query.OrderBy(s => s.SharedWith.UserName)
             };
 
             return await query
@@ -71,7 +71,7 @@ namespace TimesynqServer.Persistence.Repository
                 .Take(pageSize)
                 .Select(s => new UserProjection
                 (
-                    s.SharedWith!.Id,
+                    s.SharedWith.Id,
                     s.SharedWith.UserName!,
                     s.SharedWith.ProfilePicture!,
                     s.SharedWith.CreatedOnUTC,
@@ -88,12 +88,12 @@ namespace TimesynqServer.Persistence.Repository
                 .Where(s => s.SharedWithId == sharedWithId);
 
             if (!string.IsNullOrEmpty(searchString))
-                query = query.Where(s => s.Wip!.Name.StartsWith(searchString));
+                query = query.Where(s => s.Wip.Name.StartsWith(searchString));
 
             query = (sortOrder, sortBy) switch
             {
-                (SortOrder.Default, ShareSortBy.Name) => query.OrderBy(s => s.Wip!.Name),
-                (SortOrder.Reverse, ShareSortBy.Name) => query.OrderByDescending(s => s.Wip!.Name),
+                (SortOrder.Default, ShareSortBy.Name) => query.OrderBy(s => s.Wip.Name),
+                (SortOrder.Reverse, ShareSortBy.Name) => query.OrderByDescending(s => s.Wip.Name),
 
                 (SortOrder.Default, ShareSortBy.ShareAge) => query.OrderByDescending(s => s.CreatedOnUTC),
                 (SortOrder.Reverse, ShareSortBy.ShareAge) => query.OrderBy(s => s.CreatedOnUTC),
@@ -105,11 +105,11 @@ namespace TimesynqServer.Persistence.Repository
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Select(s => new WipProjection(
-                    s.Wip!.Id,
-                    s.Wip!.Name,
-                    s.Wip!.OwnerId,
-                    s.Wip!.CreatedOnUTC,
-                    s.Wip!.LastOpenedOnUTC
+                    s.Wip.Id,
+                    s.Wip.Name,
+                    s.Wip.OwnerId,
+                    s.Wip.CreatedOnUTC,
+                    s.Wip.LastOpenedOnUTC
                 ))
                 .ToListAsync();
         }

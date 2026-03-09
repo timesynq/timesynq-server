@@ -46,7 +46,7 @@ namespace TimesynqServer.Domain.Entities.Wips
         /// <summary>
         /// Navigation property for the user who created the wip.
         /// </summary>
-        public TimesynqUser? Owner { get; private set; }
+        public TimesynqUser Owner { get; private set; } = null!;
 
         /// <summary>
         /// Navigation property for all users this wip has been shared with.
