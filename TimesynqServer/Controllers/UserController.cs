@@ -91,7 +91,7 @@ namespace TimesynqServer.Controllers
             return Ok(await _userService.SearchUsers(searchString, pageNumber, pageSize, sortOrder, sortBy, Request));
         }
 
-        [HttpPost("username")]
+        [HttpPatch("username")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
