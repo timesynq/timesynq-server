@@ -45,9 +45,12 @@ namespace TimesynqServer.Common
         public static class Share
         {
             public static DomainError MatchingId => new(StatusCodes.Status400BadRequest, "WipId and SharedWithId cannot be matching.");
+            public static DomainError NotFound => new(StatusCodes.Status404NotFound, "Share not found.");
             public static DomainError NoSharesDeleted => new(StatusCodes.Status404NotFound, "No shares were deleted.");
             public static DomainError CannotShareWithSelf => new(StatusCodes.Status409Conflict, "Cannot share wip with yourself.");
             public static DomainError AlreadyShared => new(StatusCodes.Status409Conflict, "Already shared with this user.");
+            public static DomainError AlreadyAccepted => new(StatusCodes.Status409Conflict, "Already accepted this share.");
+            public static DomainError ShareLimitReached => new(StatusCodes.Status422UnprocessableEntity, "Share limit reached.");
         }
     }
 }

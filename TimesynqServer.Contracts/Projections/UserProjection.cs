@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents only the TimesynqUser fields we need to retrieve from the database.
     /// </summary>
-    public sealed class UserProjection
+    public class UserProjection
     {
         /// <summary>
         /// The unique identifier of the user.

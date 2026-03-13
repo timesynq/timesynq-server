@@ -6,7 +6,7 @@ namespace TimesynqServer.Application.DTO
     /// <summary>
     /// Represents only the publicly relevant information of a TimesynqUser.
     /// </summary>
-    public sealed class UserDTO
+    public class UserDTO
     {
         /// <summary>
         /// The unique identifier of the user.
@@ -42,7 +42,7 @@ namespace TimesynqServer.Application.DTO
         /// </summary>
         public int FolloweeCount { get; }
 
-        private UserDTO(Guid id, string userName, uint profilePicture, DateTime createdOnUTC, int followerCount, int followeeCount)
+        protected UserDTO(Guid id, string userName, uint profilePicture, DateTime createdOnUTC, int followerCount, int followeeCount)
         {
             Id = id;
             UserName = userName;

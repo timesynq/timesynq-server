@@ -8,6 +8,6 @@
         /// <summary>
         /// The ID of the user that the wip is to be shared with.
         /// </summary>
-        public required Guid UserId { get; init; }
+        public required Guid ShareWithId { get; init; }
     }
 }

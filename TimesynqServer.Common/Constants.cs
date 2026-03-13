@@ -28,6 +28,8 @@
     {
         public const int MinNameLength = 1;
         public const int MaxNameLength = 100;
+        public const int MaxUnacceptedShares = 10;
+        public const int MaxUsersAWipCanBeSharedWith = 10;
     }
 
     public static class TrackerHubConstants

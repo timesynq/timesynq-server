@@ -18,6 +18,12 @@ namespace TimesynqServer.Domain.Entities.Shares
         public Guid SharedWithId { get; private set; }
         
         /// <summary>
+        /// Determines if the recipient of the share has accepted the invite.
+        /// IsAccepted == false means that the invite is pending. A declined share invite will be deleted.
+        /// </summary>
+        public bool IsAccepted { get; private set; }
+
+        /// <summary>
         /// The date when the share action occurred.
         /// </summary>
         public DateTime CreatedOnUTC { get; private set; }
@@ -39,6 +45,7 @@ namespace TimesynqServer.Domain.Entities.Shares
             WipId = wipId;
             SharedWithId = sharedWithId;
             CreatedOnUTC = DateTime.UtcNow;
+            IsAccepted = false;
         }
 
         public static Result<Share> Create(Guid wipId, Guid sharedWithId)
@@ -49,6 +56,14 @@ namespace TimesynqServer.Domain.Entities.Shares
             }
 
             return Result<Share>.Success(new Share(wipId, sharedWithId));
+        }
+
+        public Result Accept()
+        {
+            if (IsAccepted)
+                return Result.Failure(DomainErrors.Share.AlreadyAccepted);
+            IsAccepted = true;
+            return Result.Success();
         }
     }
 }
