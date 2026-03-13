@@ -30,19 +30,26 @@ namespace TimesynqServer.Persistence.Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<int> GetWipCountAsync(Guid ownerId)
-        {
-            return await _dbContext.Wips
-                .AsNoTracking()
-                .Where(w => w.OwnerId == ownerId)
-                .CountAsync();
-        }
-
-        public async Task<IEnumerable<WipProjection>> GetWipsByUserAsync(Guid ownerId, int pageNumber, int pageSize, SortOrder sortOrder, WipSortBy sortBy)
+        public async Task<int> GetWipCountAsync(Guid ownerId, string? searchString)
         {
             var query = _dbContext.Wips
                 .AsNoTracking()
                 .Where(w => w.OwnerId == ownerId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(w => w.Name.StartsWith(searchString));
+
+            return await query.CountAsync();
+        }
+
+        public async Task<IEnumerable<WipProjection>> GetWipsByUserAsync(Guid ownerId, string? searchString, int pageNumber, int pageSize, SortOrder sortOrder, WipSortBy sortBy)
+        {
+            var query = _dbContext.Wips
+                .AsNoTracking()
+                .Where(w => w.OwnerId == ownerId);
+
+            if (!string.IsNullOrEmpty(searchString))
+                query = query.Where(w => w.Name.StartsWith(searchString));
 
             query = (sortOrder, sortBy) switch
             {

@@ -2,7 +2,9 @@
 using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
+using TimesynqServer.Contracts.Projections;
 using TimesynqServer.Domain.Cache.Tracker;
+using TimesynqServer.Domain.Entities.Shares;
 using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
 
 namespace TimesynqServer.Infrastructure.Service
@@ -11,12 +13,14 @@ namespace TimesynqServer.Infrastructure.Service
     {
         private readonly IUserService _userService;
         private readonly IWipService _wipService;
+        private readonly IShareRepository _shareRepository;
         private readonly ITrackerHubCache _trackerHubCache;
 
-        public RoomService(IUserService userService, IWipService wipService, ITrackerHubCache trackerHubCache) 
+        public RoomService(IUserService userService, IWipService wipService, IShareRepository shareRepository, ITrackerHubCache trackerHubCache) 
         {
             _userService = userService;
             _wipService = wipService;
+            _shareRepository = shareRepository;
             _trackerHubCache = trackerHubCache;
         }
 
@@ -31,11 +35,15 @@ namespace TimesynqServer.Infrastructure.Service
             }
 
             // todo: this will fetch the joined tracker-init object and check that instead as if that object is null, the wip does not exist
+            // for initial manual testing sake this is fine, but these two calls should be combined into one "GetOwnedOrSharedTracker" method
             WipDTO? wipDTO = await _wipService.GetWipAsync(callerId, wipId);
-            if (wipDTO == null)
+            SharedWipProjection? sharedWipProjection = await _shareRepository.GetSharedWipAsync(wipId, callerId);
+            if (wipDTO == null && sharedWipProjection == null)
             {
                 return TrackerHubResult<RoomJoinedDTO>.Failure(TrackerHubError.WipNotFound);
             }
+
+            WipDTO loadedWipDTO = wipDTO ?? WipDTO.FromProjection(sharedWipProjection!);
 
             UserDTO? userDTO = await _userService.GetUserAsync(callerId);
             if (userDTO == null)
@@ -50,14 +58,14 @@ namespace TimesynqServer.Infrastructure.Service
                 UserId = callerId,
             };
 
-            TrackerHubResult<IEnumerable<RoomMember>> joinRoomResult = await _trackerHubCache.SetConnectionAndCreateRoomIfEmptyAsync(userDTO, newConnection, wipDTO);
+            TrackerHubResult<IEnumerable<RoomMember>> joinRoomResult = await _trackerHubCache.SetConnectionAndCreateRoomIfEmptyAsync(userDTO, newConnection, loadedWipDTO);
             if (!joinRoomResult.IsSuccessful || joinRoomResult.Value == null)
             {
                 return TrackerHubResult<RoomJoinedDTO>.Failure(joinRoomResult.ErrorMessage ?? TrackerHubError.FailedToJoinRoom);
             }
 
             return new RoomJoinedDTO(
-                wipDTO,
+                loadedWipDTO,
                 new RoomMemberDTO(userDTO, connectionId),
                 joinRoomResult.Value.Select(RoomMemberDTO.FromDomainModel)
             );

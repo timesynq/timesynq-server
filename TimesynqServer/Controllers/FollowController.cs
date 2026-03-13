@@ -43,14 +43,15 @@ namespace TimesynqServer.Controllers
         [Authorize]
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFollowers(
-            Guid userId, 
+            Guid userId,
+            [FromQuery] string? searchString,
             [FromQuery] int pageNumber = 1, 
             [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
             [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
             [FromQuery] string sortBy = PaginationConstants.DefaultFollowSearchSortBy
         )
         {
-            return Ok(await _followService.GetFollowersAsync(userId, pageNumber, pageSize, sortOrder, sortBy, Request));
+            return Ok(await _followService.GetFollowersAsync(userId, searchString, pageNumber, pageSize, sortOrder, sortBy, Request));
         }
 
         [HttpGet("{userId}/followees")]
@@ -58,13 +59,14 @@ namespace TimesynqServer.Controllers
         [ProducesResponseType(typeof(PagedResult<UserDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFollowees(
             Guid userId, 
+            [FromQuery] string? searchString,
             [FromQuery] int pageNumber = 1, 
             [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
             [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
             [FromQuery] string sortBy = PaginationConstants.DefaultFollowSearchSortBy
         )
         {
-            return Ok(await _followService.GetFolloweesAsync(userId, pageNumber, pageSize, sortOrder, sortBy, Request));
+            return Ok(await _followService.GetFolloweesAsync(userId, searchString, pageNumber, pageSize, sortOrder, sortBy, Request));
         }
 
         [HttpPost]
@@ -92,16 +94,16 @@ namespace TimesynqServer.Controllers
             );
         }
 
-        [HttpDelete]
+        [HttpDelete("{followeeId}")]
         [Authorize(Roles = "ConfirmedUser, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UnfollowUser([FromBody] UnfollowRequestDTO unfollowRequest)
+        public async Task<IActionResult> UnfollowUser(Guid followeeId)
         {
-            Result unfollowResult = await _followService.UnfollowAsync(CallerId, unfollowRequest.FolloweeId);
+            Result unfollowResult = await _followService.UnfollowAsync(CallerId, followeeId);
             return unfollowResult.Match<IActionResult>
             (
                 onSuccess: NoContent,

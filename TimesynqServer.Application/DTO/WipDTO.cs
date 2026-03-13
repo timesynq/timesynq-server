@@ -6,7 +6,7 @@ namespace TimesynqServer.Application.DTO
     /// <summary>
     /// Represents only the publicly relevant information of a Wip.
     /// </summary>
-    public sealed class WipDTO
+    public class WipDTO
     {
         /// <summary>
         /// The wip's unique identifier.
@@ -33,7 +33,7 @@ namespace TimesynqServer.Application.DTO
         /// </summary>
         public DateTime LastOpenedOnUTC { get; }
 
-        private WipDTO(Guid id, string name, Guid ownerId, DateTime createdOnUTC, DateTime lastOpenedOnUTC)
+        protected WipDTO(Guid id, string name, Guid ownerId, DateTime createdOnUTC, DateTime lastOpenedOnUTC)
         {
             Id = id;
             Name = name;

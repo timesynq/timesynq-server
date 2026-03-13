@@ -1,6 +1,6 @@
 ﻿namespace TimesynqServer.Contracts.Projections
 {
-    public sealed class WipProjection
+    public class WipProjection
     {
         /// <summary>
         /// The wip's unique identifier.
@@ -32,6 +32,7 @@
         /// </summary>
         /// <param name="id">The unique identifier of the wip.</param>
         /// <param name="name">The name of the wip.</param>
+        /// <param name="ownerId">The unique identifier of the user who created the wip.</param>
         /// <param name="createdOnUTC">The date when the wip was created.</param>
         /// <param name="lastOpenedOnUTC">The date when the wip was last opened.</param>
         public WipProjection(Guid id, string name, Guid ownerId, DateTime createdOnUTC, DateTime lastOpenedOnUTC)

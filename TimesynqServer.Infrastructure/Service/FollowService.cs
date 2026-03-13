@@ -34,11 +34,11 @@ namespace TimesynqServer.Infrastructure.Service.FollowService
             return Result<FollowDTO>.Success(FollowDTO.FromProjection(followProjection));
         }
 
-        public async Task<PagedResult<UserDTO>> GetFollowersAsync(Guid followeeId, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
+        public async Task<PagedResult<UserDTO>> GetFollowersAsync(Guid followeeId, string? searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
         {
             pageSize = Math.Clamp(pageSize, PaginationConstants.MinPageSize, PaginationConstants.MaxPageSize);
 
-            int totalFollowers = await _followRepository.GetFollowersCountAsync(followeeId);
+            int totalFollowers = await _followRepository.GetFollowersCountAsync(followeeId, searchString);
 
             int totalPages = (int)Math.Ceiling((double)totalFollowers / pageSize);
 
@@ -59,18 +59,18 @@ namespace TimesynqServer.Infrastructure.Service.FollowService
                 parsedSortBy = FollowSortBy.Followers;
             }
 
-            IEnumerable<UserProjection> followers = await _followRepository.GetFollowersAsync(followeeId, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
+            IEnumerable<UserProjection> followers = await _followRepository.GetFollowersAsync(followeeId, searchString, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
 
             IEnumerable<UserDTO> followerDTOs = followers.Select(UserDTO.FromProjection);
 
             return new PagedResult<UserDTO>(followerDTOs, pageNumber, pageSize, totalFollowers, totalPages, httpRequest);
         }
 
-        public async Task<PagedResult<UserDTO>> GetFolloweesAsync(Guid followerId, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
+        public async Task<PagedResult<UserDTO>> GetFolloweesAsync(Guid followerId, string? searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
         {
             pageSize = Math.Clamp(pageSize, PaginationConstants.MinPageSize, PaginationConstants.MaxPageSize);
 
-            int totalFollowees = await _followRepository.GetFolloweesCountAsync(followerId);
+            int totalFollowees = await _followRepository.GetFolloweesCountAsync(followerId, searchString);
 
             int totalPages = (int)Math.Ceiling((double)totalFollowees / pageSize);
 
@@ -91,7 +91,7 @@ namespace TimesynqServer.Infrastructure.Service.FollowService
                 parsedSortBy = FollowSortBy.Followers;
             }
 
-            IEnumerable<UserProjection> followees = await _followRepository.GetFolloweesAsync(followerId, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
+            IEnumerable<UserProjection> followees = await _followRepository.GetFolloweesAsync(followerId, searchString, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
 
             IEnumerable<UserDTO> followeeDTOs = followees.Select(UserDTO.FromProjection);
 
