@@ -60,5 +60,16 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// The task result indicates whether the operation was successful.
         /// </returns>
         public Task<bool> RemoveRoomAsync(Guid wipId);
+
+        /// <summary>
+        /// Changes the name of a wip that is stored in the cache.
+        /// </summary>
+        /// <param name="wipId">The room's unique identifier, taken from the unique identifier of the wip that the room was opened on.</param>
+        /// <param name="newName">The new wip name.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result indicates whether the operation was successful.
+        /// </returns>
+        public Task<bool> ChangeWipName(Guid wipId, string newName);
     }
 }

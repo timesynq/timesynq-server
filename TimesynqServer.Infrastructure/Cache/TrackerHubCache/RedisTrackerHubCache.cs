@@ -27,7 +27,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         {
             public static string ConnectionKeyPrefix(Guid userId)
                  => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Connection}:{userId}";
-            public static string ConnectionKey(Guid userId, string connectionId) 
+            public static string ConnectionKey(Guid userId, string connectionId)
                 => $"{ConnectionKeyPrefix(userId)}:{connectionId}";
 
             public static string RoomIndexKey(Guid wipId)
@@ -55,7 +55,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 const string ScriptPathPrefix = "TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts";
                 string path = $"{ScriptPathPrefix}.{filename}";
                 Assembly assembly = Assembly.GetExecutingAssembly();
-                using Stream? stream = assembly.GetManifestResourceStream(path) 
+                using Stream? stream = assembly.GetManifestResourceStream(path)
                     ?? throw new Exception($"Resource not found: {path}");
                 using var reader = new StreamReader(stream);
                 return reader.ReadToEnd();
@@ -98,12 +98,12 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             string userSpecificPrefix = CacheKeyBuilder.ConnectionKeyPrefix(userId);
 
             IEnumerable<RedisValue> connectionKeysBelongingToUser = connectionKeys.Where(
-                key => 
+                key =>
                 key.ToString().StartsWith(userSpecificPrefix)
             );
 
             return connectionKeysBelongingToUser.Select(
-                key => 
+                key =>
                 CacheKeyBuilder.ExtractConnectionIdFromConnectionKey(key.ToString())
             );
         }
@@ -135,7 +135,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                     roomIndexKey,
                     roomConnectionsKey,
                     roomInfoKey,
-                ], 
+                ],
                 [
                     payload
                 ]
@@ -199,6 +199,22 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             );
 
             return result == 0;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> ChangeWipName(Guid wipId, string newName)
+        {
+            string roomInfoKey = CacheKeyBuilder.RoomInfoKey(wipId);
+
+            IDatabase db = _redis.GetDatabase();
+
+            ITransaction tran = db.CreateTransaction();
+
+            tran.AddCondition(Condition.KeyExists(roomInfoKey));
+            Task<bool> setTask = tran.HashSetAsync(roomInfoKey, "WipName", newName);
+
+            bool committed = await tran.ExecuteAsync();
+            return committed && await setTask;
         }
     }
 }
