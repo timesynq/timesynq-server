@@ -1,6 +1,8 @@
-﻿using StackExchange.Redis;
+﻿using Amazon.SimpleEmail.Model;
+using StackExchange.Redis;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
@@ -23,14 +25,27 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
         private static class CacheKeyBuilder
         {
+            public static string ConnectionKeyPrefix(Guid userId)
+                 => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Connection}:{userId}";
             public static string ConnectionKey(Guid userId, string connectionId) 
-                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Connection}:{userId}:{connectionId}";
+                => $"{ConnectionKeyPrefix(userId)}:{connectionId}";
+
             public static string RoomIndexKey(Guid wipId)
                 => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Index}";
             public static string RoomConnectionsKey(Guid wipId)
                 => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Connections}";
             public static string RoomInfoKey(Guid wipId)
                 => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Info}";
+
+            public static string ExtractConnectionIdFromConnectionKey(string connectionKey)
+            {
+                if (!Regex.IsMatch(connectionKey, @"^tracker:connection:[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}:[^\s]+$"))
+                    throw new ArgumentException(
+                        $"Argument ({connectionKey}) is not formatted properly. " +
+                        $"Use CacheKeyBuilder.ConnectionKey(Guid, string) to build a proper connection key."
+                    );
+                return connectionKey.Split(':')[^1];
+            }
         }
 
         private static class LuaScripts
@@ -73,11 +88,32 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<string>> GetConnectionIdsAsync(Guid wipId, Guid userId)
+        {
+            string roomConnectionsKey = CacheKeyBuilder.RoomConnectionsKey(wipId);
+
+            IDatabase db = _redis.GetDatabase();
+
+            RedisValue[] connectionKeys = await db.SetMembersAsync(roomConnectionsKey);
+            string userSpecificPrefix = CacheKeyBuilder.ConnectionKeyPrefix(userId);
+
+            IEnumerable<RedisValue> connectionKeysBelongingToUser = connectionKeys.Where(
+                key => 
+                key.ToString().StartsWith(userSpecificPrefix)
+            );
+
+            return connectionKeysBelongingToUser.Select(
+                key => 
+                CacheKeyBuilder.ExtractConnectionIdFromConnectionKey(key.ToString())
+            );
+        }
+
+        /// <inheritdoc/>
         public async Task<TrackerHubResult<IEnumerable<RoomMember>>> SetConnectionAndCreateRoomIfEmptyAsync(UserDTO userDTO, TrackerConnection connection, WipDTO wipDTO)
         {
             string connectionKey = CacheKeyBuilder.ConnectionKey(userDTO.Id, connection.ConnectionId);
             string roomIndexKey = CacheKeyBuilder.RoomIndexKey(connection.WipId);
-            string RoomConnectionsKey = CacheKeyBuilder.RoomConnectionsKey(connection.WipId);
+            string roomConnectionsKey = CacheKeyBuilder.RoomConnectionsKey(connection.WipId);
             string roomInfoKey = CacheKeyBuilder.RoomInfoKey(connection.WipId);
 
             string payload = JsonSerializer.Serialize(new
@@ -97,7 +133,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 [
                     connectionKey,
                     roomIndexKey,
-                    RoomConnectionsKey,
+                    roomConnectionsKey,
                     roomInfoKey,
                 ], 
                 [

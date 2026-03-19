@@ -19,6 +19,14 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         public Task<Guid?> GetRoomCodeAsync(Guid userId, string connectionId);
 
         /// <summary>
+        /// Get's all connection ids associated with the specified room and user combination.
+        /// </summary>
+        /// <param name="wipId">The room's unique identifier, taken from the unique identifier of the wip that the room was opened on</param>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <returns>An enumerable list of SignalR connection identifiers that correspond to the same user within the same room.</returns>
+        public Task<IEnumerable<string>> GetConnectionIdsAsync(Guid wipId, Guid userId);
+
+        /// <summary>
         /// Adds a connection to a room, and initializes the room if it doesn't already exist.
         /// Joining a room will prevent it from expiring.
         /// </summary>
