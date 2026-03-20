@@ -93,7 +93,7 @@ namespace TimesynqServer.Controllers
             Result<WipDTO> changeWipNameResult = await _wipService.ChangeWipName(CallerId, wipId, changeWipNameRequest.NewName);
             return changeWipNameResult.Match<IActionResult>
             (
-                onSuccess: Ok, // todo: use IHubContext to propagate the name change to hub users
+                onSuccess: Ok,
                 onFailure: error => Problem(
                     statusCode: error.Code,
                     detail: error.Message
