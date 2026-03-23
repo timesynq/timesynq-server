@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
 using TimesynqServer.Application.Service;
@@ -9,6 +10,8 @@ using TimesynqServer.Contracts.Projections;
 using TimesynqServer.Domain.Entities.Shares;
 using TimesynqServer.Domain.Entities.Users;
 using TimesynqServer.Domain.Entities.Wips;
+using TimesynqServer.Hubs.TrackerHub;
+using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
 using TimesynqServer.Persistence.UnitOfWork;
 
 namespace TimesynqServer.Infrastructure.Service
@@ -19,18 +22,24 @@ namespace TimesynqServer.Infrastructure.Service
         private readonly IShareRepository _shareRepository;
         private readonly IWipRepository _wipRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ITrackerHubCache _trackerHubCache;
+        private readonly IHubContext<TrackerHub> _hubContext;
 
         public ShareService(
             IUnitOfWork unitOfWork,
             IShareRepository shareRepository,
             IWipRepository wipRepository,
-            IUserRepository userRepository
+            IUserRepository userRepository,
+            ITrackerHubCache trackerHubCache,
+            IHubContext<TrackerHub> hubContext
             ) 
         {
             _unitOfWork = unitOfWork;
             _shareRepository = shareRepository;
             _wipRepository = wipRepository;
             _userRepository = userRepository;
+            _trackerHubCache = trackerHubCache;
+            _hubContext = hubContext;
         }
 
         public async Task<IEnumerable<SharedUserDTO>> GetSharedUsersAsync(Guid callerId, Guid wipId)
@@ -46,11 +55,11 @@ namespace TimesynqServer.Infrastructure.Service
             return sharedUserProjections.Select(SharedUserDTO.FromProjection);
         }
 
-        public async Task<PagedResult<SharedWipDTO>> GetSharedWipsAsync(Guid callerId, string? searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
+        public async Task<PagedResult<SharedWipDTO>> GetSharedWipsAsync(Guid callerId, bool isAccepted, string? searchString, int pageNumber, int pageSize, string sortOrder, string sortBy, HttpRequest httpRequest)
         {
             pageSize = Math.Clamp(pageSize, PaginationConstants.MinPageSize, PaginationConstants.MaxPageSize);
 
-            int totalWips = await _shareRepository.GetSharedWipCountAsync(callerId, searchString);
+            int totalWips = await _shareRepository.GetSharedWipCountAsync(callerId, isAccepted, searchString);
 
             int totalPages = (int)Math.Ceiling((double)totalWips / pageSize);
 
@@ -71,7 +80,7 @@ namespace TimesynqServer.Infrastructure.Service
                 parsedSortBy = ShareSortBy.ShareAge;
             }
 
-            IEnumerable<SharedWipProjection> sharedWipProjections = await _shareRepository.GetSharedWipsByUserAsync(callerId, searchString, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
+            IEnumerable<SharedWipProjection> sharedWipProjections = await _shareRepository.GetSharedWipsByUserAsync(callerId, isAccepted, searchString, pageNumber, pageSize, parsedSortOrder, parsedSortBy);
 
             IEnumerable<SharedWipDTO> sharedWipDTOs = sharedWipProjections.Select(SharedWipDTO.FromProjection);
 
@@ -103,7 +112,7 @@ namespace TimesynqServer.Infrastructure.Service
                 return Result<UserDTO>.Failure(DomainErrors.Share.AlreadyShared);
             }
 
-            int numUnacceptedShares = await _shareRepository.GetUnacceptedShareCountAsync(callerId);
+            int numUnacceptedShares = await _shareRepository.GetSharedWipCountAsync(callerId, isAccepted: false, searchString: null);
             if (numUnacceptedShares >= WipConstants.MaxUnacceptedShares)
             {
                 return Result<UserDTO>.Failure(DomainErrors.Share.ShareLimitReached);
@@ -128,12 +137,12 @@ namespace TimesynqServer.Infrastructure.Service
             );
         }
 
-        public async Task<Result<SharedWipDTO>> AcceptShareAsync(Guid callerId, Guid wipId)
+        public async Task<Result> AcceptShareAsync(Guid callerId, Guid wipId)
         {
             Share? share = await _shareRepository.GetTrackedShareAsync(wipId, callerId);
             if (share == null)
             {
-                return Result<SharedWipDTO>.Failure(DomainErrors.Share.NotFound);
+                return Result.Failure(DomainErrors.Share.NotFound);
             }
 
             Result shareResult = share.Accept();
@@ -142,12 +151,9 @@ namespace TimesynqServer.Infrastructure.Service
                 onSuccess: async () =>
                 {
                     await _unitOfWork.SaveChangesAsync();
-                    SharedWipProjection? sharedWipProjection = await _shareRepository.GetSharedWipAsync(wipId, callerId);
-                    if (sharedWipProjection == null)
-                        return Result<SharedWipDTO>.Failure(DomainErrors.Share.NotFound);
-                    return Result<SharedWipDTO>.Success(SharedWipDTO.FromProjection(sharedWipProjection));
+                    return Result.Success();
                 },
-                onFailure: error => Task.FromResult(Result<SharedWipDTO>.Failure(error))
+                onFailure: error => Task.FromResult(Result.Failure(error))
             );
         }
 
@@ -164,6 +170,13 @@ namespace TimesynqServer.Infrastructure.Service
             if (deleted == 0)
             {
                 return Result.Failure(DomainErrors.Share.NoSharesDeleted);
+            }
+
+            IEnumerable<string> revokedConnectionIds = await _trackerHubCache.GetConnectionIdsAsync(wipId, sharedWithId);
+            foreach(string connectionId in revokedConnectionIds)
+            {
+                await _hubContext.Groups.RemoveFromGroupAsync(connectionId, wipId.ToString());
+                await _hubContext.Clients.Client(connectionId).SendAsync(TrackerHubClientCallbacks.AccessExpired);
             }
 
             return Result.Success();

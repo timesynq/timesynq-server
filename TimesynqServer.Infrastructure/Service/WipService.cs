@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Pagination;
 using TimesynqServer.Application.Service;
@@ -8,6 +9,8 @@ using TimesynqServer.Common.Result;
 using TimesynqServer.Contracts.Projections;
 using TimesynqServer.Domain.Entities.Users;
 using TimesynqServer.Domain.Entities.Wips;
+using TimesynqServer.Hubs.TrackerHub;
+using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
 using TimesynqServer.Persistence.UnitOfWork;
 
 namespace TimesynqServer.Infrastructure.Service
@@ -17,12 +20,22 @@ namespace TimesynqServer.Infrastructure.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _userRepository;
         private readonly IWipRepository _wipRepository;
+        private readonly ITrackerHubCache _trackerHubCache;
+        private readonly IHubContext<TrackerHub> _hubContext;
 
-        public WipService(IUnitOfWork unitOfWork, IUserRepository userRepository, IWipRepository wipRepository) 
+        public WipService(
+            IUnitOfWork unitOfWork,
+            IUserRepository userRepository, 
+            IWipRepository wipRepository,
+            ITrackerHubCache trackerHubCache,
+            IHubContext<TrackerHub> hubContext
+        ) 
         {
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _wipRepository = wipRepository;
+            _trackerHubCache = trackerHubCache;
+            _hubContext = hubContext;
         }
 
         public async Task<WipDTO?> GetWipAsync(Guid callerId, Guid wipId)
@@ -95,6 +108,8 @@ namespace TimesynqServer.Infrastructure.Service
                 onSuccess: async () =>
                 {
                     await _unitOfWork.SaveChangesAsync();
+                    await _hubContext.Clients.Group(wipId.ToString()).SendAsync(TrackerHubClientCallbacks.WipNameChanged, newName);
+                    await _trackerHubCache.ChangeWipName(wipId, newName);
                     return Result<WipDTO>.Success(WipDTO.FromWip(wip));
                 },
                 onFailure: error => Task.FromResult(Result<WipDTO>.Failure(error))

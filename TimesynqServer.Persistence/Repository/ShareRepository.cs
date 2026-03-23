@@ -31,6 +31,8 @@ namespace TimesynqServer.Persistence.Repository
                     s.Wip.Id,
                     s.Wip.Name,
                     s.Wip.OwnerId,
+                    s.Wip.Owner.UserName!,
+                    s.CreatedOnUTC,
                     s.Wip.CreatedOnUTC,
                     s.Wip.LastOpenedOnUTC,
                     s.IsAccepted
@@ -46,19 +48,11 @@ namespace TimesynqServer.Persistence.Repository
                 .AnyAsync();
         }
 
-        public async Task<int> GetUnacceptedShareCountAsync(Guid callerId)
-        {
-            return await _dbContext.Shares
-                .AsNoTracking()
-                .Where(s => s.Wip.OwnerId == callerId && !s.IsAccepted)
-                .CountAsync();
-        }
-
-        public async Task<int> GetSharedWipCountAsync(Guid sharedWithId, string? searchString)
+        public async Task<int> GetSharedWipCountAsync(Guid sharedWithId, bool isAccepted, string? searchString)
         {
             var query = _dbContext.Shares
                 .AsNoTracking()
-                .Where(s => s.SharedWithId == sharedWithId);
+                .Where(s => s.SharedWithId == sharedWithId && s.IsAccepted == isAccepted);
 
             if (!string.IsNullOrEmpty(searchString))
                 query = query.Where(s => s.Wip.Name.StartsWith(searchString));
@@ -85,11 +79,19 @@ namespace TimesynqServer.Persistence.Repository
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<SharedWipProjection>> GetSharedWipsByUserAsync(Guid sharedWithId, string? searchString, int pageNumber, int pageSize, SortOrder sortOrder, ShareSortBy sortBy)
+        public async Task<IEnumerable<SharedWipProjection>> GetSharedWipsByUserAsync(
+            Guid sharedWithId, 
+            bool isAccepted, 
+            string? searchString,
+            int pageNumber, 
+            int pageSize,
+            SortOrder sortOrder,
+            ShareSortBy sortBy
+        )
         {
             var query = _dbContext.Shares
                 .AsNoTracking()
-                .Where(s => s.SharedWithId == sharedWithId);
+                .Where(s => s.SharedWithId == sharedWithId && s.IsAccepted == isAccepted);
 
             if (!string.IsNullOrEmpty(searchString))
                 query = query.Where(s => s.Wip.Name.StartsWith(searchString));
@@ -112,6 +114,8 @@ namespace TimesynqServer.Persistence.Repository
                     s.Wip.Id,
                     s.Wip.Name,
                     s.Wip.OwnerId,
+                    s.Wip.Owner.UserName!,
+                    s.CreatedOnUTC,
                     s.Wip.CreatedOnUTC,
                     s.Wip.LastOpenedOnUTC,
                     s.IsAccepted

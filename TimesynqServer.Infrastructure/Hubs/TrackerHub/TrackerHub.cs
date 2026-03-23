@@ -52,7 +52,7 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             string roomCode = leaveRoomResult.Value.WipId.ToString();
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserLeftRoom, leaveRoomResult.Value.UserId);
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.UserLeftRoom, leaveRoomResult.Value);
 
             return TrackerHubResult.Success();
         }

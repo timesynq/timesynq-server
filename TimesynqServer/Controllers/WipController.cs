@@ -93,7 +93,7 @@ namespace TimesynqServer.Controllers
             Result<WipDTO> changeWipNameResult = await _wipService.ChangeWipName(CallerId, wipId, changeWipNameRequest.NewName);
             return changeWipNameResult.Match<IActionResult>
             (
-                onSuccess: Ok, // todo: use IHubContext to propagate the name change to hub users
+                onSuccess: Ok,
                 onFailure: error => Problem(
                     statusCode: error.Code,
                     detail: error.Message
@@ -130,16 +130,18 @@ namespace TimesynqServer.Controllers
         }
 
         [HttpGet("shared")]
+        [Authorize]
         [ProducesResponseType(typeof(PagedResult<SharedWipDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetSharedWips(
             [FromQuery] string? searchString,
+            [FromQuery] bool isAccepted = true,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = PaginationConstants.DefaultPageSize,
             [FromQuery] string sortOrder = PaginationConstants.DefaultSortOrder,
             [FromQuery] string sortBy = PaginationConstants.DefaultShareSortBy
         )
         {
-            return Ok(await _shareService.GetSharedWipsAsync(CallerId, searchString, pageNumber, pageSize, sortOrder, sortBy, Request));
+            return Ok(await _shareService.GetSharedWipsAsync(CallerId, isAccepted, searchString, pageNumber, pageSize, sortOrder, sortBy, Request));
         }
 
         [HttpPost("{wipId}/shares")]
@@ -167,12 +169,20 @@ namespace TimesynqServer.Controllers
         }
 
         [HttpPatch("{wipId}/shares")]
+        [Authorize(Roles = "ConfirmedUser, Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> AcceptShare(Guid wipId) 
         {
-            Result<SharedWipDTO> acceptResult = await _shareService.AcceptShareAsync(CallerId, wipId);
-            return acceptResult.Match
+            Result acceptResult = await _shareService.AcceptShareAsync(CallerId, wipId);
+            return acceptResult.Match<IActionResult>
             (
-                onSuccess: Ok,
+                onSuccess: NoContent,
                 onFailure: error => Problem(
                     statusCode: error.Code,
                     detail: error.Message
