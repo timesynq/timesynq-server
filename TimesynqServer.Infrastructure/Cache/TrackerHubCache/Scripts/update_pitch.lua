@@ -3,7 +3,7 @@
 -- KEYS[1] = connectionKey
 
 -- ARGV[1] = JSON serialized payload that contains
--- UserId, Frame, Channel, Line, NoteGroup, NewPitch
+-- UserId, Frame, Channel, Line, NoteGroup, Address, NewPitch, UpdatedOnUTC
 
 local empty_line_value = string.rep("-", 28)
 
@@ -21,6 +21,7 @@ old_line_value = old_line_value and old_line_value or empty_line_value
 local note_group = tonumber(input.NoteGroup)
 
 local left = note_group ~= 0 and string.sub(old_line_value, 1, (note_group * 4) + 1) or ""
+local old_pitch_value = string.sub(old_line_value, (note_group * 4) + 1, (note_group * 4) + 3)
 local right = string.sub(old_line_value, (note_group * 4) + 3)
 local new_line_value = left .. input.NewPitch .. right
 
@@ -32,8 +33,15 @@ else
 	)
 end
 
--- create operational log entry and save it
 local room_log_key = "tracker:room:" .. wip_id .. ":log"
-
+local operational_log_entry = {
+	UserId = input.UserId,
+	Timestamp = input.UpdatedOnUTC,
+	OldValue = old_pitch_value,	
+	NewValue = input.NewPitch,
+	Address = input.Address
+}
+local operation_log_entry_json = cjson.encode(operation_log_entry)
+redis.call("RPUSH", room_log_key, operation_log_entry_json)
 
 return wip_id

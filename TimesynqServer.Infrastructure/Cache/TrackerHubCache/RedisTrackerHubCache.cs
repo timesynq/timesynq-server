@@ -1,6 +1,7 @@
 ﻿using Amazon.SimpleEmail.Model;
 using StackExchange.Redis;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using TimesynqServer.Application.DTO;
@@ -16,6 +17,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
     /// </summary>
     public class RedisTrackerHubCache : ITrackerHubCache
     {
+        private const string NullPitch = "--";
+        private const string NullInstrument = "--";
 
         private readonly IConnectionMultiplexer _redis;
 
@@ -230,14 +233,23 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         {
             string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
 
+            var cellAddress = CellAddress.CreatePitchAddress(
+                updatePitchCommandDTO.Frame,
+                updatePitchCommandDTO.Channel,
+                updatePitchCommandDTO.Line,
+                updatePitchCommandDTO.NoteGroup
+            );
+
             string payload = JsonSerializer.Serialize(new
             {
                 UserId = userId.ToString(),
-                Frame = Hex.TwoDigit(updatePitchCommandDTO.Frame),
-                Channel = Hex.TwoDigit(updatePitchCommandDTO.Channel),
-                Line = Hex.TwoDigit(updatePitchCommandDTO.Line),
+                Frame = cellAddress.FrameHex,
+                Channel = cellAddress.ChannelHex,
+                Line = cellAddress.LineHex,
                 NoteGroup = updatePitchCommandDTO.NoteGroup.ToString(),
-                NewPitch = updatePitchCommandDTO.NewPitch == null ? "--" : Hex.TwoDigit(updatePitchCommandDTO.NewPitch.Value),
+                Address = cellAddress.Address,
+                NewPitch = updatePitchCommandDTO.NewPitch == null ? NullPitch : Hex.TwoDigit(updatePitchCommandDTO.NewPitch.Value),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
             });
 
             IDatabase db = _redis.GetDatabase();
@@ -265,14 +277,23 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         {
             string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
 
+            var cellAddress = CellAddress.CreateInstrumentAddress(
+                updateInstrumentCommandDTO.Frame,
+                updateInstrumentCommandDTO.Channel,
+                updateInstrumentCommandDTO.Line,
+                updateInstrumentCommandDTO.NoteGroup
+            );
+
             string payload = JsonSerializer.Serialize(new
             {
                 UserId = userId.ToString(),
-                Frame = Hex.TwoDigit(updateInstrumentCommandDTO.Frame),
-                Channel = Hex.TwoDigit(updateInstrumentCommandDTO.Channel),
-                Line = Hex.TwoDigit(updateInstrumentCommandDTO.Line),
+                Frame = cellAddress.FrameHex,
+                Channel = cellAddress.ChannelHex,
+                Line = cellAddress.LineHex,
                 NoteGroup = updateInstrumentCommandDTO.NoteGroup.ToString(),
-                NewInstrument = updateInstrumentCommandDTO.NewInstrument == null ? "--" : Hex.TwoDigit(updateInstrumentCommandDTO.NewInstrument.Value)
+                Address = cellAddress.Address,
+                NewInstrument = updateInstrumentCommandDTO.NewInstrument == null ? NullInstrument : Hex.TwoDigit(updateInstrumentCommandDTO.NewInstrument.Value),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
             });
 
             IDatabase db = _redis.GetDatabase();
