@@ -49,9 +49,9 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             public static string RoomLogKey(Guid wipId)
                 => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Log}";
             public static string FrameKey(Guid wipId, int frame)
-                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Frame}:{frame:X2}";
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Frame}:{Hex.TwoDigit(frame)}";
             public static string ChannelKey(Guid wipId, int frame, int channel)
-                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Frame}:{frame:X2}:{TrackerHubCacheKeySegments.Channel}:{channel:X2}";
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Frame}:{Hex.TwoDigit(frame)}:{TrackerHubCacheKeySegments.Channel}:{Hex.TwoDigit(channel)}";
         }
 
         private static class LuaScripts
@@ -233,11 +233,11 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             string payload = JsonSerializer.Serialize(new
             {
                 UserId = userId.ToString(),
-                Frame = $"{updatePitchCommandDTO.Frame:X2}",
-                Channel = $"{updatePitchCommandDTO.Channel:X2}",
-                Line = $"{updatePitchCommandDTO.Line:X2}",
+                Frame = Hex.TwoDigit(updatePitchCommandDTO.Frame),
+                Channel = Hex.TwoDigit(updatePitchCommandDTO.Channel),
+                Line = Hex.TwoDigit(updatePitchCommandDTO.Line),
                 NoteGroup = updatePitchCommandDTO.NoteGroup.ToString(),
-                NewPitch = updatePitchCommandDTO == null ? "--" : $"{updatePitchCommandDTO.NewPitch:X2}",
+                NewPitch = updatePitchCommandDTO.NewPitch == null ? "--" : Hex.TwoDigit(updatePitchCommandDTO.NewPitch.Value),
             });
 
             IDatabase db = _redis.GetDatabase();
@@ -268,11 +268,11 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             string payload = JsonSerializer.Serialize(new
             {
                 UserId = userId.ToString(),
-                Frame = $"{updateInstrumentCommandDTO.Frame:X2}",
-                Channel = $"{updateInstrumentCommandDTO.Channel:X2}",
-                Line = $"{updateInstrumentCommandDTO.Line:X2}",
+                Frame = Hex.TwoDigit(updateInstrumentCommandDTO.Frame),
+                Channel = Hex.TwoDigit(updateInstrumentCommandDTO.Channel),
+                Line = Hex.TwoDigit(updateInstrumentCommandDTO.Line),
                 NoteGroup = updateInstrumentCommandDTO.NoteGroup.ToString(),
-                NewInstrument = updateInstrumentCommandDTO == null ? "--" : $"{updateInstrumentCommandDTO.NewInstrument:X2}"
+                NewInstrument = updateInstrumentCommandDTO.NewInstrument == null ? "--" : Hex.TwoDigit(updateInstrumentCommandDTO.NewInstrument.Value)
             });
 
             IDatabase db = _redis.GetDatabase();
