@@ -15,5 +15,6 @@
         public static string InvalidFXGroup = $"Invalid FX group. FX group value must be between 0 and {TrackerConstants.MaxFXGroups - 1} inclusive.";
         public static string InvalidPitch = $"Invalid pitch. Pitch value must be between 0 and {TrackerConstants.MaxPitches - 1} inclusive.";
         public static string FailedToUpdatePitch = "Failed to update pitch.";
+        public static string FailedToUpdateInstrument = "Failed to update instrument";
     }
 }

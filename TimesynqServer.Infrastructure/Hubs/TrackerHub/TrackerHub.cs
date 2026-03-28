@@ -89,5 +89,18 @@ namespace TimesynqServer.Hubs.TrackerHub
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.PitchUpdated, updatePitchCommandDTO);
             return TrackerHubResult.Success();
         }
+
+        public async Task<TrackerHubResult> UpdateInstrument(UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
+        {
+            TrackerHubResult<Guid> updateInstrumentResult = await _roomService.UpdateInstrument(Context.UserIdentifier, Context.ConnectionId, updateInstrumentCommandDTO);
+            if (!updateInstrumentResult.IsSuccessful)
+            {
+                return TrackerHubResult.Failure(updateInstrumentResult.ErrorMessage ?? TrackerHubError.FailedToUpdateInstrument);
+            }
+
+            string roomCode = updateInstrumentResult.Value.ToString();
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.PitchUpdated, updateInstrumentCommandDTO);
+            return TrackerHubResult.Success();
+        }
     }
 }

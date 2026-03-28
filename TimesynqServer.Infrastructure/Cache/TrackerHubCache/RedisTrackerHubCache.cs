@@ -68,16 +68,15 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             }
 
             public static readonly string RoomJoinScript =
-                    LoadEmbeddedScript("set_connection_and_create_room_if_empty.lua");
-
+                LoadEmbeddedScript("set_connection_and_create_room_if_empty.lua");
             public static readonly string RoomLeaveScript =
-                    LoadEmbeddedScript("remove_connection_and_cleanup_if_empty.lua");
-
+                LoadEmbeddedScript("remove_connection_and_cleanup_if_empty.lua");
             public static readonly string RoomRemoveScript =
-                    LoadEmbeddedScript("remove_room.lua");
-
+                LoadEmbeddedScript("remove_room.lua");
             public static readonly string PitchUpdateScript =
-                    LoadEmbeddedScript("update_pitch.lua");
+                LoadEmbeddedScript("update_pitch.lua");
+            public static readonly string InstrumentUpdateScript =
+                LoadEmbeddedScript("update_instrument.lua");
         }
 
         /// <inheritdoc/>
@@ -245,6 +244,41 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.PitchUpdateScript,
+                [
+                    connectionKey,
+                ],
+                [
+                    payload
+                ]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid?> UpdateInstrumentAsync(Guid userId, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Frame = $"{updateInstrumentCommandDTO.Frame:X2}",
+                Channel = $"{updateInstrumentCommandDTO.Channel:X2}",
+                Line = $"{updateInstrumentCommandDTO.Line:X2}",
+                NoteGroup = updateInstrumentCommandDTO.NoteGroup.ToString(),
+                NewInstrument = updateInstrumentCommandDTO == null ? "--" : $"{updateInstrumentCommandDTO.NewInstrument:X2}"
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.InstrumentUpdateScript,
                 [
                     connectionKey,
                 ],

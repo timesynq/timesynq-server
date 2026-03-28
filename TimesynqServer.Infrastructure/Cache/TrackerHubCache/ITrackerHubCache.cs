@@ -81,5 +81,14 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// <param name="updatePitchCommandDTO">The information on what the new pitch is and where it goes.</param>
         /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
         public Task<Guid?> UpdatePitchAsync(Guid userId, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO);
+
+        /// <summary>
+        /// Updates a single instrument value in a wip. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="updateInstrumentCommandDTO">The information on what the new instrument is and where it goes.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> UpdateInstrumentAsync(Guid userId, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO);
     }
 }

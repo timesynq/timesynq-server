@@ -155,9 +155,40 @@ namespace TimesynqServer.Infrastructure.Service
             }
         }
 
-        public Task<TrackerHubResult<Guid>> UpdateInstrument(string? userIdentifier, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
+        public async Task<TrackerHubResult<Guid>> UpdateInstrument(string? userIdentifier, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
         {
-            throw new NotImplementedException();
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            string? errorMessage = ValidateUpdateInstrumentCommand(updateInstrumentCommandDTO);
+            if (errorMessage != null)
+            {
+                return TrackerHubResult<Guid>.Failure(errorMessage);
+            }
+
+            Guid? wipId = await _trackerHubCache.UpdateInstrumentAsync(callerId, connectionId, updateInstrumentCommandDTO);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
+
+            static string? ValidateUpdateInstrumentCommand(UpdateInstrumentCommandDTO command)
+            {
+                if (command.Frame >= TrackerConstants.MaxFramesPerWip)
+                    return TrackerHubError.InvalidFrame;
+                if (command.Channel >= TrackerConstants.MaxChannels)
+                    return TrackerHubError.InvalidChannel;
+                if (command.NoteGroup >= TrackerConstants.MaxNoteGroups)
+                    return TrackerHubError.InvalidNoteGroup;
+                return null;
+            }
         }
     }
 }

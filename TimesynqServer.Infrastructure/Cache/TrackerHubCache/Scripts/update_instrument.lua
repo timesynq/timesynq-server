@@ -3,7 +3,7 @@
 -- KEYS[1] = connectionKey
 
 -- ARGV[1] = JSON serialized payload that contains
--- UserId, Frame, Channel, Line, NoteGroup, NewPitch
+-- UserId, Frame, Channel, Line, NoteGroup, NewInstrument
 
 local empty_line_value = string.rep("-", 28)
 
@@ -20,8 +20,8 @@ old_line_value = old_line_value and old_line_value or empty_line_value
 
 local note_group = tonumber(input.NoteGroup)
 
-local left = note_group ~= 0 and string.sub(old_line_value, 1, (note_group * 4) + 1) or ""
-local right = string.sub(old_line_value, (note_group * 4) + 3)
+local left = string.sub(old_line_value, 1, (note_group * 4) + 3)
+local right = string.sub(old_line_value, (note_group * 4) + 5)
 local new_line_value = left .. input.NewPitch .. right
 
 if new_line_value == empty_line_value then
