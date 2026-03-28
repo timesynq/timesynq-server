@@ -1,5 +1,6 @@
 ﻿using TimesynqServer.Application.DTO;
 using TimesynqServer.Common.Result;
+using TimesynqServer.Contracts.TrackerCommandDTO;
 using TimesynqServer.Domain.Cache.Tracker;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
@@ -70,6 +71,15 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// A task representing the asynchronous operation.
         /// The task result indicates whether the operation was successful.
         /// </returns>
-        public Task<bool> ChangeWipName(Guid wipId, string newName);
+        public Task<bool> ChangeWipNameAsync(Guid wipId, string newName);
+
+        /// <summary>
+        /// Updates a single pitch value in a wip. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="updatePitchCommandDTO">The information on what the new pitch is and where it goes.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> UpdatePitchAsync(Guid userId, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO);
     }
 }

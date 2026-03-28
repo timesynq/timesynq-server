@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using TimesynqServer.Application.DTO;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
+using TimesynqServer.Contracts.TrackerCommandDTO;
 using TimesynqServer.Domain.Cache.Tracker;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
@@ -29,14 +30,6 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                  => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Connection}:{userId}";
             public static string ConnectionKey(Guid userId, string connectionId)
                 => $"{ConnectionKeyPrefix(userId)}:{connectionId}";
-
-            public static string RoomIndexKey(Guid wipId)
-                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Index}";
-            public static string RoomConnectionsKey(Guid wipId)
-                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Connections}";
-            public static string RoomInfoKey(Guid wipId)
-                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Info}";
-
             public static string ExtractConnectionIdFromConnectionKey(string connectionKey)
             {
                 if (!Regex.IsMatch(connectionKey, @"^tracker:connection:[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}:[^\s]+$"))
@@ -46,6 +39,19 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                     );
                 return connectionKey.Split(':')[^1];
             }
+
+            public static string RoomIndexKey(Guid wipId)
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Index}";
+            public static string RoomConnectionsKey(Guid wipId)
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Connections}";
+            public static string RoomInfoKey(Guid wipId)
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Info}";
+            public static string RoomLogKey(Guid wipId)
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Log}";
+            public static string FrameKey(Guid wipId, int frame)
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Frame}:{frame:X2}";
+            public static string ChannelKey(Guid wipId, int frame, int channel)
+                => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Frame}:{frame:X2}:{TrackerHubCacheKeySegments.Channel}:{channel:X2}";
         }
 
         private static class LuaScripts
@@ -69,6 +75,9 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             public static readonly string RoomRemoveScript =
                     LoadEmbeddedScript("remove_room.lua");
+
+            public static readonly string PitchUpdateScript =
+                    LoadEmbeddedScript("update_pitch.lua");
         }
 
         /// <inheritdoc/>
@@ -202,7 +211,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
-        public async Task<bool> ChangeWipName(Guid wipId, string newName)
+        public async Task<bool> ChangeWipNameAsync(Guid wipId, string newName)
         {
             string roomInfoKey = CacheKeyBuilder.RoomInfoKey(wipId);
 
@@ -215,6 +224,41 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             bool committed = await tran.ExecuteAsync();
             return committed && await setTask;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid?> UpdatePitchAsync(Guid userId, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Frame = $"{updatePitchCommandDTO.Frame:X2}",
+                Channel = $"{updatePitchCommandDTO.Channel:X2}",
+                Line = $"{updatePitchCommandDTO.Line:X2}",
+                NoteGroup = updatePitchCommandDTO.NoteGroup.ToString(),
+                NewPitch = updatePitchCommandDTO == null ? "--" : $"{updatePitchCommandDTO.NewPitch:X2}",
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.PitchUpdateScript,
+                [
+                    connectionKey,
+                ],
+                [
+                    payload
+                ]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
         }
     }
 }

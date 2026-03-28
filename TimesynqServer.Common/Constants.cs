@@ -38,4 +38,14 @@
         public const int MinMessageLength = 1;
         public const int MaxMessageLength = 500;
     }
+
+    public static class TrackerConstants
+    {
+        public const int MaxFramesPerWip = 64;
+        public const int MaxChannels = 16;
+        public const int MaxLinesPerChannel = 256;
+        public const int MaxNoteGroups = 3;
+        public const int MaxFXGroups = 4;
+        public const int MaxPitches = 108;
+    }
 }

@@ -4,6 +4,7 @@ using TimesynqServer.Application.DTO;
 using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
+using TimesynqServer.Contracts.TrackerCommandDTO;
 
 namespace TimesynqServer.Hubs.TrackerHub
 {
@@ -73,6 +74,19 @@ namespace TimesynqServer.Hubs.TrackerHub
                 chatMessageDTO.Message
             );
 
+            return TrackerHubResult.Success();
+        }
+
+        public async Task<TrackerHubResult> UpdatePitch(UpdatePitchCommandDTO updatePitchCommandDTO)
+        {
+            TrackerHubResult<Guid> updatePitchResult = await _roomService.UpdatePitch(Context.UserIdentifier, Context.ConnectionId, updatePitchCommandDTO);
+            if (!updatePitchResult.IsSuccessful)
+            {
+                return TrackerHubResult.Failure(updatePitchResult.ErrorMessage ?? TrackerHubError.FailedToUpdatePitch);
+            }
+
+            string roomCode = updatePitchResult.Value.ToString();
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.PitchUpdated, updatePitchCommandDTO);
             return TrackerHubResult.Success();
         }
     }

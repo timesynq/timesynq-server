@@ -3,6 +3,7 @@ using TimesynqServer.Application.Service;
 using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
 using TimesynqServer.Contracts.Projections;
+using TimesynqServer.Contracts.TrackerCommandDTO;
 using TimesynqServer.Domain.Cache.Tracker;
 using TimesynqServer.Domain.Entities.Shares;
 using TimesynqServer.Infrastructure.Cache.TrackerHubCache;
@@ -106,7 +107,6 @@ namespace TimesynqServer.Infrastructure.Service
             if 
             (
                 string.IsNullOrEmpty(message) ||
-
                 message.Length < TrackerHubConstants.MinMessageLength || 
                 message.Length > TrackerHubConstants.MaxMessageLength
             )
@@ -115,6 +115,49 @@ namespace TimesynqServer.Infrastructure.Service
             }
 
             return new ChatMessageDTO(wipId.Value, callerId, message);
+        }
+
+        public async Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            string? errorMessage = ValidateUpdatePitchCommand(updatePitchCommandDTO);
+            if (errorMessage != null) 
+            {
+                return TrackerHubResult<Guid>.Failure(errorMessage);
+            }
+
+            Guid? wipId = await _trackerHubCache.UpdatePitchAsync(callerId, connectionId, updatePitchCommandDTO);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
+
+            static string? ValidateUpdatePitchCommand(UpdatePitchCommandDTO command) 
+            {
+                if (command.Frame >= TrackerConstants.MaxFramesPerWip)
+                    return TrackerHubError.InvalidFrame;
+                if (command.Channel >= TrackerConstants.MaxChannels)
+                    return TrackerHubError.InvalidChannel;
+                if (command.NoteGroup >= TrackerConstants.MaxNoteGroups)
+                    return TrackerHubError.InvalidNoteGroup;
+                if (command.NewPitch != null && command.NewPitch >= TrackerConstants.MaxPitches)
+                    return TrackerHubError.InvalidPitch;
+                return null;
+            }
+        }
+
+        public Task<TrackerHubResult<Guid>> UpdateInstrument(string? userIdentifier, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
+        {
+            throw new NotImplementedException();
         }
     }
 }

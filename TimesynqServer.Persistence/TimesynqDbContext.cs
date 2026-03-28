@@ -104,11 +104,11 @@ namespace TimesynqServer.Persistence
             builder.Entity<TimesynqUser>()
                 .HasQueryFilter(b => b.DeletedOnUTC == null);
             builder.Entity<Follow>()
-                .HasQueryFilter(b => b.Follower!.DeletedOnUTC == null && b.Followee!.DeletedOnUTC == null);
+                .HasQueryFilter(b => b.Follower.DeletedOnUTC == null && b.Followee.DeletedOnUTC == null);
             builder.Entity<Wip>()
                 .HasQueryFilter(b => b.DeletedOnUTC == null);
             builder.Entity<Share>()
-                .HasQueryFilter(b => b.Wip!.DeletedOnUTC == null && b.SharedWith!.DeletedOnUTC == null);
+                .HasQueryFilter(b => b.Wip.DeletedOnUTC == null && b.SharedWith.DeletedOnUTC == null);
         }
 
     }
