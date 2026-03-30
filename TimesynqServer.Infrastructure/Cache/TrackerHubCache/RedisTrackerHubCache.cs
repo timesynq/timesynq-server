@@ -76,6 +76,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 LoadEmbeddedScript("remove_connection_and_cleanup_if_empty.lua");
             public static readonly string RoomRemoveScript =
                 LoadEmbeddedScript("remove_room.lua");
+            public static readonly string BpmUpdateScript =
+                LoadEmbeddedScript("update_bpm.lua");
             public static readonly string PitchUpdateScript =
                 LoadEmbeddedScript("update_pitch.lua");
             public static readonly string InstrumentUpdateScript =
@@ -135,6 +137,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 UserName = userDTO.UserName,
                 WipName = wipDTO.Name,
                 OwnerId = wipDTO.OwnerId.ToString(),
+                WipBpm = TrackerConstants.DefaultBpm, // placeholder; wipDTO should not contain bpm, so leave this until wipDTO param is replaced with the full tracker
             });
 
             IDatabase db = _redis.GetDatabase();
@@ -226,6 +229,38 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             bool committed = await tran.ExecuteAsync();
             return committed && await setTask;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid?> UpdateBpmAsync(Guid userId, string connectionId, int newBpm)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserID = userId.ToString(),
+                NewBpm = newBpm.ToString(),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.BpmUpdateScript,
+                [
+                    connectionKey,
+                ],
+                [
+                    payload
+                ]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
         }
 
         /// <inheritdoc/>

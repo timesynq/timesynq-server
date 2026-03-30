@@ -10,6 +10,8 @@
         public const string MessageAddedToChat = nameof(MessageAddedToChat);
         public const string AccessExpired = nameof(AccessExpired);
         public const string WipNameChanged = nameof(WipNameChanged);
+        public const string BpmUpdated = nameof(BpmUpdated);
         public const string PitchUpdated = nameof(PitchUpdated);
+        public const string InstrumentUpdated = nameof(InstrumentUpdated);
     }
 }

@@ -24,6 +24,11 @@ namespace TimesynqServer.Domain.Entities.Wips
         public Guid OwnerId { get; private set; }
 
         /// <summary>
+        /// The wip's initial beats per minute.
+        /// </summary>
+        public int Bpm { get; private set; } = TrackerConstants.DefaultBpm;
+
+        /// <summary>
         /// The date when the wip was created.
         /// </summary>
         public DateTime CreatedOnUTC { get; private set; }

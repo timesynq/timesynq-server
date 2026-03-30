@@ -47,5 +47,8 @@
         public const int MaxNoteGroups = 3;
         public const int MaxFXGroups = 4;
         public const int MaxPitches = 108;
+        public const int MinBpm = 20;
+        public const int MaxBpm = 999;
+        public const int DefaultBpm = 120;
     }
 }

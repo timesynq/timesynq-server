@@ -34,7 +34,7 @@ else
 end
 
 local room_log_key = "tracker:room:" .. wip_id .. ":log"
-local operational_log_entry = {
+local operation_log_entry = {
 	UserId = input.UserId,
 	Timestamp = input.UpdatedOnUTC,
 	OldValue = old_instrument_value,	

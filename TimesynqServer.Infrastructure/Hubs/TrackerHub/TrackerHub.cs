@@ -77,6 +77,19 @@ namespace TimesynqServer.Hubs.TrackerHub
             return TrackerHubResult.Success();
         }
 
+        public async Task<TrackerHubResult> UpdateBpm(int newBpm)
+        {
+            TrackerHubResult<Guid> updateBpmResult = await _roomService.UpdateBpm(Context.UserIdentifier, Context.ConnectionId, newBpm);
+            if (!updateBpmResult.IsSuccessful)
+            {
+                return TrackerHubResult.Failure(updateBpmResult.ErrorMessage ?? TrackerHubError.FailedToUpdateBpm);
+            }
+
+            string roomCode = updateBpmResult.Value.ToString();
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.BpmUpdated, newBpm);
+            return TrackerHubResult.Success();
+        }
+
         public async Task<TrackerHubResult> UpdatePitch(UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             TrackerHubResult<Guid> updatePitchResult = await _roomService.UpdatePitch(Context.UserIdentifier, Context.ConnectionId, updatePitchCommandDTO);
@@ -99,7 +112,7 @@ namespace TimesynqServer.Hubs.TrackerHub
             }
 
             string roomCode = updateInstrumentResult.Value.ToString();
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.PitchUpdated, updateInstrumentCommandDTO);
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.InstrumentUpdated, updateInstrumentCommandDTO);
             return TrackerHubResult.Success();
         }
     }

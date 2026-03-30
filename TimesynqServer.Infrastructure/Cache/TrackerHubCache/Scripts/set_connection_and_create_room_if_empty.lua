@@ -6,7 +6,7 @@
 -- KEYS[4] = roomInfoKey
 
 -- ARGV[1] = JSON serialized payload that contains
--- WipId, ConnectionId, UserId, UserName, WipName, OwnerId
+-- WipId, ConnectionId, UserId, UserName, WipName, OwnerId, WipBpm
 
 local input = cjson.decode(ARGV[1])
 
@@ -23,6 +23,7 @@ if room_exists == 0 then
 	redis.call("HSET", KEYS[4],
 		"WipName", input.WipName,
 		"OwnerId", input.OwnerId
+		"Bpm", input.WipBpm
 	)
 	redis.call("SADD", KEYS[2], KEYS[4])
 	-- create first frame info

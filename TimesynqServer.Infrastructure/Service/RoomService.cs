@@ -117,6 +117,30 @@ namespace TimesynqServer.Infrastructure.Service
             return new ChatMessageDTO(wipId.Value, callerId, message);
         }
 
+        public async Task<TrackerHubResult<Guid>> UpdateBpm(string? userIdentifier, string connectionId, int newBpm)
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            if (newBpm < TrackerConstants.MinBpm || newBpm > TrackerConstants.MaxBpm)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.InvalidBpm);
+            }
+
+            Guid? wipId = await _trackerHubCache.UpdateBpmAsync(callerId, connectionId, newBpm);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
+        }
+
         public async Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             if (

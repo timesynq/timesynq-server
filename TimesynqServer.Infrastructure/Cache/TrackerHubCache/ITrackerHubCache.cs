@@ -74,6 +74,15 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         public Task<bool> ChangeWipNameAsync(Guid wipId, string newName);
 
         /// <summary>
+        /// Updates the wip's starting BPM. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="newBpm">The new BPM value.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> UpdateBpmAsync(Guid userId, string connectionId, int newBpm);
+
+        /// <summary>
         /// Updates a single pitch value in a wip. User must have permission to edit the wip in order for changes to be made.
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>
