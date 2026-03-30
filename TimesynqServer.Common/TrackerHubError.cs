@@ -11,6 +11,8 @@
         public static string FailedToUpdateBpm = "Failed to update BPM.";
         public static string InvalidMessage = $"Invalid message. Message must be between {TrackerHubConstants.MinMessageLength} and {TrackerHubConstants.MaxMessageLength} characters long.";
         public static string InvalidBpm = $"Invalid BPM. BPM must be between {TrackerConstants.MinBpm} and {TrackerConstants.MaxBpm} inclusive.";
+        public static string FailedToUpdateLineCount = "Failed to update line count.";
+        public static string InvalidLineCount = $"Invalid line count. Line count must be between {TrackerConstants.MinLinesPerFrame} and {TrackerConstants.MaxLinesPerFrame} inclusive.";
         public static string InvalidFrame = $"Invalid frame. Frame value must be between 0 and {TrackerConstants.MaxFramesPerWip - 1} inclusive.";
         public static string InvalidChannel = $"Invalid channel. Channel value must be between 0 and {TrackerConstants.MaxChannels - 1} inclusive.";
         public static string InvalidNoteGroup = $"Invalid note group. Note group value must be between 0 and {TrackerConstants.MaxNoteGroups - 1} inclusive.";

@@ -90,6 +90,19 @@ namespace TimesynqServer.Hubs.TrackerHub
             return TrackerHubResult.Success();
         }
 
+        public async Task<TrackerHubResult> UpdateLineCount(UpdateLineCountCommandDTO updateLineCountCommandDTO)
+        {
+            TrackerHubResult<Guid> updateLineCountResult = await _roomService.UpdateLineCount(Context.UserIdentifier, Context.ConnectionId, updateLineCountCommandDTO);
+            if (!updateLineCountResult.IsSuccessful)
+            {
+                return TrackerHubResult.Failure(updateLineCountResult.ErrorMessage ?? TrackerHubError.FailedToUpdateLineCount);
+            }
+
+            string roomCode = updateLineCountResult.Value.ToString();
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.LineCountUpdated, updateLineCountCommandDTO);
+            return TrackerHubResult.Success();
+        }
+
         public async Task<TrackerHubResult> UpdatePitch(UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             TrackerHubResult<Guid> updatePitchResult = await _roomService.UpdatePitch(Context.UserIdentifier, Context.ConnectionId, updatePitchCommandDTO);

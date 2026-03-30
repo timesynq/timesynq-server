@@ -11,6 +11,7 @@
         public const string AccessExpired = nameof(AccessExpired);
         public const string WipNameChanged = nameof(WipNameChanged);
         public const string BpmUpdated = nameof(BpmUpdated);
+        public const string LineCountUpdated = nameof(LineCountUpdated);
         public const string PitchUpdated = nameof(PitchUpdated);
         public const string InstrumentUpdated = nameof(InstrumentUpdated);
     }

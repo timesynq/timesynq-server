@@ -141,6 +141,33 @@ namespace TimesynqServer.Infrastructure.Service
             return wipId.Value;
         }
 
+        public async Task<TrackerHubResult<Guid>> UpdateLineCount(string? userIdentifier, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO)
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            if (
+                updateLineCountCommandDTO.NewLineCount < TrackerConstants.MinLinesPerFrame || 
+                updateLineCountCommandDTO.NewLineCount > TrackerConstants.MaxLinesPerFrame
+            )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.InvalidLineCount);
+            }
+
+            Guid? wipId = await _trackerHubCache.UpdateLineCountAsync(callerId, connectionId, updateLineCountCommandDTO);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
+        }
+
         public async Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             if (

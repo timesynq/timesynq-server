@@ -78,6 +78,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 LoadEmbeddedScript("remove_room.lua");
             public static readonly string BpmUpdateScript =
                 LoadEmbeddedScript("update_bpm.lua");
+            public static readonly string LineCountUpdateScript =
+                LoadEmbeddedScript("update_line_count.lua");
             public static readonly string PitchUpdateScript =
                 LoadEmbeddedScript("update_pitch.lua");
             public static readonly string InstrumentUpdateScript =
@@ -249,6 +251,39 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 LuaScripts.BpmUpdateScript,
                 [
                     connectionKey,
+                ],
+                [
+                    payload
+                ]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid?> UpdateLineCountAsync(Guid userId, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Frame = Hex.TwoDigit(updateLineCountCommandDTO.Frame),
+                NewLineCount = updateLineCountCommandDTO.NewLineCount.ToString(),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.LineCountUpdateScript,
+                [
+                    connectionKey
                 ],
                 [
                     payload
