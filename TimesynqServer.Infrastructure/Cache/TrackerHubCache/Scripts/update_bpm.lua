@@ -30,6 +30,7 @@ redis.call("HSET", room_info_key,
 
 local room_log_key = "tracker:room:" .. wip_id .. ":log"
 local operation_log_entry = {
+	Type = "bpm",
 	UserId = input.UserId,
 	Timestamp = input.UpdatedOnUTC,
 	OldValue = old_bpm_number,	

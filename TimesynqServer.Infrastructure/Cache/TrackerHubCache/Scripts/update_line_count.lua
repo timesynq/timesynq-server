@@ -30,6 +30,7 @@ redis.call("HSET", frame_key,
 
 local room_log_key = "tracker:room:" .. wip_id .. ":log"
 local operation_log_entry = {
+	Type = "line_count"
 	UserId = input.UserId,
 	Timestamp = input.UpdatedOnUTC,
 	OldValue = old_line_count_number,	

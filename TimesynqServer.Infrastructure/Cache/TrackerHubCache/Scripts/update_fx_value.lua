@@ -3,8 +3,9 @@
 -- KEYS[1] = connectionKey
 
 -- ARGV[1] = JSON serialized payload that contains
--- UserId, Frame, Channel, Line, NoteGroup, Address, NewInstrument, UpdatedOnUTC
+-- UserId, Frame, Channel, Line, FXGroup, Address, NewFXValue, UpdatedOnUTC
 
+local fx_groups_offset = 13
 local empty_line_value = string.rep("-", 28)
 
 local input = cjson.decode(ARGV[1])
@@ -18,12 +19,12 @@ local channel_key = "tracker:room:" .. wip_id .. ":frame:" .. input.Frame .. ":c
 local old_line_value = redis.call("HGET", channel_key, input.Line)
 old_line_value = old_line_value and old_line_value or empty_line_value
 
-local note_group = tonumber(input.NoteGroup)
+local fx_group = tonumber(input.FXGroup)
 
-local left = string.sub(old_line_value, 1, (note_group * 4) + 3)
-local old_instrument_value = string.sub(old_line_value, (note_group * 4) + 3, (note_group * 4) + 5)
-local right = string.sub(old_line_value, (note_group * 4) + 5)
-local new_line_value = left .. input.NewPitch .. right
+local left = string.sub(old_line_value, 1, fx_groups_offset + (fx_group * 4) + 2)
+local old_fx_value = string.sub(old_line_value, fx_groups_offset + (fx_group * 4) + 2, fx_groups_offset + (fx_group * 4) + 4)
+local right = fx_group ~= 3 and string.sub(old_line_value, fx_groups_offset + (fx_group * 4) + 4) or ""
+local new_line_value = left .. input.NewFXValue .. right
 
 if new_line_value == empty_line_value then
 	redis.call("HDEL", channel_key, input.Line)
@@ -35,11 +36,11 @@ end
 
 local room_log_key = "tracker:room:" .. wip_id .. ":log"
 local operation_log_entry = {
-	Type = "instrument",
+	Type = "fx_value",
 	UserId = input.UserId,
 	Timestamp = input.UpdatedOnUTC,
-	OldValue = old_instrument_value,	
-	NewValue = input.NewPitch,
+	OldValue = old_fx_value,	
+	NewValue = input.NewFXValue,
 	Address = input.Address
 }
 local operation_log_entry_json = cjson.encode(operation_log_entry)

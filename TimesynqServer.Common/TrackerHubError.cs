@@ -20,5 +20,7 @@
         public static string InvalidPitch = $"Invalid pitch. Pitch value must be between 0 and {TrackerConstants.MaxPitches - 1} inclusive.";
         public static string FailedToUpdatePitch = "Failed to update pitch.";
         public static string FailedToUpdateInstrument = "Failed to update instrument";
+        public static string FailedToUpdateFXSymbol = "Failed to update FX symbol";
+        public static string FailedToUpdateFXVAlue = "Failed to update FX value";
     }
 }

@@ -108,5 +108,23 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// <param name="updateInstrumentCommandDTO">The information on what the new instrument is and where it goes.</param>
         /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
         public Task<Guid?> UpdateInstrumentAsync(Guid userId, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO);
+
+        /// <summary>
+        /// Updates a single FX symbol in a wip. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="updateFXSymbolCommandDTO">The information on what the new FX symbol is and where it goes.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> UpdateFXSymbolAsync(Guid userId, string connectionId, UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO);
+
+        /// <summary>
+        /// Updates a single FX value in a wip. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="updateFXSymbolCommandDTO">The information on what the new FX value is and where it goes.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> UpdateFXValueAsync(Guid userId, string connectionId, UpdateFXValueCommandDTO updateFXValueCommandDTO);
     }
 }

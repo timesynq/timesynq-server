@@ -19,6 +19,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
     {
         private const string NullPitch = "--";
         private const string NullInstrument = "--";
+        private const string NullFXSymbol = "--";
+        private const string NullFXValue = "--";
 
         private readonly IConnectionMultiplexer _redis;
 
@@ -84,6 +86,10 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 LoadEmbeddedScript("update_pitch.lua");
             public static readonly string InstrumentUpdateScript =
                 LoadEmbeddedScript("update_instrument.lua");
+            public static readonly string FXSymbolUpdateScript =
+                LoadEmbeddedScript("update_fx_symbol.lua");
+            public static readonly string FXValueUpdateScript =
+                LoadEmbeddedScript("update_fx_value.lua");
         }
 
         /// <inheritdoc/>
@@ -370,6 +376,92 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.InstrumentUpdateScript,
+                [
+                    connectionKey,
+                ],
+                [
+                    payload
+                ]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        public async Task<Guid?> UpdateFXSymbolAsync(Guid userId, string connectionId, UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            var cellAddress = CellAddress.CreateFXAddress(
+                updateFXSymbolCommandDTO.Frame,
+                updateFXSymbolCommandDTO.Channel,
+                updateFXSymbolCommandDTO.Line,
+                updateFXSymbolCommandDTO.FXGroup
+            );
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Frame = cellAddress.FrameHex,
+                Channel = cellAddress.ChannelHex,
+                Line = cellAddress.LineHex,
+                FXGroup = updateFXSymbolCommandDTO.FXGroup.ToString(),
+                Address = cellAddress.Address,
+                NewFXSymbol = updateFXSymbolCommandDTO.NewFXSymbol == null ? NullFXSymbol : Hex.TwoDigit(updateFXSymbolCommandDTO.NewFXSymbol.Value),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.FXSymbolUpdateScript,
+                [
+                    connectionKey,
+                ],
+                [
+                    payload
+                ]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        public async Task<Guid?> UpdateFXValueAsync(Guid userId, string connectionId, UpdateFXValueCommandDTO updateFXValueCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            var cellAddress = CellAddress.CreateFXAddress(
+                updateFXValueCommandDTO.Frame,
+                updateFXValueCommandDTO.Channel,
+                updateFXValueCommandDTO.Line,
+                updateFXValueCommandDTO.FXGroup
+            );
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Frame = cellAddress.FrameHex,
+                Channel = cellAddress.ChannelHex,
+                Line = cellAddress.LineHex,
+                FXGroup = updateFXValueCommandDTO.FXGroup.ToString(),
+                Address = cellAddress.Address,
+                NewFXSymbol = updateFXValueCommandDTO.NewFXValue == null ? NullFXSymbol : Hex.TwoDigit(updateFXValueCommandDTO.NewFXValue.Value),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.FXValueUpdateScript,
                 [
                     connectionKey,
                 ],

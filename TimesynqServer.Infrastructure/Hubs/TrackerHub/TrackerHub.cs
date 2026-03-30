@@ -128,5 +128,31 @@ namespace TimesynqServer.Hubs.TrackerHub
             await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.InstrumentUpdated, updateInstrumentCommandDTO);
             return TrackerHubResult.Success();
         }
+
+        public async Task<TrackerHubResult> UpdateFXSymbol(UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO)
+        {
+            TrackerHubResult<Guid> updateFXSymbolResult = await _roomService.UpdateFXSymbol(Context.UserIdentifier, Context.ConnectionId, updateFXSymbolCommandDTO);
+            if (!updateFXSymbolResult.IsSuccessful)
+            {
+                return TrackerHubResult.Failure(updateFXSymbolResult.ErrorMessage ?? TrackerHubError.FailedToUpdateFXSymbol);
+            }
+
+            string roomCode = updateFXSymbolResult.Value.ToString();
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.FXSymbolUpdated, updateFXSymbolCommandDTO);
+            return TrackerHubResult.Success();
+        }
+
+        public async Task<TrackerHubResult> UpdateFXValue(UpdateFXValueCommandDTO updateFXValueCommandDTO)
+        {
+            TrackerHubResult<Guid> updateFXValueResult = await _roomService.UpdateFXValue(Context.UserIdentifier, Context.ConnectionId, updateFXValueCommandDTO);
+            if (!updateFXValueResult.IsSuccessful)
+            {
+                return TrackerHubResult.Failure(updateFXValueResult.ErrorMessage ?? TrackerHubError.FailedToUpdateFXVAlue);
+            }
+
+            string roomCode = updateFXValueResult.Value.ToString();
+            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.FXValueUpdated, updateFXValueCommandDTO);
+            return TrackerHubResult.Success();
+        }
     }
 }

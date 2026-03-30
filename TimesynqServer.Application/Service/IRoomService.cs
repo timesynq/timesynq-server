@@ -13,5 +13,7 @@ namespace TimesynqServer.Application.Service
         public Task<TrackerHubResult<Guid>> UpdateLineCount(string? userIdentifier, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO);
         public Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO);
         public Task<TrackerHubResult<Guid>> UpdateInstrument(string? userIdentifier, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO);
+        public Task<TrackerHubResult<Guid>> UpdateFXSymbol(string? userIdentifier, string connectionId, UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO);
+        public Task<TrackerHubResult<Guid>> UpdateFXValue(string? userIdentifier, string connectionId, UpdateFXValueCommandDTO updateFXValueCommandDTO);
     }
 }

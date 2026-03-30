@@ -241,5 +241,77 @@ namespace TimesynqServer.Infrastructure.Service
                 return null;
             }
         }
+
+        public async Task<TrackerHubResult<Guid>> UpdateFXSymbol(string? userIdentifier, string connectionId, UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO)
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            string? errorMessage = ValidateUpdateFXSymbolCommand(updateFXSymbolCommandDTO);
+            if (errorMessage != null)
+            {
+                return TrackerHubResult<Guid>.Failure(errorMessage);
+            }
+
+            Guid? wipId = await _trackerHubCache.UpdateFXSymbolAsync(callerId, connectionId, updateFXSymbolCommandDTO);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
+
+            static string? ValidateUpdateFXSymbolCommand(UpdateFXSymbolCommandDTO command)
+            {
+                if (command.Frame >= TrackerConstants.MaxFramesPerWip)
+                    return TrackerHubError.InvalidFrame;
+                if (command.Channel >= TrackerConstants.MaxChannels)
+                    return TrackerHubError.InvalidChannel;
+                if (command.FXGroup >= TrackerConstants.MaxFXGroups)
+                    return TrackerHubError.InvalidFXGroup;
+                return null;
+            }
+        }
+
+        public async Task<TrackerHubResult<Guid>> UpdateFXValue(string? userIdentifier, string connectionId, UpdateFXValueCommandDTO updateFXValueCommandDTO)
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            string? errorMessage = ValidateUpdateFXValueCommand(updateFXValueCommandDTO);
+            if (errorMessage != null)
+            {
+                return TrackerHubResult<Guid>.Failure(errorMessage);
+            }
+
+            Guid? wipId = await _trackerHubCache.UpdateFXValueAsync(callerId, connectionId, updateFXValueCommandDTO);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
+
+            static string? ValidateUpdateFXValueCommand(UpdateFXValueCommandDTO command)
+            {
+                if (command.Frame >= TrackerConstants.MaxFramesPerWip)
+                    return TrackerHubError.InvalidFrame;
+                if (command.Channel >= TrackerConstants.MaxChannels)
+                    return TrackerHubError.InvalidChannel;
+                if (command.FXGroup >= TrackerConstants.MaxFXGroups)
+                    return TrackerHubError.InvalidFXGroup;
+                return null;
+            }
+        }
     }
 }

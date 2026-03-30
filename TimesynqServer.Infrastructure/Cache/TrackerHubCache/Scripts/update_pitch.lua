@@ -35,6 +35,7 @@ end
 
 local room_log_key = "tracker:room:" .. wip_id .. ":log"
 local operation_log_entry = {
+	Type = "pitch",
 	UserId = input.UserId,
 	Timestamp = input.UpdatedOnUTC,
 	OldValue = old_pitch_value,	

@@ -14,5 +14,7 @@
         public const string LineCountUpdated = nameof(LineCountUpdated);
         public const string PitchUpdated = nameof(PitchUpdated);
         public const string InstrumentUpdated = nameof(InstrumentUpdated);
+        public const string FXSymbolUpdated = nameof(FXSymbolUpdated);
+        public const string FXValueUpdated = nameof(FXValueUpdated);
     }
 }
