@@ -77,81 +77,81 @@ namespace TimesynqServer.Hubs.TrackerHub
             return TrackerHubResult.Success();
         }
 
-        public async Task<TrackerHubResult> UpdateBpm(int newBpm)
+        public Task<TrackerHubResult> UpdateBpm(int newBpm)
         {
-            TrackerHubResult<Guid> updateBpmResult = await _roomService.UpdateBpm(Context.UserIdentifier, Context.ConnectionId, newBpm);
-            if (!updateBpmResult.IsSuccessful)
-            {
-                return TrackerHubResult.Failure(updateBpmResult.ErrorMessage ?? TrackerHubError.FailedToUpdateBpm);
-            }
-
-            string roomCode = updateBpmResult.Value.ToString();
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.BpmUpdated, newBpm);
-            return TrackerHubResult.Success();
+            return UpdateTracker(
+                () => _roomService.UpdateBpm(Context.UserIdentifier, Context.ConnectionId, newBpm),
+                TrackerHubClientCallbacks.BpmUpdated,
+                newBpm,
+                TrackerHubError.FailedToUpdateBpm
+            );
         }
 
-        public async Task<TrackerHubResult> UpdateLineCount(UpdateLineCountCommandDTO updateLineCountCommandDTO)
+        public Task<TrackerHubResult> UpdateLineCount(UpdateLineCountCommandDTO updateLineCountCommandDTO)
         {
-            TrackerHubResult<Guid> updateLineCountResult = await _roomService.UpdateLineCount(Context.UserIdentifier, Context.ConnectionId, updateLineCountCommandDTO);
-            if (!updateLineCountResult.IsSuccessful)
-            {
-                return TrackerHubResult.Failure(updateLineCountResult.ErrorMessage ?? TrackerHubError.FailedToUpdateLineCount);
-            }
-
-            string roomCode = updateLineCountResult.Value.ToString();
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.LineCountUpdated, updateLineCountCommandDTO);
-            return TrackerHubResult.Success();
+            return UpdateTracker(
+                () => _roomService.UpdateLineCount(Context.UserIdentifier, Context.ConnectionId, updateLineCountCommandDTO),
+                TrackerHubClientCallbacks.LineCountUpdated,
+                updateLineCountCommandDTO,
+                TrackerHubError.FailedToUpdateLineCount
+            );
         }
 
-        public async Task<TrackerHubResult> UpdatePitch(UpdatePitchCommandDTO updatePitchCommandDTO)
+        public Task<TrackerHubResult> UpdatePitch(UpdatePitchCommandDTO updatePitchCommandDTO)
         {
-            TrackerHubResult<Guid> updatePitchResult = await _roomService.UpdatePitch(Context.UserIdentifier, Context.ConnectionId, updatePitchCommandDTO);
-            if (!updatePitchResult.IsSuccessful)
-            {
-                return TrackerHubResult.Failure(updatePitchResult.ErrorMessage ?? TrackerHubError.FailedToUpdatePitch);
-            }
-
-            string roomCode = updatePitchResult.Value.ToString();
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.PitchUpdated, updatePitchCommandDTO);
-            return TrackerHubResult.Success();
+            return UpdateTracker(
+                () => _roomService.UpdatePitch(Context.UserIdentifier, Context.ConnectionId, updatePitchCommandDTO),
+                TrackerHubClientCallbacks.PitchUpdated,
+                updatePitchCommandDTO,
+                TrackerHubError.FailedToUpdatePitch
+            );
         }
 
-        public async Task<TrackerHubResult> UpdateInstrument(UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
+        public Task<TrackerHubResult> UpdateInstrument(UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
         {
-            TrackerHubResult<Guid> updateInstrumentResult = await _roomService.UpdateInstrument(Context.UserIdentifier, Context.ConnectionId, updateInstrumentCommandDTO);
-            if (!updateInstrumentResult.IsSuccessful)
-            {
-                return TrackerHubResult.Failure(updateInstrumentResult.ErrorMessage ?? TrackerHubError.FailedToUpdateInstrument);
-            }
-
-            string roomCode = updateInstrumentResult.Value.ToString();
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.InstrumentUpdated, updateInstrumentCommandDTO);
-            return TrackerHubResult.Success();
+            return UpdateTracker(
+                () => _roomService.UpdateInstrument(Context.UserIdentifier, Context.ConnectionId, updateInstrumentCommandDTO),
+                TrackerHubClientCallbacks.InstrumentUpdated,
+                updateInstrumentCommandDTO,
+                TrackerHubError.FailedToUpdateInstrument
+            );
         }
 
-        public async Task<TrackerHubResult> UpdateFXSymbol(UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO)
+        public Task<TrackerHubResult> UpdateFXSymbol(UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO)
         {
-            TrackerHubResult<Guid> updateFXSymbolResult = await _roomService.UpdateFXSymbol(Context.UserIdentifier, Context.ConnectionId, updateFXSymbolCommandDTO);
-            if (!updateFXSymbolResult.IsSuccessful)
-            {
-                return TrackerHubResult.Failure(updateFXSymbolResult.ErrorMessage ?? TrackerHubError.FailedToUpdateFXSymbol);
-            }
-
-            string roomCode = updateFXSymbolResult.Value.ToString();
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.FXSymbolUpdated, updateFXSymbolCommandDTO);
-            return TrackerHubResult.Success();
+            return UpdateTracker(
+                () => _roomService.UpdateFXSymbol(Context.UserIdentifier, Context.ConnectionId, updateFXSymbolCommandDTO),
+                TrackerHubClientCallbacks.FXSymbolUpdated,
+                updateFXSymbolCommandDTO,
+                TrackerHubError.FailedToUpdateFXSymbol
+            );
         }
 
-        public async Task<TrackerHubResult> UpdateFXValue(UpdateFXValueCommandDTO updateFXValueCommandDTO)
+        public Task<TrackerHubResult> UpdateFXValue(UpdateFXValueCommandDTO updateFXValueCommandDTO)
         {
-            TrackerHubResult<Guid> updateFXValueResult = await _roomService.UpdateFXValue(Context.UserIdentifier, Context.ConnectionId, updateFXValueCommandDTO);
-            if (!updateFXValueResult.IsSuccessful)
+            return UpdateTracker(
+                () => _roomService.UpdateFXValue(Context.UserIdentifier, Context.ConnectionId, updateFXValueCommandDTO),
+                TrackerHubClientCallbacks.FXValueUpdated,
+                updateFXValueCommandDTO,
+                TrackerHubError.FailedToUpdateFXValue
+            );
+        }
+
+        private async Task<TrackerHubResult> UpdateTracker<T>(
+            Func<Task<TrackerHubResult<Guid>>> roomServiceFunction,
+            string trackerHubClientCallback,
+            T payload,
+            string errorMessageFallback
+        )
+        {
+            TrackerHubResult<Guid> result = await roomServiceFunction();
+            if (!result.IsSuccessful)
             {
-                return TrackerHubResult.Failure(updateFXValueResult.ErrorMessage ?? TrackerHubError.FailedToUpdateFXVAlue);
+                return TrackerHubResult.Failure(result.ErrorMessage ?? errorMessageFallback);
             }
 
-            string roomCode = updateFXValueResult.Value.ToString();
-            await Clients.Group(roomCode).SendAsync(TrackerHubClientCallbacks.FXValueUpdated, updateFXValueCommandDTO);
+            string roomCode = result.Value.ToString();
+            await Clients.Group(roomCode).SendAsync(trackerHubClientCallback, payload);
             return TrackerHubResult.Success();
         }
     }
