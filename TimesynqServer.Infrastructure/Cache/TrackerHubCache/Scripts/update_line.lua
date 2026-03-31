@@ -7,6 +7,8 @@
 
 local num_columns = 14
 local num_chars_per_column = 2
+local default_line_count = 64
+local default_lines_per_beat = 4
 
 local empty_line_value = string.rep("-", num_columns * num_chars_per_column)
 
@@ -17,12 +19,29 @@ if not wip_id then
 	return nil
 end
 
+local room_index_key = "tracker:room:" .. wip_id .. ":index"
+
 local column = tonumber(input.Column)
 if not column or column < 0 or column >= num_columns then 
 	return nil
 end
 
-local channel_key = "tracker:room:" .. wip_id .. ":frame:" .. input.Frame .. ":channel:" .. input.Channel
+local frame_key = "tracker:room:" .. wip_id .. ":frame:" .. input.Frame
+local frame_exists = redis.call("EXISTS", frame_key)
+if frame_exists == 0 then
+	redis.call("HSET", frame_key,
+		"LineCount", default_line_count,
+		"LinesPerBeat", default_lines_per_beat
+	)
+	redis.call("SADD", room_index_key, frame_key)
+end
+
+local channel_key = frame_key .. ":channel:" .. input.Channel
+local channel_exists = redis.call("EXISTS", channel_key)
+if channel_exists == 0 then
+	redis.call("SADD", room_index_key, channel_key)
+end
+
 local old_line_value = redis.call("HGET", channel_key, input.Line)
 old_line_value = old_line_value and old_line_value or empty_line_value
 
