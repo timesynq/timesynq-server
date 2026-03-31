@@ -168,6 +168,33 @@ namespace TimesynqServer.Infrastructure.Service
             return wipId.Value;
         }
 
+        public async Task<TrackerHubResult<Guid>> UpdateLinesPerBeat(string? userIdentifier, string connectionId, UpdateLinesPerBeatCommandDTO updateLinesPerBeatCommandDTO)
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            if (
+                updateLinesPerBeatCommandDTO.NewLinesPerBeat < TrackerConstants.MinLinesPerBeat ||
+                updateLinesPerBeatCommandDTO.NewLinesPerBeat > TrackerConstants.MaxLinesPerBeat
+            )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.InvalidLineCount);
+            }
+
+            Guid? wipId = await _trackerHubCache.UpdateLinesPerBeatAsync(callerId, connectionId, updateLinesPerBeatCommandDTO);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
+        }
+
         public async Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             if (

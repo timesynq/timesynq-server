@@ -46,6 +46,9 @@
         public const int MinLinesPerFrame = 1;
         public const int MaxLinesPerFrame = 256;
         public const int DefaultLinesPerFrame = 64;
+        public const int MinLinesPerBeat = 1;
+        public const int MaxLinesPerBeat = 64;
+        public const int DefaultLinesPerBeat = 4;
         public const int MaxNoteGroups = 3;
         public const int MaxFXGroups = 4;
         public const int MaxPitches = 108;

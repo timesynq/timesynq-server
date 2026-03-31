@@ -92,6 +92,15 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         public Task<Guid?> UpdateLineCountAsync(Guid userId, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO);
 
         /// <summary>
+        /// Updates the LPB of a given frame int he wip. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="updateLinesPerBeatCommandDTO">THe information on which frame to update and the new LPB.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> UpdateLinesPerBeatAsync(Guid userId, string connectionId, UpdateLinesPerBeatCommandDTO updateLinesPerBeatCommandDTO);
+
+        /// <summary>
         /// Updates a single pitch value in a wip. User must have permission to edit the wip in order for changes to be made.
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>

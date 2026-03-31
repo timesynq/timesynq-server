@@ -97,6 +97,16 @@ namespace TimesynqServer.Hubs.TrackerHub
             );
         }
 
+        public Task<TrackerHubResult> UpdateLinesPerBeat(UpdateLinesPerBeatCommandDTO updateLinesPerBeatCommandDTO)
+        {
+            return UpdateTracker(
+                () => _roomService.UpdateLinesPerBeat(Context.UserIdentifier, Context.ConnectionId, updateLinesPerBeatCommandDTO),
+                TrackerHubClientCallbacks.LinesPerBeatUpdated,
+                updateLinesPerBeatCommandDTO,
+                TrackerHubError.FailedToUpdateLinesPerBeat
+            );
+        }
+
         public Task<TrackerHubResult> UpdatePitch(UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             return UpdateTracker(

@@ -79,6 +79,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 LoadEmbeddedScript("update_bpm.lua");
             public static readonly string LineCountUpdateScript =
                 LoadEmbeddedScript("update_line_count.lua");
+            public static readonly string LinesPerBeatUpdateScript =
+                LoadEmbeddedScript("update_lines_per_beat.lua");
             public static readonly string LineUpdateScript =
                 LoadEmbeddedScript("update_line.lua");
         }
@@ -279,6 +281,38 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.LineCountUpdateScript,
+                [
+                    connectionKey
+                ],
+                [
+                    payload
+                ]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        public async Task<Guid?> UpdateLinesPerBeatAsync(Guid userId, string connectionId, UpdateLinesPerBeatCommandDTO updateLinesPerBeatCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Frame = Hex.TwoDigit(updateLinesPerBeatCommandDTO.Frame),
+                NewLinesPerBeat = updateLinesPerBeatCommandDTO.NewLinesPerBeat.ToString(),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.LinesPerBeatUpdateScript,
                 [
                     connectionKey
                 ],
