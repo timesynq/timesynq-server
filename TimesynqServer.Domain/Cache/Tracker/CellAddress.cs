@@ -5,6 +5,8 @@ namespace TimesynqServer.Domain.Cache.Tracker
 {
     public readonly struct CellAddress
     {
+        private const byte ColsPerGroup = 2;
+
         public readonly byte Frame;
         public readonly byte Channel;
         public readonly byte Line;
@@ -29,13 +31,16 @@ namespace TimesynqServer.Domain.Cache.Tracker
         }
 
         public static CellAddress CreatePitchAddress(byte frame, byte channel, byte line, byte noteGroup)
-            => new (frame, channel, line, noteGroup);
+            => new (frame, channel, line, (byte)(noteGroup * ColsPerGroup));
 
         public static CellAddress CreateInstrumentAddress(byte frame, byte channel, byte line, byte noteGroup)
-            => CreatePitchAddress(frame, channel, line, noteGroup);
+            => new (frame, channel, line, (byte)((noteGroup * ColsPerGroup) + 1));
 
-        public static CellAddress CreateFXAddress(byte frame, byte channel, byte line, byte fxGroup)
-            => new(frame, channel, line, (byte)(fxGroup + TrackerConstants.MaxNoteGroups));
+        public static CellAddress CreateFXSymbolAddress(byte frame, byte channel, byte line, byte fxGroup)
+            => new(frame, channel, line, (byte)((fxGroup * ColsPerGroup) + (TrackerConstants.MaxNoteGroups * ColsPerGroup)));
+
+        public static CellAddress CreateFXValueAddress(byte frame, byte channel, byte line, byte fxGroup)
+            => new(frame, channel, line, (byte)((fxGroup * ColsPerGroup) + (TrackerConstants.MaxNoteGroups * ColsPerGroup) + 1));
 
         public static CellAddress? DecodeAddressString(string encodedAddress)
         {

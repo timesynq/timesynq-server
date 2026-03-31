@@ -17,10 +17,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
     /// </summary>
     public class RedisTrackerHubCache : ITrackerHubCache
     {
-        private const string NullPitch = "--";
-        private const string NullInstrument = "--";
-        private const string NullFXSymbol = "--";
-        private const string NullFXValue = "--";
+        private const string NullColumn = "--";
 
         private readonly IConnectionMultiplexer _redis;
 
@@ -39,7 +36,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             {
                 if (!Regex.IsMatch(connectionKey, @"^tracker:connection:[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}:[^\s]+$"))
                     throw new ArgumentException(
-                        $"Argument ({connectionKey}) is not formatted properly. " +
+                        $"Argument ({connectionKey}) is not formatted properly." +
                         $"Use CacheKeyBuilder.ConnectionKey(Guid, string) to build a proper connection key."
                     );
                 return connectionKey.Split(':')[^1];
@@ -82,14 +79,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 LoadEmbeddedScript("update_bpm.lua");
             public static readonly string LineCountUpdateScript =
                 LoadEmbeddedScript("update_line_count.lua");
-            public static readonly string PitchUpdateScript =
-                LoadEmbeddedScript("update_pitch.lua");
-            public static readonly string InstrumentUpdateScript =
-                LoadEmbeddedScript("update_instrument.lua");
-            public static readonly string FXSymbolUpdateScript =
-                LoadEmbeddedScript("update_fx_symbol.lua");
-            public static readonly string FXValueUpdateScript =
-                LoadEmbeddedScript("update_fx_value.lua");
+            public static readonly string LineUpdateScript =
+                LoadEmbeddedScript("update_line.lua");
         }
 
         /// <inheritdoc/>
@@ -307,8 +298,6 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// <inheritdoc/>
         public async Task<Guid?> UpdatePitchAsync(Guid userId, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
         {
-            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
-
             var cellAddress = CellAddress.CreatePitchAddress(
                 updatePitchCommandDTO.Frame,
                 updatePitchCommandDTO.Channel,
@@ -316,43 +305,12 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 updatePitchCommandDTO.NoteGroup
             );
 
-            string payload = JsonSerializer.Serialize(new
-            {
-                UserId = userId.ToString(),
-                Frame = cellAddress.FrameHex,
-                Channel = cellAddress.ChannelHex,
-                Line = cellAddress.LineHex,
-                NoteGroup = updatePitchCommandDTO.NoteGroup.ToString(),
-                Address = cellAddress.Address,
-                NewPitch = updatePitchCommandDTO.NewPitch == null ? NullPitch : Hex.TwoDigit(updatePitchCommandDTO.NewPitch.Value),
-                UpdatedOnUTC = DateTime.UtcNow.ToString()
-            });
-
-            IDatabase db = _redis.GetDatabase();
-
-            string? result = (string?)await db.ScriptEvaluateAsync(
-                LuaScripts.PitchUpdateScript,
-                [
-                    connectionKey,
-                ],
-                [
-                    payload
-                ]
-            );
-
-            if (result == null || !Guid.TryParse(result, out Guid wipId))
-            {
-                return null;
-            }
-
-            return wipId;
+            return await UpdateLineAsync(userId, connectionId, TrackerCommands.Pitch, cellAddress, updatePitchCommandDTO.NewPitch);
         }
 
         /// <inheritdoc/>
         public async Task<Guid?> UpdateInstrumentAsync(Guid userId, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
         {
-            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
-
             var cellAddress = CellAddress.CreateInstrumentAddress(
                 updateInstrumentCommandDTO.Frame,
                 updateInstrumentCommandDTO.Channel,
@@ -360,108 +318,59 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 updateInstrumentCommandDTO.NoteGroup
             );
 
-            string payload = JsonSerializer.Serialize(new
-            {
-                UserId = userId.ToString(),
-                Frame = cellAddress.FrameHex,
-                Channel = cellAddress.ChannelHex,
-                Line = cellAddress.LineHex,
-                NoteGroup = updateInstrumentCommandDTO.NoteGroup.ToString(),
-                Address = cellAddress.Address,
-                NewInstrument = updateInstrumentCommandDTO.NewInstrument == null ? NullInstrument : Hex.TwoDigit(updateInstrumentCommandDTO.NewInstrument.Value),
-                UpdatedOnUTC = DateTime.UtcNow.ToString()
-            });
-
-            IDatabase db = _redis.GetDatabase();
-
-            string? result = (string?)await db.ScriptEvaluateAsync(
-                LuaScripts.InstrumentUpdateScript,
-                [
-                    connectionKey,
-                ],
-                [
-                    payload
-                ]
-            );
-
-            if (result == null || !Guid.TryParse(result, out Guid wipId))
-            {
-                return null;
-            }
-
-            return wipId;
+            return await UpdateLineAsync(userId, connectionId, TrackerCommands.Instrument, cellAddress, updateInstrumentCommandDTO.NewInstrument);
         }
 
         public async Task<Guid?> UpdateFXSymbolAsync(Guid userId, string connectionId, UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO)
         {
-            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
-
-            var cellAddress = CellAddress.CreateFXAddress(
+            var cellAddress = CellAddress.CreateFXSymbolAddress(
                 updateFXSymbolCommandDTO.Frame,
                 updateFXSymbolCommandDTO.Channel,
                 updateFXSymbolCommandDTO.Line,
                 updateFXSymbolCommandDTO.FXGroup
             );
 
-            string payload = JsonSerializer.Serialize(new
-            {
-                UserId = userId.ToString(),
-                Frame = cellAddress.FrameHex,
-                Channel = cellAddress.ChannelHex,
-                Line = cellAddress.LineHex,
-                FXGroup = updateFXSymbolCommandDTO.FXGroup.ToString(),
-                Address = cellAddress.Address,
-                NewFXSymbol = updateFXSymbolCommandDTO.NewFXSymbol == null ? NullFXSymbol : Hex.TwoDigit(updateFXSymbolCommandDTO.NewFXSymbol.Value),
-                UpdatedOnUTC = DateTime.UtcNow.ToString()
-            });
-
-            IDatabase db = _redis.GetDatabase();
-
-            string? result = (string?)await db.ScriptEvaluateAsync(
-                LuaScripts.FXSymbolUpdateScript,
-                [
-                    connectionKey,
-                ],
-                [
-                    payload
-                ]
-            );
-
-            if (result == null || !Guid.TryParse(result, out Guid wipId))
-            {
-                return null;
-            }
-
-            return wipId;
+            return await UpdateLineAsync(userId, connectionId, TrackerCommands.FXSymbol, cellAddress, updateFXSymbolCommandDTO.NewFXSymbol);
         }
 
         public async Task<Guid?> UpdateFXValueAsync(Guid userId, string connectionId, UpdateFXValueCommandDTO updateFXValueCommandDTO)
         {
-            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
-
-            var cellAddress = CellAddress.CreateFXAddress(
+            var cellAddress = CellAddress.CreateFXValueAddress(
                 updateFXValueCommandDTO.Frame,
                 updateFXValueCommandDTO.Channel,
                 updateFXValueCommandDTO.Line,
                 updateFXValueCommandDTO.FXGroup
             );
 
+            return await UpdateLineAsync(userId, connectionId, TrackerCommands.FXValue, cellAddress, updateFXValueCommandDTO.NewFXValue);
+        }
+
+        private async Task<Guid?> UpdateLineAsync(
+            Guid userId,
+            string connectionId, 
+            string commandType, 
+            CellAddress cellAddress,
+            byte? newValue
+            )
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
             string payload = JsonSerializer.Serialize(new
             {
                 UserId = userId.ToString(),
-                Frame = cellAddress.FrameHex,
+                Type = commandType,
                 Channel = cellAddress.ChannelHex,
                 Line = cellAddress.LineHex,
-                FXGroup = updateFXValueCommandDTO.FXGroup.ToString(),
+                Column = cellAddress.Column,
                 Address = cellAddress.Address,
-                NewFXSymbol = updateFXValueCommandDTO.NewFXValue == null ? NullFXSymbol : Hex.TwoDigit(updateFXValueCommandDTO.NewFXValue.Value),
+                NewValue = newValue == null ? NullColumn : Hex.TwoDigit(newValue.Value),
                 UpdatedOnUTC = DateTime.UtcNow.ToString()
             });
 
             IDatabase db = _redis.GetDatabase();
 
             string? result = (string?)await db.ScriptEvaluateAsync(
-                LuaScripts.FXValueUpdateScript,
+                LuaScripts.LineUpdateScript,
                 [
                     connectionKey,
                 ],
