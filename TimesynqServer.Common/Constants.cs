@@ -42,7 +42,8 @@
     public static class TrackerConstants
     {
         public const int MaxFramesPerWip = 64;
-        public const int MaxChannels = 16;
+        public const int MaxChannels = 1 + 16;
+        public const int MasterChannelIndex = 0;
         public const int MinLinesPerFrame = 1;
         public const int MaxLinesPerFrame = 256;
         public const int DefaultLinesPerFrame = 64;

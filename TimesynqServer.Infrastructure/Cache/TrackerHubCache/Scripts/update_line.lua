@@ -10,9 +10,11 @@ local num_chars_per_column = 2
 local default_line_count = 64
 local default_lines_per_beat = 4
 
-local empty_line_value = string.rep("-", num_columns * num_chars_per_column)
-
 local input = cjson.decode(ARGV[1])
+
+num_columns = input.Channel == "00" and 8 or num_columns
+
+local empty_line_value = string.rep("-", num_columns * num_chars_per_column)
 
 local wip_id = redis.call("HGET", KEYS[1], "WipId")
 if not wip_id then

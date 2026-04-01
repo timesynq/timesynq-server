@@ -223,7 +223,7 @@ namespace TimesynqServer.Infrastructure.Service
             {
                 if (command.Frame >= TrackerConstants.MaxFramesPerWip)
                     return TrackerHubError.InvalidFrame;
-                if (command.Channel >= TrackerConstants.MaxChannels)
+                if (command.Channel == TrackerConstants.MasterChannelIndex || command.Channel >= TrackerConstants.MaxChannels)
                     return TrackerHubError.InvalidChannel;
                 if (command.NoteGroup >= TrackerConstants.MaxNoteGroups)
                     return TrackerHubError.InvalidNoteGroup;
@@ -261,7 +261,7 @@ namespace TimesynqServer.Infrastructure.Service
             {
                 if (command.Frame >= TrackerConstants.MaxFramesPerWip)
                     return TrackerHubError.InvalidFrame;
-                if (command.Channel >= TrackerConstants.MaxChannels)
+                if (command.Channel == TrackerConstants.MasterChannelIndex || command.Channel >= TrackerConstants.MaxChannels)
                     return TrackerHubError.InvalidChannel;
                 if (command.NoteGroup >= TrackerConstants.MaxNoteGroups)
                     return TrackerHubError.InvalidNoteGroup;

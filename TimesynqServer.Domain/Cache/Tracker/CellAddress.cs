@@ -37,10 +37,18 @@ namespace TimesynqServer.Domain.Cache.Tracker
             => new (frame, channel, line, (byte)((noteGroup * ColsPerGroup) + 1));
 
         public static CellAddress CreateFXSymbolAddress(byte frame, byte channel, byte line, byte fxGroup)
-            => new(frame, channel, line, (byte)((fxGroup * ColsPerGroup) + (TrackerConstants.MaxNoteGroups * ColsPerGroup)));
+        {
+            byte noteGroupOffset = channel == TrackerConstants.MasterChannelIndex ?
+                (byte)0 : (byte)(TrackerConstants.MaxNoteGroups * ColsPerGroup);
+            return new(frame, channel, line, (byte)((fxGroup * ColsPerGroup) + noteGroupOffset));
+        }
 
         public static CellAddress CreateFXValueAddress(byte frame, byte channel, byte line, byte fxGroup)
-            => new(frame, channel, line, (byte)((fxGroup * ColsPerGroup) + (TrackerConstants.MaxNoteGroups * ColsPerGroup) + 1));
+        {
+            byte noteGroupOffset = channel == TrackerConstants.MasterChannelIndex ?
+                (byte)0 : (byte)(TrackerConstants.MaxNoteGroups * ColsPerGroup);
+            return new(frame, channel, line, (byte)((fxGroup * ColsPerGroup) + noteGroupOffset + 1));
+        }
 
         public static CellAddress? DecodeAddressString(string encodedAddress)
         {
