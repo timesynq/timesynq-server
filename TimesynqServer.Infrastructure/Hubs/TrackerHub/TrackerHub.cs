@@ -117,6 +117,16 @@ namespace TimesynqServer.Hubs.TrackerHub
             );
         }
 
+        public Task<TrackerHubResult> UpdateChannelType(UpdateChannelTypeCommandDTO updateChannelTypeCommandDTO)
+        {
+            return UpdateTracker(
+                () => _roomService.UpdateChannelType(Context.UserIdentifier, Context.ConnectionId, updateChannelTypeCommandDTO),
+                TrackerHubClientCallbacks.ChannelTypeUpdated,
+                updateChannelTypeCommandDTO,
+                TrackerHubError.FailedToUpdateChannelType
+            );
+        }
+
         public Task<TrackerHubResult> UpdatePitch(UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             return UpdateTracker(

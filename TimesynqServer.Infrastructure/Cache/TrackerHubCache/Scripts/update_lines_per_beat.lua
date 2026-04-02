@@ -7,6 +7,7 @@
 
 local default_line_count = 64
 local default_lines_per_beat = 4
+local default_send_mask = "0000"
 
 local input = cjson.decode(ARGV[1])
 
@@ -22,7 +23,8 @@ local frame_exists = redis.call("EXISTS", frame_key)
 if frame_exists == 0 then
 	redis.call("HSET", frame_key,
 		"LineCount", default_line_count,
-		"LinesPerBeat", default_lines_per_beat
+		"LinesPerBeat", default_lines_per_beat,
+		"SendMask", default_send_mask
 	)
 	redis.call("SADD", room_index_key, frame_key)
 end

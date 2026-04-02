@@ -3,7 +3,7 @@
 -- KEYS[1] = connectionKey
 
 -- ARGV[1] = JSON serialized payload that contains
--- UserId, Frame, NewLineCount, UpdatedOnUTC
+-- UserId, Frame, Channel, IsSend, UpdatedOnUTC
 
 local default_line_count = 64
 local default_lines_per_beat = 4
@@ -23,31 +23,39 @@ local frame_exists = redis.call("EXISTS", frame_key)
 if frame_exists == 0 then
 	redis.call("HSET", frame_key,
 		"LineCount", default_line_count,
-		"LinesPerBeat", default_lines_per_beat.
+		"LinesPerBeat", default_lines_per_beat,
 		"SendMask", default_send_mask
 	)
 	redis.call("SADD", room_index_key, frame_key)
 end
 
-local old_line_count = redis.call("HGET", frame_key, "LineCount")
+local old_send_mask = redis.call("HGET", frame_key, "SendMask")
+local old_send_mask_short = tonumber(old_send_mask, 16)
 
-local old_line_count_number = tonumber(old_line_count)
-local new_line_count_number = tonumber(input.NewLineCount)
-if not new_line_count_number then
+local index_number = tonumber(input.Channel)
+if not index_number then
 	return nil
 end
+index_number -= 1
+
+local bit = input.IsSend and input.bit.lshift(1, index_number) or 0
+local mask = bit.lshift(1, index_number)
+local cleared_send_mask_short = bit.band(old_send_mask_short, bit.bnot(mask))
+local new_send_mask_short = bit.bor(bit, cleared_send_mask_short)
+
+local new_send_mask = string.format("%x", new_send_mask_short)
 
 redis.call("HSET", frame_key,
-	"LineCount", new_line_count_number
+	"SendMask", new_send_mask
 )
 
 local room_log_key = "tracker:room:" .. wip_id .. ":log"
 local operation_log_entry = {
-	Type = "line_count"
+	Type = "send_mask"
 	UserId = input.UserId,
 	Timestamp = input.UpdatedOnUTC,
-	OldValue = old_line_count_number,	
-	NewValue = new_line_count_number,
+	OldValue = old_send_mask,	
+	NewValue = new_send_mask,
 }
 local operation_log_entry_json = cjson.encode(operation_log_entry)
 redis.call("RPUSH", room_log_key, operation_log_entry_json)

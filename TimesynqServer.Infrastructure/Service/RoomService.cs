@@ -222,6 +222,40 @@ namespace TimesynqServer.Infrastructure.Service
             return wipId.Value;
         }
 
+        public async Task<TrackerHubResult<Guid>> UpdateChannelType(string? userIdentifier, string connectionId, UpdateChannelTypeCommandDTO updateChannelTypeCommandDTO)
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            string? errorMessage = ValidateUpdateChannelTypeCommand(updateChannelTypeCommandDTO);
+            if (errorMessage != null)
+            {
+                return TrackerHubResult<Guid>.Failure(errorMessage);
+            }
+
+            Guid? wipId = await _trackerHubCache.UpdateChannelTypeAsync(callerId, connectionId, updateChannelTypeCommandDTO);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
+
+            static string? ValidateUpdateChannelTypeCommand(UpdateChannelTypeCommandDTO command)
+            {
+                if (command.Frame >= TrackerConstants.MaxFramesPerWip)
+                    return TrackerHubError.InvalidFrame;
+                if (command.Channel == TrackerConstants.MasterChannelIndex || command.Channel >= TrackerConstants.MaxChannels)
+                    return TrackerHubError.InvalidChannel;
+                return null;
+            }
+        }
+
         public async Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             if (

@@ -1,4 +1,5 @@
 ﻿using Amazon.SimpleEmail.Model;
+using Microsoft.EntityFrameworkCore.Metadata;
 using StackExchange.Redis;
 using System.Reflection;
 using System.Runtime.Versioning;
@@ -83,6 +84,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 LoadEmbeddedScript("update_line_count.lua");
             public static readonly string LinesPerBeatUpdateScript =
                 LoadEmbeddedScript("update_lines_per_beat.lua");
+            public static readonly string ChannelTypeUpdateScript =
+                LoadEmbeddedScript("update_channel_type.lua");
             public static readonly string LineUpdateScript =
                 LoadEmbeddedScript("update_line.lua");
         }
@@ -347,6 +350,39 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.LinesPerBeatUpdateScript,
+                [
+                    connectionKey
+                ],
+                [
+                    payload
+                ]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        public async Task<Guid?> UpdateChannelTypeAsync(Guid userId, string connectionId, UpdateChannelTypeCommandDTO updateChannelTypeCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Frame = Hex.TwoDigit(updateChannelTypeCommandDTO.Frame),
+                Channel = updateChannelTypeCommandDTO.Channel,
+                IsSend = updateChannelTypeCommandDTO.IsSend.ToString(),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.ChannelTypeUpdateScript,
                 [
                     connectionKey
                 ],

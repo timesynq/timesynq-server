@@ -105,9 +105,18 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>
         /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
-        /// <param name="updateLinesPerBeatCommandDTO">THe information on which frame to update and the new LPB.</param>
+        /// <param name="updateLinesPerBeatCommandDTO">The information on which frame to update and the new LPB.</param>
         /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
         public Task<Guid?> UpdateLinesPerBeatAsync(Guid userId, string connectionId, UpdateLinesPerBeatCommandDTO updateLinesPerBeatCommandDTO);
+
+        /// <summary>
+        /// Updates the type of a channel in a given frame to either Send or non-Send. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="updateChannelTypeCommandDTO">The information on which channel in which frame to update and the new channel type.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> UpdateChannelTypeAsync(Guid userId, string connectionId, UpdateChannelTypeCommandDTO updateChannelTypeCommandDTO);
 
         /// <summary>
         /// Updates a single pitch value in a wip. User must have permission to edit the wip in order for changes to be made.
