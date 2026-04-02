@@ -10,6 +10,7 @@ namespace TimesynqServer.Application.Service
         public Task<TrackerHubResult<TrackerConnectionDTO>> LeaveRoom(string? userIdentifier, string connectionId);
         public Task<TrackerHubResult<ChatMessageDTO>> SendChatMessage(string? userIdentifier, string connectionId, string? message);
         public Task<TrackerHubResult<Guid>> UpdateBpm(string? userIdentifier, string connectionId, int newBpm);
+        public Task<TrackerHubResult<Guid>> UpdateChannelCount(string? userIdentifier, string connectionId, int newChannelCount);
         public Task<TrackerHubResult<Guid>> UpdateLineCount(string? userIdentifier, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO);
         public Task<TrackerHubResult<Guid>> UpdateLinesPerBeat(string? userIdentifier, string connectionId, UpdateLinesPerBeatCommandDTO updateLinesPerBeatCommandDTO);
         public Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO);

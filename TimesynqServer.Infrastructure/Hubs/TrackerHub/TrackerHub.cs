@@ -87,6 +87,16 @@ namespace TimesynqServer.Hubs.TrackerHub
             );
         }
 
+        public Task<TrackerHubResult> UpdateChannelCount(int newChannelCount)
+        {
+            return UpdateTracker(
+                () => _roomService.UpdateChannelCount(Context.UserIdentifier, Context.ConnectionId, newChannelCount),
+                TrackerHubClientCallbacks.ChannelCountUpdated,
+                newChannelCount,
+                TrackerHubError.FailedToUpdateChannelCount
+            );
+        }
+
         public Task<TrackerHubResult> UpdateLineCount(UpdateLineCountCommandDTO updateLineCountCommandDTO)
         {
             return UpdateTracker(

@@ -141,6 +141,33 @@ namespace TimesynqServer.Infrastructure.Service
             return wipId.Value;
         }
 
+        public async Task<TrackerHubResult<Guid>> UpdateChannelCount(string? userIdentifier, string connectionId, int newChannelCount)
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            // the newChannelCount value received from the client does NOT include master channel,
+            // so it should be in the range [minChannels-1, maxChannels-1]
+            newChannelCount += 1;
+            if (newChannelCount < TrackerConstants.MinChannels || newChannelCount > TrackerConstants.MaxChannels)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.InvalidChannelCount);
+            }
+
+            Guid? wipId = await _trackerHubCache.UpdateChannelCountAsync(callerId, connectionId, newChannelCount);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
+        }
+
         public async Task<TrackerHubResult<Guid>> UpdateLineCount(string? userIdentifier, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO)
         {
             if (

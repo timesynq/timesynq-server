@@ -83,6 +83,15 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         public Task<Guid?> UpdateBpmAsync(Guid userId, string connectionId, int newBpm);
 
         /// <summary>
+        /// Update's the wip's channel count. Channel counts for each frame are logically capped at this new value. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="newChannelCount">The new channel count.</param>
+        /// <returns></returns>
+        public Task<Guid?> UpdateChannelCountAsync(Guid userId, string connectionId, int newChannelCount);
+
+        /// <summary>
         /// Updates the line count of a given frame in the wip. User must have permission to edit the wip in order for changes to be made.
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>

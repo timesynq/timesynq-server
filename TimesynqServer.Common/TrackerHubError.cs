@@ -16,6 +16,7 @@
         public static string InvalidLineCount = $"Invalid line count. Line count must be between {TrackerConstants.MinLinesPerFrame} and {TrackerConstants.MaxLinesPerFrame} inclusive.";
         public static string InvalidFrame = $"Invalid frame. Frame value must be between 0 and {TrackerConstants.MaxFramesPerWip - 1} inclusive.";
         public static string InvalidChannel = $"Invalid channel. Channel value must be between 0 and {TrackerConstants.MaxChannels - 1} inclusive.";
+        public static string InvalidChannelCount = $"Invalid channel count. Channel count must be between {TrackerConstants.MinChannels - 1} and {TrackerConstants.MaxChannels - 1} inclusive.";
         public static string InvalidNoteGroup = $"Invalid note group. Note group value must be between 0 and {TrackerConstants.MaxNoteGroups - 1} inclusive.";
         public static string InvalidFXGroup = $"Invalid FX group. FX group value must be between 0 and {TrackerConstants.MaxFXGroups - 1} inclusive.";
         public static string InvalidPitch = $"Invalid pitch. Pitch value must be between 0 and {TrackerConstants.MaxPitches - 1} inclusive.";
@@ -23,5 +24,6 @@
         public static string FailedToUpdateInstrument = "Failed to update instrument";
         public static string FailedToUpdateFXSymbol = "Failed to update FX symbol";
         public static string FailedToUpdateFXValue = "Failed to update FX value";
+        public static string FailedToUpdateChannelCount = "Failed to update channelc count";
     }
 }

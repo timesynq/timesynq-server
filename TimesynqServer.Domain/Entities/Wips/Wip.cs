@@ -29,6 +29,11 @@ namespace TimesynqServer.Domain.Entities.Wips
         public int Bpm { get; private set; } = TrackerConstants.DefaultBpm;
 
         /// <summary>
+        /// The number of channels each of the wip's frames has including the master channel.
+        /// </summary>
+        public int Channels { get; private set; } = TrackerConstants.DefaultChannels;
+
+        /// <summary>
         /// The date when the wip was created.
         /// </summary>
         public DateTime CreatedOnUTC { get; private set; }
