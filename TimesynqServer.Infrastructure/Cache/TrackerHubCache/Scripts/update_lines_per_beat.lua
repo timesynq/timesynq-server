@@ -5,9 +5,8 @@
 -- ARGV[1] = JSON serialized payload that contains
 -- UserId, Frame, NewLinesPerBeat, UpdatedOnUTC
 
-local default_line_count = 64
-local default_lines_per_beat = 4
-local default_send_mask = "0000"
+-- LIB IMPORTS
+-- frame.lua: lines_per_beat_key, get_frame_key_and_create_frame_if_nonexistent()
 
 local input = cjson.decode(ARGV[1])
 
@@ -17,19 +16,9 @@ if not wip_id then
 end
 
 local room_index_key = "tracker:room:" .. wip_id .. ":index"
+local frame_key =  get_frame_key_and_create_frame_if_nonexistent(wip_id, input.Frame, room_index_key)
 
-local frame_key = "tracker:room:" .. wip_id .. ":frame:" .. input.Frame
-local frame_exists = redis.call("EXISTS", frame_key)
-if frame_exists == 0 then
-	redis.call("HSET", frame_key,
-		"LineCount", default_line_count,
-		"LinesPerBeat", default_lines_per_beat,
-		"SendMask", default_send_mask
-	)
-	redis.call("SADD", room_index_key, frame_key)
-end
-
-local old_lines_per_beat = redis.call("HGET", frame_key, "LinesPerBeat")
+local old_lines_per_beat = redis.call("HGET", frame_key, lines_per_beat_key)
 
 local old_lines_per_beat_number = tonumber(old_lines_per_beat)
 local new_lines_per_beat_number = tonumber(input.NewLinesPerBeat)
@@ -38,7 +27,7 @@ if not new_lines_per_beat_number then
 end
 
 redis.call("HSET", frame_key,
-	"LinesPerBeat", new_lines_per_beat_number
+	lines_per_beat_key, new_lines_per_beat_number
 )
 
 local room_log_key = "tracker:room:" .. wip_id .. ":log"

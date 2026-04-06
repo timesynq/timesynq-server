@@ -19,7 +19,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
         private record LuaLibraryModule(string Name, string Code);
         private static class LuaLibraryModules
         {
-
+            public static LuaLibraryModule FrameModule = new("frame", LoadEmbeddedScript("Lib.frame.lua"));
         }
 
         private class LuaScriptBuilder
@@ -77,18 +77,22 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
             .Build();
 
         public static readonly string LineCountUpdateScript = new LuaScriptBuilder()
+            .Use(LuaLibraryModules.FrameModule)
             .Body(LoadEmbeddedScript("update_line_count.lua"))
             .Build();
 
         public static readonly string LinesPerBeatUpdateScript = new LuaScriptBuilder()
+            .Use(LuaLibraryModules.FrameModule)
             .Body(LoadEmbeddedScript("update_lines_per_beat.lua"))
             .Build();
 
         public static readonly string ChannelTypeUpdateScript = new LuaScriptBuilder()
+            .Use(LuaLibraryModules.FrameModule)
             .Body(LoadEmbeddedScript("update_channel_type.lua"))
             .Build();
 
         public static readonly string LineUpdateScript = new LuaScriptBuilder()
+            .Use(LuaLibraryModules.FrameModule)
             .Body(LoadEmbeddedScript("update_line.lua"))
             .Build();
     }

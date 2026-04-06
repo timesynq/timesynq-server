@@ -5,9 +5,8 @@
 -- ARGV[1] = JSON serialized payload that contains
 -- UserId, Frame, Channel, IsSend, UpdatedOnUTC
 
-local default_line_count = 64
-local default_lines_per_beat = 4
-local default_send_mask = "0000"
+-- LIB IMPORTS
+-- frame.lua: send_mask_key, get_frame_key_and_create_frame_if_nonexistent()
 
 local input = cjson.decode(ARGV[1])
 
@@ -17,19 +16,9 @@ if not wip_id then
 end
 
 local room_index_key = "tracker:room:" .. wip_id .. ":index"
+local frame_key =  get_frame_key_and_create_frame_if_nonexistent(wip_id, input.Frame, room_index_key)
 
-local frame_key = "tracker:room:" .. wip_id .. ":frame:" .. input.Frame
-local frame_exists = redis.call("EXISTS", frame_key)
-if frame_exists == 0 then
-	redis.call("HSET", frame_key,
-		"LineCount", default_line_count,
-		"LinesPerBeat", default_lines_per_beat,
-		"SendMask", default_send_mask
-	)
-	redis.call("SADD", room_index_key, frame_key)
-end
-
-local old_send_mask = redis.call("HGET", frame_key, "SendMask")
+local old_send_mask = redis.call("HGET", frame_key, send_mask_key)
 local old_send_mask_short = tonumber(old_send_mask, 16)
 
 local index_number = tonumber(input.Channel)
@@ -46,7 +35,7 @@ local new_send_mask_short = bit.bor(bit, cleared_send_mask_short)
 local new_send_mask = string.format("%x", new_send_mask_short)
 
 redis.call("HSET", frame_key,
-	"SendMask", new_send_mask
+	send_mask_key, new_send_mask
 )
 
 local room_log_key = "tracker:room:" .. wip_id .. ":log"

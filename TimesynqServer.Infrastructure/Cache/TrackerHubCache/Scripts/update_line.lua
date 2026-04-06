@@ -5,11 +5,11 @@
 -- ARGV[1] = JSON serialized payload that contains
 -- UserId, Type, Frame, Channel, Line, Column, Address, NewValue, UpdatedOnUTC
 
+-- LIB IMPORTS
+-- frame.lua: get_frame_key_and_create_frame_if_nonexistent()
+
 local num_columns = 14
 local num_chars_per_column = 2
-local default_line_count = 64
-local default_lines_per_beat = 4
-local default_send_mask = "0000"
 
 local input = cjson.decode(ARGV[1])
 
@@ -29,16 +29,7 @@ if not column or column < 0 or column >= num_columns then
 	return nil
 end
 
-local frame_key = "tracker:room:" .. wip_id .. ":frame:" .. input.Frame
-local frame_exists = redis.call("EXISTS", frame_key)
-if frame_exists == 0 then
-	redis.call("HSET", frame_key,
-		"LineCount", default_line_count,
-		"LinesPerBeat", default_lines_per_beat,
-		"SendMask", default_send_mask
-	)
-	redis.call("SADD", room_index_key, frame_key)
-end
+local frame_key =  get_frame_key_and_create_frame_if_nonexistent(wip_id, input.Frame, room_index_key)
 
 local channel_key = frame_key .. ":channel:" .. input.Channel
 local channel_exists = redis.call("EXISTS", channel_key)
