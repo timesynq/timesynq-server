@@ -5,6 +5,9 @@
 -- ARGV[1] = JSON serialized payload that contains
 -- UserId, NewChannelCount, UpdatedOnUTC
 
+-- LIB IMPORTS
+-- operation_log.lua: add_operation_log_entry()
+
 local input = cjson.decode(ARGV[1])
 
 local wip_id = redis.call("HGET", KEYS[1], "WipId")
@@ -28,15 +31,13 @@ redis.call("HSET", room_info_key,
 	"Channels", new_channel_count_number
 )
 
-local room_log_key = "tracker:room:" .. wip_id .. ":log"
-local operation_log_entry = {
-	Type = "channel_count",
-	UserId = input.UserId,
-	Timestamp = input.UpdatedOnUTC,
-	OldValue = old_channel_count_number,	
-	NewValue = new_channel_count_number,
-}
-local operation_log_entry_json = cjson.encode(operation_log_entry)
-redis.call("RPUSH", room_log_key, operation_log_entry_json)
+add_operation_log_entry(
+	wip_id,
+	"channel_count",
+	input.UserId,
+	input.UpdatedOnUTC,
+	old_channel_count_number,
+	new_channel_count_number
+)
 
 return wip_id

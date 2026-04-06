@@ -7,6 +7,7 @@
 
 -- LIB IMPORTS
 -- frame.lua: send_mask_key, get_frame_key_and_create_frame_if_nonexistent()
+-- operation_log.lua: add_operation_log_entry()
 
 local input = cjson.decode(ARGV[1])
 
@@ -38,15 +39,13 @@ redis.call("HSET", frame_key,
 	send_mask_key, new_send_mask
 )
 
-local room_log_key = "tracker:room:" .. wip_id .. ":log"
-local operation_log_entry = {
-	Type = "send_mask"
-	UserId = input.UserId,
-	Timestamp = input.UpdatedOnUTC,
-	OldValue = old_send_mask,	
-	NewValue = new_send_mask,
-}
-local operation_log_entry_json = cjson.encode(operation_log_entry)
-redis.call("RPUSH", room_log_key, operation_log_entry_json)
+add_operation_log_entry(
+	wip_id,
+	"send_mask",
+	input.UserId,
+	input.UpdatedOnUTC,
+	old_send_mask,
+	new_send_mask
+)
 
 return wip_id

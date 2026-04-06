@@ -7,6 +7,7 @@
 
 -- LIB IMPORTS
 -- frame.lua: get_frame_key_and_create_frame_if_nonexistent()
+-- operation_log.lua: add_operation_log_entry()
 
 local num_columns = 14
 local num_chars_per_column = 2
@@ -57,16 +58,14 @@ else
 	)
 end
 
-local room_log_key = "tracker:room:" .. wip_id .. ":log"
-local operation_log_entry = {
-	Type = input.Type,
-	UserId = input.UserId,
-	Timestamp = input.UpdatedOnUTC,
-	OldValue = old_value,	
-	NewValue = input.NewValue,
-	Address = input.Address
-}
-local operation_log_entry_json = cjson.encode(operation_log_entry)
-redis.call("RPUSH", room_log_key, operation_log_entry_json)
+add_operation_log_entry(
+	wip_id,
+	input.Type,
+	input.UserId,
+	input.UpdatedOnUTC,
+	old_value,
+	input.NewValue,
+	input.Address
+)
 
 return wip_id

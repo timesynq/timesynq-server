@@ -7,6 +7,7 @@
 
 -- LIB IMPORTS
 -- frame.lua: line_count_key, get_frame_key_and_create_frame_if_nonexistent()
+-- operation_log.lua: add_operation_log_entry()
 
 local input = cjson.decode(ARGV[1])
 
@@ -30,15 +31,13 @@ redis.call("HSET", frame_key,
 	line_count_key, new_line_count_number
 )
 
-local room_log_key = "tracker:room:" .. wip_id .. ":log"
-local operation_log_entry = {
-	Type = "line_count"
-	UserId = input.UserId,
-	Timestamp = input.UpdatedOnUTC,
-	OldValue = old_line_count_number,	
-	NewValue = new_line_count_number,
-}
-local operation_log_entry_json = cjson.encode(operation_log_entry)
-redis.call("RPUSH", room_log_key, operation_log_entry_json)
+add_operation_log_entry(
+	wip_id,
+	"line_count",
+	input.UserId,
+	input.UpdatedOnUTC,
+	old_line_count_number,
+	new_line_count_number
+)
 
 return wip_id
