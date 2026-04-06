@@ -10,6 +10,7 @@ using TimesynqServer.Common;
 using TimesynqServer.Common.Result;
 using TimesynqServer.Contracts.TrackerCommandDTO;
 using TimesynqServer.Domain.Cache.Tracker;
+using TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts;
 
 namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 {
@@ -55,39 +56,6 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Frame}:{Hex.TwoDigit(frame)}";
             public static string ChannelKey(Guid wipId, int frame, int channel)
                 => $"{CachePrefixes.Tracker}:{TrackerHubCacheKeySegments.Room}:{wipId}:{TrackerHubCacheKeySegments.Frame}:{Hex.TwoDigit(frame)}:{TrackerHubCacheKeySegments.Channel}:{Hex.TwoDigit(channel)}";
-        }
-
-        private static class LuaScripts
-        {
-            private static string LoadEmbeddedScript(string filename)
-            {
-                const string ScriptPathPrefix = "TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts";
-                string path = $"{ScriptPathPrefix}.{filename}";
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                using Stream? stream = assembly.GetManifestResourceStream(path)
-                    ?? throw new Exception($"Resource not found: {path}");
-                using var reader = new StreamReader(stream);
-                return reader.ReadToEnd();
-            }
-
-            public static readonly string RoomJoinScript =
-                LoadEmbeddedScript("set_connection_and_create_room_if_empty.lua");
-            public static readonly string RoomLeaveScript =
-                LoadEmbeddedScript("remove_connection_and_cleanup_if_empty.lua");
-            public static readonly string RoomRemoveScript =
-                LoadEmbeddedScript("remove_room.lua");
-            public static readonly string BpmUpdateScript =
-                LoadEmbeddedScript("update_bpm.lua");
-            public static readonly string ChannelCountUpdateScript =
-                LoadEmbeddedScript("update_channel_count.lua");
-            public static readonly string LineCountUpdateScript =
-                LoadEmbeddedScript("update_line_count.lua");
-            public static readonly string LinesPerBeatUpdateScript =
-                LoadEmbeddedScript("update_lines_per_beat.lua");
-            public static readonly string ChannelTypeUpdateScript =
-                LoadEmbeddedScript("update_channel_type.lua");
-            public static readonly string LineUpdateScript =
-                LoadEmbeddedScript("update_line.lua");
         }
 
         /// <inheritdoc/>

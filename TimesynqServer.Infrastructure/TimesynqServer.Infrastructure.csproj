@@ -10,6 +10,12 @@
     <None Remove="Cache\TrackerHubCache\Scripts\remove_connection_and_cleanup_if_empty.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\remove_room.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\set_connection_and_create_room_if_empty.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\update_bpm.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\update_channel_count.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\update_channel_type.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\update_line.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\update_lines_per_beat.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\update_line_count.lua" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +31,12 @@
     <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\remove_connection_and_cleanup_if_empty.lua">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\update_bpm.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\update_channel_count.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\update_channel_type.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\update_line.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\update_lines_per_beat.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\update_line_count.lua" />
   </ItemGroup>
 
   <ItemGroup>
