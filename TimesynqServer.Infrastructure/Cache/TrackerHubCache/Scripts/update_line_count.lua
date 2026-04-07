@@ -8,7 +8,7 @@
 -- LIB IMPORTS
 -- connection.lua: connection_field_names{}
 -- room.lua: get_room_index_key()
--- frame.lua: line_count_key, get_frame_key_and_create_frame_if_nonexistent()
+-- frame.lua: frame_field_names{}, get_frame_key_and_create_frame_if_nonexistent()
 -- operation_log.lua: add_operation_log_entry()
 
 local input = cjson.decode(ARGV[1])
@@ -21,7 +21,7 @@ end
 local room_index_key = get_room_index_key(wip_id)
 local frame_key =  get_frame_key_and_create_frame_if_nonexistent(wip_id, input.Frame, room_index_key)
 
-local old_line_count = redis.call("HGET", frame_key, line_count_key)
+local old_line_count = redis.call("HGET", frame_key, frame_field_names.line_count)
 
 local old_line_count_number = tonumber(old_line_count)
 local new_line_count_number = tonumber(input.NewLineCount)
@@ -30,7 +30,7 @@ if not new_line_count_number then
 end
 
 redis.call("HSET", frame_key,
-	line_count_key, new_line_count_number
+	frame_field_names.line_count, new_line_count_number
 )
 
 add_operation_log_entry(

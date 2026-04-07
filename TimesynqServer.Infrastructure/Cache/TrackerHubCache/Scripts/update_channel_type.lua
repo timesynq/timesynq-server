@@ -8,7 +8,7 @@
 -- LIB IMPORTS
 -- connection.lua: connection_field_names{}
 -- room.lua: get_room_index_key()
--- frame.lua: send_mask_key, get_frame_key_and_create_frame_if_nonexistent()
+-- frame.lua: frame_field_names{}, get_frame_key_and_create_frame_if_nonexistent()
 -- operation_log.lua: add_operation_log_entry()
 
 local input = cjson.decode(ARGV[1])
@@ -21,7 +21,7 @@ end
 local room_index_key = get_room_index_key(wip_id)
 local frame_key =  get_frame_key_and_create_frame_if_nonexistent(wip_id, input.Frame, room_index_key)
 
-local old_send_mask = redis.call("HGET", frame_key, send_mask_key)
+local old_send_mask = redis.call("HGET", frame_key, frame_field_names.send_mask)
 local old_send_mask_short = tonumber(old_send_mask, 16)
 
 local index_number = tonumber(input.Channel)
@@ -38,7 +38,7 @@ local new_send_mask_short = bit.bor(bit, cleared_send_mask_short)
 local new_send_mask = string.format("%x", new_send_mask_short)
 
 redis.call("HSET", frame_key,
-	send_mask_key, new_send_mask
+	frame_field_names.send_mask, new_send_mask
 )
 
 add_operation_log_entry(
