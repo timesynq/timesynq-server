@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Cache\TrackerHubCache\Scripts\Lib\connection.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\Lib\frame.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\Lib\key_builder.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\Lib\operation_log.lua" />
+    <None Remove="Cache\TrackerHubCache\Scripts\Lib\room_keys.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\remove_connection_and_cleanup_if_empty.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\remove_room.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\set_connection_and_create_room_if_empty.lua" />
@@ -19,6 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\Lib\connection.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\Lib\frame.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\Lib\key_builder.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\Lib\operation_log.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\Lib\room_keys.lua" />
     <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\remove_room.lua">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>

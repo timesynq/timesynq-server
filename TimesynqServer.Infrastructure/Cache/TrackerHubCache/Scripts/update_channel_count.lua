@@ -6,12 +6,13 @@
 -- UserId, NewChannelCount, UpdatedOnUTC
 
 -- LIB IMPORTS
+-- connection.lua: connection_field_names{}
 -- room_keys.lua: get_room_info_key()
 -- operation_log.lua: add_operation_log_entry()
 
 local input = cjson.decode(ARGV[1])
 
-local wip_id = redis.call("HGET", KEYS[1], "WipId")
+local wip_id = redis.call("HGET", KEYS[1], connection_field_names.wip_id)
 if not wip_id then
 	return nil
 end

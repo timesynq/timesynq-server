@@ -6,13 +6,14 @@
 -- UserId, Frame, NewLineCount, UpdatedOnUTC
 
 -- LIB IMPORTS
+-- connection.lua: connection_field_names{}
 -- room_keys.lua: get_room_index_key()
 -- frame.lua: line_count_key, get_frame_key_and_create_frame_if_nonexistent()
 -- operation_log.lua: add_operation_log_entry()
 
 local input = cjson.decode(ARGV[1])
 
-local wip_id = redis.call("HGET", KEYS[1], "WipId")
+local wip_id = redis.call("HGET", KEYS[1], connection_field_names.wip_id)
 if not wip_id then
 	return nil
 end

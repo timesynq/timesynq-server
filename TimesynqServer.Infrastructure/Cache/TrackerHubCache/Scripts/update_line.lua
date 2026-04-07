@@ -6,6 +6,7 @@
 -- UserId, Type, Frame, Channel, Line, Column, Address, NewValue, UpdatedOnUTC
 
 -- LIB IMPORTS
+-- connection.lua: connection_field_names{}
 -- key_builder.lua: build_key()
 -- room_keys.lua: get_room_index_key()
 -- frame.lua: get_frame_key_and_create_frame_if_nonexistent()
@@ -20,7 +21,7 @@ num_columns = input.Channel == "00" and 8 or num_columns
 
 local empty_line_value = string.rep("-", num_columns * num_chars_per_column)
 
-local wip_id = redis.call("HGET", KEYS[1], "WipId")
+local wip_id = redis.call("HGET", KEYS[1], connection_field_names.wip_id)
 if not wip_id then
 	return nil
 end

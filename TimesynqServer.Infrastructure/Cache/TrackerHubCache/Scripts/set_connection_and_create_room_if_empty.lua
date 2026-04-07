@@ -8,13 +8,16 @@
 -- ARGV[1] = JSON serialized payload that contains
 -- WipId, ConnectionId, UserId, UserName, WipName, OwnerId, WipBpm
 
+-- LIB IMPORTS
+-- connection.lua: connection_field_names{}
+
 local input = cjson.decode(ARGV[1])
 
 redis.call("HSET", KEYS[1],
-	"WipId", input.WipId,
-	"ConnectionId", input.ConnectionId,
-	"UserId", input.UserId,
-	"UserName", input.UserName
+	connection_field_names.wip_id, input.WipId,
+	connection_field_names.connection_id, input.ConnectionId,
+	connection_field_names.user_id, input.UserId,
+	connection_field_names.username, input.UserName
 )
 
 local room_exists = redis.call("EXISTS", KEYS[2])
