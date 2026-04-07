@@ -6,10 +6,11 @@
 -- KEYS[4] = roomInfoKey
 
 -- ARGV[1] = JSON serialized payload that contains
--- WipId, ConnectionId, UserId, UserName, WipName, OwnerId, WipBpm
+-- WipId, ConnectionId, UserId, UserName, WipName, OwnerId, WipBpm, WipChannels
 
 -- LIB IMPORTS
 -- connection.lua: connection_field_names{}
+-- room.lua: room_info_field_names{}
 
 local input = cjson.decode(ARGV[1])
 
@@ -24,9 +25,10 @@ local room_exists = redis.call("EXISTS", KEYS[2])
 
 if room_exists == 0 then
 	redis.call("HSET", KEYS[4],
-		"WipName", input.WipName,
-		"OwnerId", input.OwnerId
-		"Bpm", input.WipBpm
+		room_info_field_names.wip_name, input.WipName,
+		room_info_field_names.owner_id, input.OwnerId,
+		room_info_field_names.bpm, input.WipBpm,
+		room_info_field_names.channels, input.WipChannels
 	)
 	redis.call("SADD", KEYS[2], KEYS[4])
 	-- create first frame info

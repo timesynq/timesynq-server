@@ -7,7 +7,7 @@
 
 -- LIB IMPORTS
 -- connection.lua: connection_field_names{}
--- room_keys.lua: get_room_info_key()
+-- room.lua: get_room_info_key(), room_info_field_names{}
 -- operation_log.lua: add_operation_log_entry()
 
 local input = cjson.decode(ARGV[1])
@@ -18,7 +18,7 @@ if not wip_id then
 end
 
 local room_info_key = get_room_info_key(wip_id)
-local old_bpm_value = redis.call("HGET", room_info_key, "Bpm")
+local old_bpm_value = redis.call("HGET", room_info_key, room_info_field_names.bpm)
 if not old_bpm_value then
 	return nil
 end
@@ -30,7 +30,7 @@ if not new_bpm_number then
 end
 
 redis.call("HSET", room_info_key, 
-	"Bpm", new_bpm_number
+	room_info_field_names.bpm, new_bpm_number
 )
 
 add_operation_log_entry(

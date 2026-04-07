@@ -8,7 +8,7 @@
 -- LIB IMPORTS
 -- connection.lua: connection_field_names{}
 -- key_builder.lua: build_key()
--- room_keys.lua: get_room_index_key()
+-- room.lua: get_room_index_key()
 -- frame.lua: get_frame_key_and_create_frame_if_nonexistent()
 -- operation_log.lua: add_operation_log_entry()
 

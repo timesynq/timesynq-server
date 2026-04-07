@@ -1,5 +1,5 @@
 ﻿-- LIB IMPORTS
--- room_keys.lua: get_room_frame_key()
+-- room.lua: get_room_frame_key()
 
 local default_line_count = 64
 local default_lines_per_beat = 4

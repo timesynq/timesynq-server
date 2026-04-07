@@ -7,7 +7,7 @@
 
 -- LIB IMPORTS
 -- connection.lua: connection_field_names{}
--- room_keys.lua: get_room_connections_key(), get_room_index_key()
+-- room.lua: get_room_connections_key(), get_room_index_key()
 
 local wip_id = redis.call("HGET", KEYS[1], connection_field_names.wip_id)
 if not wip_id then

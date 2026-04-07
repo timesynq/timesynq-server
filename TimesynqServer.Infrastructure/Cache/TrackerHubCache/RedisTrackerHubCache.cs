@@ -112,6 +112,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 WipName = wipDTO.Name,
                 OwnerId = wipDTO.OwnerId.ToString(),
                 WipBpm = TrackerConstants.DefaultBpm, // placeholder; wipDTO should not contain bpm, so leave this until wipDTO param is replaced with the full tracker
+                WipChannels = TrackerConstants.DefaultChannels, // placeholder; wipDTO also should not contain channels, so leave this until wipDTO param is replaced with the full tracker
             });
 
             IDatabase db = _redis.GetDatabase();

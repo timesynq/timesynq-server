@@ -24,22 +24,22 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
                 LoadEmbeddedScript("Lib.key_builder.lua")
             );
 
-            public static LuaLibraryModule RoomKeyModule = new(
-                "room_keys",
-                LoadEmbeddedScript("Lib.room_keys.lua"),
+            public static LuaLibraryModule RoomModule = new(
+                "room",
+                LoadEmbeddedScript("Lib.room.lua"),
                 KeyBuilderModule
             );
 
             public static LuaLibraryModule FrameModule = new(
                 "frame", 
                 LoadEmbeddedScript("Lib.frame.lua"),
-                RoomKeyModule
+                RoomModule
             );
 
             public static LuaLibraryModule OperationLogModule = new(
                 "operation_log", 
                 LoadEmbeddedScript("Lib.operation_log.lua"),
-                RoomKeyModule
+                RoomModule
             );
 
             public static LuaLibraryModule ConnectionModule = new(
@@ -97,12 +97,13 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
 
         public static readonly string RoomJoinScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
+            .Use(LuaLibraryModules.RoomModule)
             .Body(LoadEmbeddedScript("set_connection_and_create_room_if_empty.lua"))
             .Build();
 
         public static readonly string RoomLeaveScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
-            .Use(LuaLibraryModules.RoomKeyModule)
+            .Use(LuaLibraryModules.RoomModule)
             .Body(LoadEmbeddedScript("remove_connection_and_cleanup_if_empty.lua"))
             .Build();
 
@@ -112,21 +113,21 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
 
         public static readonly string BpmUpdateScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
-            .Use(LuaLibraryModules.RoomKeyModule)
+            .Use(LuaLibraryModules.RoomModule)
             .Use(LuaLibraryModules.OperationLogModule)
             .Body(LoadEmbeddedScript("update_bpm.lua"))
             .Build();
 
         public static readonly string ChannelCountUpdateScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
-            .Use(LuaLibraryModules.RoomKeyModule)
+            .Use(LuaLibraryModules.RoomModule)
             .Use(LuaLibraryModules.OperationLogModule)
             .Body(LoadEmbeddedScript("update_channel_count.lua"))
             .Build();
 
         public static readonly string LineCountUpdateScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
-            .Use(LuaLibraryModules.RoomKeyModule)
+            .Use(LuaLibraryModules.RoomModule)
             .Use(LuaLibraryModules.FrameModule)
             .Use(LuaLibraryModules.OperationLogModule)
             .Body(LoadEmbeddedScript("update_line_count.lua"))
@@ -134,7 +135,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
 
         public static readonly string LinesPerBeatUpdateScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
-            .Use(LuaLibraryModules.RoomKeyModule)
+            .Use(LuaLibraryModules.RoomModule)
             .Use(LuaLibraryModules.FrameModule)
             .Use(LuaLibraryModules.OperationLogModule)
             .Body(LoadEmbeddedScript("update_lines_per_beat.lua"))
@@ -142,7 +143,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
 
         public static readonly string ChannelTypeUpdateScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
-            .Use(LuaLibraryModules.RoomKeyModule)
+            .Use(LuaLibraryModules.RoomModule)
             .Use(LuaLibraryModules.FrameModule)
             .Use(LuaLibraryModules.OperationLogModule)
             .Body(LoadEmbeddedScript("update_channel_type.lua"))
@@ -151,7 +152,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
         public static readonly string LineUpdateScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
             .Use(LuaLibraryModules.KeyBuilderModule)
-            .Use(LuaLibraryModules.RoomKeyModule)
+            .Use(LuaLibraryModules.RoomModule)
             .Use(LuaLibraryModules.FrameModule)
             .Use(LuaLibraryModules.OperationLogModule)
             .Body(LoadEmbeddedScript("update_line.lua"))
