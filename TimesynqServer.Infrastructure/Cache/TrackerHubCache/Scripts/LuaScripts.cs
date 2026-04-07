@@ -16,7 +16,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
             return reader.ReadToEnd();
         }
 
-        private record LuaLibraryModule(string Name, string Code);
+        private record LuaLibraryModule(string Name, string Code, params LuaLibraryModule[] Dependencies);
         private static class LuaLibraryModules
         {
             public static LuaLibraryModule KeyBuilderModule = new(
@@ -26,26 +26,20 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
 
             public static LuaLibraryModule RoomKeyModule = new(
                 "room_keys",
-                new LuaScriptBuilder()
-                    .Use(KeyBuilderModule)
-                    .Body(LoadEmbeddedScript("Lib.room_keys.lua"))
-                    .Build()
+                LoadEmbeddedScript("Lib.room_keys.lua"),
+                KeyBuilderModule
             );
 
             public static LuaLibraryModule FrameModule = new(
                 "frame", 
-                new LuaScriptBuilder()
-                    .Use(RoomKeyModule)
-                .Body(LoadEmbeddedScript("Lib.frame.lua"))
-                .Build()
+                LoadEmbeddedScript("Lib.frame.lua"),
+                RoomKeyModule
             );
 
             public static LuaLibraryModule OperationLogModule = new(
                 "operation_log", 
-                new LuaScriptBuilder()
-                    .Use(RoomKeyModule)
-                    .Body(LoadEmbeddedScript("Lib.operation_log.lua"))
-                    .Build()
+                LoadEmbeddedScript("Lib.operation_log.lua"),
+                RoomKeyModule
             );
         }
 
@@ -69,17 +63,30 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
             public string Build()
             {
                 var sb = new StringBuilder();
+                var visited = new HashSet<string>();
 
-                foreach (LuaLibraryModule module in _modules
-                    .GroupBy(m => m.Name).Select(g => g.First()))
+                foreach (LuaLibraryModule module in _modules)
                 {
-                    sb.AppendLine(module.Code.Trim());
-                    sb.AppendLine();
+                    AppendModule(module, sb, visited);
                 }
 
                 sb.AppendLine(_body.Trim());
 
                 return sb.ToString();
+            }
+
+            private void AppendModule(LuaLibraryModule module, StringBuilder sb, HashSet<string> visited)
+            {
+                if (!visited.Add(module.Name))
+                    return;
+
+                foreach (LuaLibraryModule dependency in module.Dependencies)
+                {
+                    AppendModule(dependency, sb, visited);
+                }
+
+                sb.AppendLine(module.Code.Trim());
+                sb.AppendLine();
             }
         }
 
