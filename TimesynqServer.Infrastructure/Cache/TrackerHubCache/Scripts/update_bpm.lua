@@ -6,6 +6,7 @@
 -- UserId, NewBpm, UpdatedOnUTC
 
 -- LIB IMPORTS
+-- room_keys.lua: get_room_info_key()
 -- operation_log.lua: add_operation_log_entry()
 
 local input = cjson.decode(ARGV[1])
@@ -15,7 +16,7 @@ if not wip_id then
 	return nil
 end
 
-local room_info_key = "tracker:room:" .. wip_id .. ":info"
+local room_info_key = get_room_info_key(wip_id)
 local old_bpm_value = redis.call("HGET", room_info_key, "Bpm")
 if not old_bpm_value then
 	return nil

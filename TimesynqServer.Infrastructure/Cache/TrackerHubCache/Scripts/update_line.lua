@@ -6,6 +6,8 @@
 -- UserId, Type, Frame, Channel, Line, Column, Address, NewValue, UpdatedOnUTC
 
 -- LIB IMPORTS
+-- key_builder.lua: build_key()
+-- room_keys.lua: get_room_index_key()
 -- frame.lua: get_frame_key_and_create_frame_if_nonexistent()
 -- operation_log.lua: add_operation_log_entry()
 
@@ -23,7 +25,7 @@ if not wip_id then
 	return nil
 end
 
-local room_index_key = "tracker:room:" .. wip_id .. ":index"
+local room_index_key = get_room_index_key(wip_id)
 
 local column = tonumber(input.Column)
 if not column or column < 0 or column >= num_columns then 
@@ -32,7 +34,7 @@ end
 
 local frame_key =  get_frame_key_and_create_frame_if_nonexistent(wip_id, input.Frame, room_index_key)
 
-local channel_key = frame_key .. ":channel:" .. input.Channel
+local channel_key = build_key(frame_key, "channel", input.Channel)
 local channel_exists = redis.call("EXISTS", channel_key)
 if channel_exists == 0 then
 	redis.call("SADD", room_index_key, channel_key)

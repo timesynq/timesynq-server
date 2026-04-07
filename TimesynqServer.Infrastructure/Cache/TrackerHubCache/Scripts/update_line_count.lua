@@ -6,6 +6,7 @@
 -- UserId, Frame, NewLineCount, UpdatedOnUTC
 
 -- LIB IMPORTS
+-- room_keys.lua: get_room_index_key()
 -- frame.lua: line_count_key, get_frame_key_and_create_frame_if_nonexistent()
 -- operation_log.lua: add_operation_log_entry()
 
@@ -16,7 +17,7 @@ if not wip_id then
 	return nil
 end
 
-local room_index_key = "tracker:room:" .. wip_id .. ":index"
+local room_index_key = get_room_index_key(wip_id)
 local frame_key =  get_frame_key_and_create_frame_if_nonexistent(wip_id, input.Frame, room_index_key)
 
 local old_line_count = redis.call("HGET", frame_key, line_count_key)

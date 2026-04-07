@@ -5,12 +5,15 @@
 
 -- ARGV[1] = ttlSeconds
 
+-- LIB IMPORTS
+-- room_keys.lua: get_room_connections_key(), get_room_index_key()
+
 local wip_id = redis.call("HGET", KEYS[1], "WipId")
 if not wip_id then
 	return nil
 end
 
-local room_connections_key = "tracker:room:" .. wip_id ..":connections"
+local room_connections_key = get_room_connections_key(wip_id)
 
 redis.call("DEL", KEYS[1])
 redis.call("SREM", room_connections_key, KEYS[1])
@@ -18,7 +21,7 @@ redis.call("SREM", room_connections_key, KEYS[1])
 local remaining_users = redis.call("SCARD", room_connections_key)
 
 if remaining_users == 0 then
-	local room_index_key = "tracker:room:" .. wip_id .. ":index"
+	local room_index_key = get_room_index_key(wip_id)
 	local room_keys = redis.call("SMEMBERS", room_index_key)
 	redis.call("EXPIRE", room_index_key, tonumber(ARGV[1]))
 	for _, room_key in ipairs(room_keys) do
