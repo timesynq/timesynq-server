@@ -46,6 +46,9 @@
         public const int MaxChannels = 1 + 16;
         public const int DefaultChannels = 1 + 4;
         public const int MasterChannelIndex = 0;
+        public const int MinSequencerLines = 1;
+        public const int MaxSequencerLines = 256;
+        public const int DefaultSequencerLength = 1;
         public const int MinLinesPerFrame = 1;
         public const int MaxLinesPerFrame = 256;
         public const int DefaultLinesPerFrame = 64;

@@ -6,7 +6,7 @@
 -- KEYS[4] = roomInfoKey
 
 -- ARGV[1] = JSON serialized payload that contains
--- WipId, ConnectionId, UserId, UserName, WipName, OwnerId, WipBpm, WipChannels
+-- WipId, ConnectionId, UserId, UserName, WipName, OwnerId, WipBpm, WipChannels, WipSequencerLength
 
 -- LIB IMPORTS
 -- connection.lua: connection_field_names{}
@@ -29,6 +29,7 @@ if room_exists == 0 then
 		room_info_field_names.owner_id, input.OwnerId,
 		room_info_field_names.bpm, input.WipBpm,
 		room_info_field_names.channels, input.WipChannels
+		room_info_field_names.sequencer_length, input.WipSequencerLength
 	)
 	redis.call("SADD", KEYS[2], KEYS[4])
 	-- create first frame info

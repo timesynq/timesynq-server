@@ -12,6 +12,7 @@
         public const string WipNameChanged = nameof(WipNameChanged);
         public const string BpmUpdated = nameof(BpmUpdated);
         public const string ChannelCountUpdated = nameof(ChannelCountUpdated);
+        public const string SequencerLengthUpdated = nameof(SequencerLengthUpdated);
         public const string LineCountUpdated = nameof(LineCountUpdated);
         public const string LinesPerBeatUpdated = nameof(LinesPerBeatUpdated);
         public const string ChannelTypeUpdated = nameof(ChannelTypeUpdated);

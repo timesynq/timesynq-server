@@ -125,6 +125,13 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
             .Body(LoadEmbeddedScript("update_channel_count.lua"))
             .Build();
 
+        public static readonly string SequencerLengthUpdateScript = new LuaScriptBuilder()
+            .Use(LuaLibraryModules.ConnectionModule)
+            .Use(LuaLibraryModules.RoomModule)
+            .Use(LuaLibraryModules.OperationLogModule)
+            .Body(LoadEmbeddedScript("update_sequencer_length.lua"))
+            .Build();
+
         public static readonly string LineCountUpdateScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
             .Use(LuaLibraryModules.RoomModule)

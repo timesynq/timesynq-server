@@ -113,6 +113,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 OwnerId = wipDTO.OwnerId.ToString(),
                 WipBpm = TrackerConstants.DefaultBpm, // placeholder; wipDTO should not contain bpm, so leave this until wipDTO param is replaced with the full tracker
                 WipChannels = TrackerConstants.DefaultChannels, // placeholder; wipDTO also should not contain channels, so leave this until wipDTO param is replaced with the full tracker
+                WipSequencerLength = TrackerConstants.DefaultSequencerLength // 〃
             });
 
             IDatabase db = _redis.GetDatabase();
@@ -213,7 +214,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string payload = JsonSerializer.Serialize(new
             {
-                UserID = userId.ToString(),
+                UserId = userId.ToString(),
                 NewBpm = newBpm.ToString(),
                 UpdatedOnUTC = DateTime.UtcNow.ToString()
             });
@@ -245,7 +246,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string payload = JsonSerializer.Serialize(new
             {
-                UserID = userId.ToString(),
+                UserId = userId.ToString(),
                 NewChannelCount = newChannelCount.ToString(),
                 UpdatedOnUTC = DateTime.UtcNow.ToString()
             });
@@ -254,6 +255,38 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.ChannelCountUpdateScript,
+                [
+                    connectionKey,
+                ],
+                [ 
+                    payload 
+                ]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid?> UpdateSequencerLengthAsync(Guid userId, string connectionId, int newSequencerLength)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserID = userId.ToString(),
+                NewSequencerLength = newSequencerLength.ToString(),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.SequencerLengthUpdateScript,
                 [
                     connectionKey,
                 ],

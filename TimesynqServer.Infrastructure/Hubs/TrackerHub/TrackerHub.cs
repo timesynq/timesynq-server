@@ -97,6 +97,16 @@ namespace TimesynqServer.Hubs.TrackerHub
             );
         }
 
+        public Task<TrackerHubResult> UpdateSequencerLength(int newSequencerLength)
+        {
+            return UpdateTracker(
+                () => _roomService.UpdateSequencerLength(Context.UserIdentifier, Context.ConnectionId, newSequencerLength),
+                TrackerHubClientCallbacks.SequencerLengthUpdated,
+                newSequencerLength,
+                TrackerHubError.FailedToUpdateSequencerLength
+            );
+        }
+
         public Task<TrackerHubResult> UpdateLineCount(UpdateLineCountCommandDTO updateLineCountCommandDTO)
         {
             return UpdateTracker(

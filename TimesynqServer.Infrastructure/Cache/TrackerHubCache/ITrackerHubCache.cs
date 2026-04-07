@@ -92,6 +92,15 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         public Task<Guid?> UpdateChannelCountAsync(Guid userId, string connectionId, int newChannelCount);
 
         /// <summary>
+        /// Update's the number of lines in the wip's sequencer. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="newSequencerLength">The new sequencer length.</param>
+        /// <returns></returns>
+        public Task<Guid?> UpdateSequencerLengthAsync(Guid userId, string connectionId, int newSequencerLength);
+
+        /// <summary>
         /// Updates the line count of a given frame in the wip. User must have permission to edit the wip in order for changes to be made.
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>

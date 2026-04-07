@@ -139,14 +139,25 @@ namespace TimesynqServer.Infrastructure.Service
 
             return UpdateTrackerValue(
                 userIdentifier,
-                callerId => 
-                {
-                    return _trackerHubCache.UpdateChannelCountAsync(callerId, connectionId, newChannelCount);
-                },
+                callerId => _trackerHubCache.UpdateChannelCountAsync(callerId, connectionId, newChannelCount),
                 () =>
                 {
                     if (newChannelCount < TrackerConstants.MinChannels || newChannelCount > TrackerConstants.MaxChannels)
                         return TrackerHubError.InvalidChannelCount;
+                    return null;
+                }
+            );
+        }
+
+        public Task<TrackerHubResult<Guid>> UpdateSequencerLength(string? userIdentifier, string connectionId, int newSequencerLength)
+        {
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateSequencerLengthAsync(callerId, connectionId, newSequencerLength),
+                () =>
+                {
+                    if (newSequencerLength < TrackerConstants.MinSequencerLines || newSequencerLength > TrackerConstants.MaxSequencerLines)
+                        return TrackerHubError.InvalidSequencerLength;
                     return null;
                 }
             );

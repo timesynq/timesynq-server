@@ -20,7 +20,8 @@ local room_info_field_names = {
 	wip_name = "WipName",
 	owner_id = "OwnerId",
 	bpm = "Bpm",
-	channels = "Channels"
+	channels = "Channels",
+	sequencer_length = "SequencerLength"
 }
 
 function get_room_log_key(wip_id)

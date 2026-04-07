@@ -18,6 +18,7 @@
         public static string InvalidFrame { get; } = $"Invalid frame. Frame value must be between 0 and {TrackerConstants.MaxFramesPerWip - 1} inclusive.";
         public static string InvalidChannel { get; } = $"Invalid channel. Channel value must be between 0 and {TrackerConstants.MaxChannels - 1} inclusive.";
         public static string InvalidChannelCount { get; } = $"Invalid channel count. Channel count must be between {TrackerConstants.MinChannels - 1} and {TrackerConstants.MaxChannels - 1} inclusive.";
+        public static string InvalidSequencerLength { get; } = $"Invalid sequencer length. Sequencer length must be between {TrackerConstants.MinSequencerLines} and {TrackerConstants.MaxSequencerLines} inclusive.";
         public static string InvalidNoteGroup { get; } = $"Invalid note group. Note group value must be between 0 and {TrackerConstants.MaxNoteGroups - 1} inclusive.";
         public static string InvalidFXGroup { get; } = $"Invalid FX group. FX group value must be between 0 and {TrackerConstants.MaxFXGroups - 1} inclusive.";
         public static string InvalidPitch { get; } = $"Invalid pitch. Pitch value must be between 0 and {TrackerConstants.MaxPitches - 1} inclusive.";
@@ -27,5 +28,6 @@
         public static string FailedToUpdateFXValue { get; } = "Failed to update FX value";
         public static string FailedToUpdateChannelCount { get; } = "Failed to update channel count";
         public static string FailedToUpdateChannelType { get; } = "Failed to update channel type";
+        public static string FailedToUpdateSequencerLength { get; } = "Failed to update sequencer length";
     }
 }
