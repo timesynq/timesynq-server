@@ -117,134 +117,86 @@ namespace TimesynqServer.Infrastructure.Service
             return new ChatMessageDTO(wipId.Value, callerId, message);
         }
 
-        public async Task<TrackerHubResult<Guid>> UpdateBpm(string? userIdentifier, string connectionId, int newBpm)
+        public Task<TrackerHubResult<Guid>> UpdateBpm(string? userIdentifier, string connectionId, int newBpm)
         {
-            if (
-                userIdentifier == null ||
-                !Guid.TryParse(userIdentifier, out Guid callerId)
-                )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
-            }
-
-            if (newBpm < TrackerConstants.MinBpm || newBpm > TrackerConstants.MaxBpm)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.InvalidBpm);
-            }
-
-            Guid? wipId = await _trackerHubCache.UpdateBpmAsync(callerId, connectionId, newBpm);
-            if (wipId == null)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
-            }
-
-            return wipId.Value;
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateBpmAsync(callerId, connectionId, newBpm),
+                () =>
+                {
+                    if (newBpm < TrackerConstants.MinBpm || newBpm > TrackerConstants.MaxBpm)
+                        return TrackerHubError.InvalidBpm;
+                    return null;
+                }
+            );
         }
 
-        public async Task<TrackerHubResult<Guid>> UpdateChannelCount(string? userIdentifier, string connectionId, int newChannelCount)
+        public Task<TrackerHubResult<Guid>> UpdateChannelCount(string? userIdentifier, string connectionId, int newChannelCount)
         {
-            if (
-                userIdentifier == null ||
-                !Guid.TryParse(userIdentifier, out Guid callerId)
-                )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
-            }
-
             // the newChannelCount value received from the client does NOT include master channel,
             // so it should be in the range [minChannels-1, maxChannels-1]
             newChannelCount += 1;
-            if (newChannelCount < TrackerConstants.MinChannels || newChannelCount > TrackerConstants.MaxChannels)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.InvalidChannelCount);
-            }
 
-            Guid? wipId = await _trackerHubCache.UpdateChannelCountAsync(callerId, connectionId, newChannelCount);
-            if (wipId == null)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
-            }
-
-            return wipId.Value;
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => 
+                {
+                    return _trackerHubCache.UpdateChannelCountAsync(callerId, connectionId, newChannelCount);
+                },
+                () =>
+                {
+                    if (newChannelCount < TrackerConstants.MinChannels || newChannelCount > TrackerConstants.MaxChannels)
+                        return TrackerHubError.InvalidChannelCount;
+                    return null;
+                }
+            );
         }
 
-        public async Task<TrackerHubResult<Guid>> UpdateLineCount(string? userIdentifier, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO)
+        public Task<TrackerHubResult<Guid>> UpdateLineCount(string? userIdentifier, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO)
         {
-            if (
-                userIdentifier == null ||
-                !Guid.TryParse(userIdentifier, out Guid callerId)
-                )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
-            }
-
-            if (
-                updateLineCountCommandDTO.NewLineCount < TrackerConstants.MinLinesPerFrame || 
-                updateLineCountCommandDTO.NewLineCount > TrackerConstants.MaxLinesPerFrame
-            )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.InvalidLineCount);
-            }
-
-            Guid? wipId = await _trackerHubCache.UpdateLineCountAsync(callerId, connectionId, updateLineCountCommandDTO);
-            if (wipId == null)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
-            }
-
-            return wipId.Value;
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateLineCountAsync(callerId, connectionId, updateLineCountCommandDTO),
+                () =>
+                {
+                    if (
+                        updateLineCountCommandDTO.NewLineCount < TrackerConstants.MinLinesPerFrame ||
+                        updateLineCountCommandDTO.NewLineCount > TrackerConstants.MaxLinesPerFrame
+                    )
+                    {
+                        return TrackerHubError.InvalidLineCount;
+                    }
+                    return null;
+                }
+            );
         }
 
-        public async Task<TrackerHubResult<Guid>> UpdateLinesPerBeat(string? userIdentifier, string connectionId, UpdateLinesPerBeatCommandDTO updateLinesPerBeatCommandDTO)
+        public Task<TrackerHubResult<Guid>> UpdateLinesPerBeat(string? userIdentifier, string connectionId, UpdateLinesPerBeatCommandDTO updateLinesPerBeatCommandDTO)
         {
-            if (
-                userIdentifier == null ||
-                !Guid.TryParse(userIdentifier, out Guid callerId)
-                )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
-            }
-
-            if (
-                updateLinesPerBeatCommandDTO.NewLinesPerBeat < TrackerConstants.MinLinesPerBeat ||
-                updateLinesPerBeatCommandDTO.NewLinesPerBeat > TrackerConstants.MaxLinesPerBeat
-            )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.InvalidLineCount);
-            }
-
-            Guid? wipId = await _trackerHubCache.UpdateLinesPerBeatAsync(callerId, connectionId, updateLinesPerBeatCommandDTO);
-            if (wipId == null)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
-            }
-
-            return wipId.Value;
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateLinesPerBeatAsync(callerId, connectionId, updateLinesPerBeatCommandDTO),
+                () =>
+                {
+                    if (
+                        updateLinesPerBeatCommandDTO.NewLinesPerBeat < TrackerConstants.MinLinesPerBeat ||
+                        updateLinesPerBeatCommandDTO.NewLinesPerBeat > TrackerConstants.MaxLinesPerBeat
+                    )
+                    {
+                        return TrackerHubError.InvalidLinesPerBeat;
+                    }
+                    return null;
+                }
+            );
         }
 
-        public async Task<TrackerHubResult<Guid>> UpdateChannelType(string? userIdentifier, string connectionId, UpdateChannelTypeCommandDTO updateChannelTypeCommandDTO)
+        public Task<TrackerHubResult<Guid>> UpdateChannelType(string? userIdentifier, string connectionId, UpdateChannelTypeCommandDTO updateChannelTypeCommandDTO)
         {
-            if (
-                userIdentifier == null ||
-                !Guid.TryParse(userIdentifier, out Guid callerId)
-                )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
-            }
-
-            string? errorMessage = ValidateUpdateChannelTypeCommand(updateChannelTypeCommandDTO);
-            if (errorMessage != null)
-            {
-                return TrackerHubResult<Guid>.Failure(errorMessage);
-            }
-
-            Guid? wipId = await _trackerHubCache.UpdateChannelTypeAsync(callerId, connectionId, updateChannelTypeCommandDTO);
-            if (wipId == null)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
-            }
-
-            return wipId.Value;
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateChannelTypeAsync(callerId, connectionId, updateChannelTypeCommandDTO),
+                () => ValidateUpdateChannelTypeCommand(updateChannelTypeCommandDTO)
+            );
 
             static string? ValidateUpdateChannelTypeCommand(UpdateChannelTypeCommandDTO command)
             {
@@ -256,29 +208,13 @@ namespace TimesynqServer.Infrastructure.Service
             }
         }
 
-        public async Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
+        public Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
         {
-            if (
-                userIdentifier == null ||
-                !Guid.TryParse(userIdentifier, out Guid callerId)
-                )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
-            }
-
-            string? errorMessage = ValidateUpdatePitchCommand(updatePitchCommandDTO);
-            if (errorMessage != null) 
-            {
-                return TrackerHubResult<Guid>.Failure(errorMessage);
-            }
-
-            Guid? wipId = await _trackerHubCache.UpdatePitchAsync(callerId, connectionId, updatePitchCommandDTO);
-            if (wipId == null)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
-            }
-
-            return wipId.Value;
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdatePitchAsync(callerId, connectionId, updatePitchCommandDTO),
+                () => ValidateUpdatePitchCommand(updatePitchCommandDTO)
+            );
 
             static string? ValidateUpdatePitchCommand(UpdatePitchCommandDTO command) 
             {
@@ -294,29 +230,13 @@ namespace TimesynqServer.Infrastructure.Service
             }
         }
 
-        public async Task<TrackerHubResult<Guid>> UpdateInstrument(string? userIdentifier, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
+        public Task<TrackerHubResult<Guid>> UpdateInstrument(string? userIdentifier, string connectionId, UpdateInstrumentCommandDTO updateInstrumentCommandDTO)
         {
-            if (
-                userIdentifier == null ||
-                !Guid.TryParse(userIdentifier, out Guid callerId)
-                )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
-            }
-
-            string? errorMessage = ValidateUpdateInstrumentCommand(updateInstrumentCommandDTO);
-            if (errorMessage != null)
-            {
-                return TrackerHubResult<Guid>.Failure(errorMessage);
-            }
-
-            Guid? wipId = await _trackerHubCache.UpdateInstrumentAsync(callerId, connectionId, updateInstrumentCommandDTO);
-            if (wipId == null)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
-            }
-
-            return wipId.Value;
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateInstrumentAsync(callerId, connectionId, updateInstrumentCommandDTO),
+                () => ValidateUpdateInstrumentCommand(updateInstrumentCommandDTO)
+            );
 
             static string? ValidateUpdateInstrumentCommand(UpdateInstrumentCommandDTO command)
             {
@@ -330,29 +250,13 @@ namespace TimesynqServer.Infrastructure.Service
             }
         }
 
-        public async Task<TrackerHubResult<Guid>> UpdateFXSymbol(string? userIdentifier, string connectionId, UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO)
+        public Task<TrackerHubResult<Guid>> UpdateFXSymbol(string? userIdentifier, string connectionId, UpdateFXSymbolCommandDTO updateFXSymbolCommandDTO)
         {
-            if (
-                userIdentifier == null ||
-                !Guid.TryParse(userIdentifier, out Guid callerId)
-                )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
-            }
-
-            string? errorMessage = ValidateUpdateFXSymbolCommand(updateFXSymbolCommandDTO);
-            if (errorMessage != null)
-            {
-                return TrackerHubResult<Guid>.Failure(errorMessage);
-            }
-
-            Guid? wipId = await _trackerHubCache.UpdateFXSymbolAsync(callerId, connectionId, updateFXSymbolCommandDTO);
-            if (wipId == null)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
-            }
-
-            return wipId.Value;
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateFXSymbolAsync(callerId, connectionId, updateFXSymbolCommandDTO),
+                () => ValidateUpdateFXSymbolCommand(updateFXSymbolCommandDTO)
+            );
 
             static string? ValidateUpdateFXSymbolCommand(UpdateFXSymbolCommandDTO command)
             {
@@ -366,29 +270,13 @@ namespace TimesynqServer.Infrastructure.Service
             }
         }
 
-        public async Task<TrackerHubResult<Guid>> UpdateFXValue(string? userIdentifier, string connectionId, UpdateFXValueCommandDTO updateFXValueCommandDTO)
+        public Task<TrackerHubResult<Guid>> UpdateFXValue(string? userIdentifier, string connectionId, UpdateFXValueCommandDTO updateFXValueCommandDTO)
         {
-            if (
-                userIdentifier == null ||
-                !Guid.TryParse(userIdentifier, out Guid callerId)
-                )
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
-            }
-
-            string? errorMessage = ValidateUpdateFXValueCommand(updateFXValueCommandDTO);
-            if (errorMessage != null)
-            {
-                return TrackerHubResult<Guid>.Failure(errorMessage);
-            }
-
-            Guid? wipId = await _trackerHubCache.UpdateFXValueAsync(callerId, connectionId, updateFXValueCommandDTO);
-            if (wipId == null)
-            {
-                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
-            }
-
-            return wipId.Value;
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateFXValueAsync(callerId, connectionId, updateFXValueCommandDTO),
+                () => ValidateUpdateFXValueCommand(updateFXValueCommandDTO)
+            );
 
             static string? ValidateUpdateFXValueCommand(UpdateFXValueCommandDTO command)
             {
@@ -400,6 +288,38 @@ namespace TimesynqServer.Infrastructure.Service
                     return TrackerHubError.InvalidFXGroup;
                 return null;
             }
+        }
+
+        private static async Task<TrackerHubResult<Guid>> UpdateTrackerValue(
+            string? userIdentifier,
+            Func<Guid, Task<Guid?>> trackerHubCacheFunction,
+            Func<string?>? predicate = null
+        )
+        {
+            if (
+                userIdentifier == null ||
+                !Guid.TryParse(userIdentifier, out Guid callerId)
+                )
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.UserNotFound);
+            }
+
+            if (predicate != null)
+            {
+                string? error = predicate();
+                if (error != null)
+                {
+                    return TrackerHubResult<Guid>.Failure(error);
+                }
+            }
+
+            Guid? wipId = await trackerHubCacheFunction(callerId);
+            if (wipId == null)
+            {
+                return TrackerHubResult<Guid>.Failure(TrackerHubError.NoConnectionFound);
+            }
+
+            return wipId.Value;
         }
     }
 }

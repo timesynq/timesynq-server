@@ -14,6 +14,7 @@
         public static string FailedToUpdateLineCount { get; } = "Failed to update line count.";
         public static string FailedToUpdateLinesPerBeat { get; } = "Failed to update LPB";
         public static string InvalidLineCount { get; } = $"Invalid line count. Line count must be between {TrackerConstants.MinLinesPerFrame} and {TrackerConstants.MaxLinesPerFrame} inclusive.";
+        public static string InvalidLinesPerBeat { get; } = $"Invalid lines per beat. Lines per beat must be between {TrackerConstants.MinLinesPerBeat} and {TrackerConstants.MaxLinesPerBeat} inclusive.";
         public static string InvalidFrame { get; } = $"Invalid frame. Frame value must be between 0 and {TrackerConstants.MaxFramesPerWip - 1} inclusive.";
         public static string InvalidChannel { get; } = $"Invalid channel. Channel value must be between 0 and {TrackerConstants.MaxChannels - 1} inclusive.";
         public static string InvalidChannelCount { get; } = $"Invalid channel count. Channel count must be between {TrackerConstants.MinChannels - 1} and {TrackerConstants.MaxChannels - 1} inclusive.";
