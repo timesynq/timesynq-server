@@ -31,3 +31,7 @@ end
 function get_room_frame_key(wip_id, frame_hex)
 	return build_key(tracker_segment, room_segment, wip_id, "frame", frame_hex)
 end
+
+function get_room_sequencer_key(wip_id)
+	return build_key(tracker_segment, room_segment, wip_id, "sequencer")
+end

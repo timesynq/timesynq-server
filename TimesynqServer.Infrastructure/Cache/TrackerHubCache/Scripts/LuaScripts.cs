@@ -46,6 +46,11 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
                 "connection",
                 LoadEmbeddedScript("Lib.connection.lua")
             );
+
+            public static LuaLibraryModule SequencerModule = new(
+                "sequencer",
+                LoadEmbeddedScript("Lib.sequencer.lua")
+            );
         }
 
         private class LuaScriptBuilder
@@ -130,6 +135,22 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
             .Use(LuaLibraryModules.RoomModule)
             .Use(LuaLibraryModules.OperationLogModule)
             .Body(LoadEmbeddedScript("update_sequencer_length.lua"))
+            .Build();
+
+        public static readonly string SequencerFrameUpdateScript = new LuaScriptBuilder()
+            .Use(LuaLibraryModules.ConnectionModule)
+            .Use(LuaLibraryModules.RoomModule)
+            .Use(LuaLibraryModules.SequencerModule)
+            .Use(LuaLibraryModules.OperationLogModule)
+            .Body(LoadEmbeddedScript("update_sequencer_frame.lua"))
+            .Build();
+
+        public static readonly string SequencerChannelUpdateScript = new LuaScriptBuilder()
+            .Use(LuaLibraryModules.ConnectionModule)
+            .Use(LuaLibraryModules.RoomModule)
+            .Use(LuaLibraryModules.SequencerModule)
+            .Use(LuaLibraryModules.OperationLogModule)
+            .Body(LoadEmbeddedScript("update_sequencer_channel.lua"))
             .Build();
 
         public static readonly string LineCountUpdateScript = new LuaScriptBuilder()

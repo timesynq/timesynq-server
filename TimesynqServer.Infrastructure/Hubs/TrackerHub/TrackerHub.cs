@@ -107,6 +107,26 @@ namespace TimesynqServer.Hubs.TrackerHub
             );
         }
 
+        public Task<TrackerHubResult> UpdateSequencerFrame(UpdateSequencerFrameCommandDTO updateSequencerFrameCommandDTO)
+        {
+            return UpdateTracker(
+                () => _roomService.UpdateSequencerFrame(Context.UserIdentifier, Context.ConnectionId, updateSequencerFrameCommandDTO),
+                TrackerHubClientCallbacks.SequencerFrameUpdated,
+                updateSequencerFrameCommandDTO,
+                TrackerHubError.FailedToUpdateSequencerFrame
+            );
+        }
+
+        public Task<TrackerHubResult> UpdateSequencerChannel(UpdateSequencerChannelCommandDTO updateSequencerChannelCommandDTO)
+        {
+            return UpdateTracker(
+                () => _roomService.UpdateSequencerChannel(Context.UserIdentifier, Context.ConnectionId, updateSequencerChannelCommandDTO),
+                TrackerHubClientCallbacks.SequencerChannelUpdated,
+                updateSequencerChannelCommandDTO,
+                TrackerHubError.FailedToUpdateSequencerChannel
+            );
+        }
+
         public Task<TrackerHubResult> UpdateLineCount(UpdateLineCountCommandDTO updateLineCountCommandDTO)
         {
             return UpdateTracker(

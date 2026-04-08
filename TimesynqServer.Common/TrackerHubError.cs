@@ -29,5 +29,7 @@
         public static string FailedToUpdateChannelCount { get; } = "Failed to update channel count";
         public static string FailedToUpdateChannelType { get; } = "Failed to update channel type";
         public static string FailedToUpdateSequencerLength { get; } = "Failed to update sequencer length";
+        public static string FailedToUpdateSequencerFrame { get; } = "Failed to update sequencer frame";
+        public static string FailedToUpdateSequencerChannel { get; } = "Failed to update sequencer channel";
     }
 }

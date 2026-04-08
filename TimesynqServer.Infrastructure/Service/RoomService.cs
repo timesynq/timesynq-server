@@ -163,6 +163,38 @@ namespace TimesynqServer.Infrastructure.Service
             );
         }
 
+        public Task<TrackerHubResult<Guid>> UpdateSequencerFrame(string? userIdentifier, string connectionId, UpdateSequencerFrameCommandDTO updateSequencerFrameCommandDTO)
+        {
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateSequencerFrameAsync(callerId, connectionId, updateSequencerFrameCommandDTO),
+                () => ValidateUpdateSequencerFrameCommand(updateSequencerFrameCommandDTO)
+            );
+
+            static string? ValidateUpdateSequencerFrameCommand(UpdateSequencerFrameCommandDTO command)
+            {
+                if (command.NewFrame >= TrackerConstants.MaxFramesPerWip)
+                    return TrackerHubError.InvalidFrame;
+                return null;
+            }
+        }
+
+        public Task<TrackerHubResult<Guid>> UpdateSequencerChannel(string? userIdentifier, string connectionId, UpdateSequencerChannelCommandDTO updateSequencerChannelCommandDTO)
+        {
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateSequencerChannelAsync(callerId, connectionId, updateSequencerChannelCommandDTO),
+                () => ValidateUpdateSequencerChannelCommand(updateSequencerChannelCommandDTO)
+            );
+
+            static string? ValidateUpdateSequencerChannelCommand(UpdateSequencerChannelCommandDTO command)
+            {
+                if (command.Channel == TrackerConstants.MasterChannelIndex || command.Channel >= TrackerConstants.MaxChannels)
+                    return TrackerHubError.InvalidChannel;
+                return null;
+            }
+        }
+
         public Task<TrackerHubResult<Guid>> UpdateLineCount(string? userIdentifier, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO)
         {
             return UpdateTrackerValue(

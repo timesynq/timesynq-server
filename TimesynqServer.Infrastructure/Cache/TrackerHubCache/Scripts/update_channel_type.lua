@@ -28,12 +28,12 @@ local index_number = tonumber(input.Channel)
 if not index_number then
 	return nil
 end
-index_number -= 1
+index_number = index_number - 1
 
-local bit = input.IsSend and input.bit.lshift(1, index_number) or 0
+local new_bit = input.IsSend and bit.lshift(1, index_number) or 0
 local mask = bit.lshift(1, index_number)
 local cleared_send_mask_short = bit.band(old_send_mask_short, bit.bnot(mask))
-local new_send_mask_short = bit.bor(bit, cleared_send_mask_short)
+local new_send_mask_short = bit.bor(new_bit, cleared_send_mask_short)
 
 local new_send_mask = string.format("%x", new_send_mask_short)
 

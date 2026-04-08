@@ -223,12 +223,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.BpmUpdateScript,
-                [
-                    connectionKey,
-                ],
-                [
-                    payload
-                ]
+                [connectionKey],
+                [payload]
             );
 
             if (result == null || !Guid.TryParse(result, out Guid wipId))
@@ -255,12 +251,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.ChannelCountUpdateScript,
-                [
-                    connectionKey,
-                ],
-                [ 
-                    payload 
-                ]
+                [connectionKey],
+                [payload]
             );
 
             if (result == null || !Guid.TryParse(result, out Guid wipId))
@@ -278,7 +270,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string payload = JsonSerializer.Serialize(new
             {
-                UserID = userId.ToString(),
+                UserId = userId.ToString(),
                 NewSequencerLength = newSequencerLength.ToString(),
                 UpdatedOnUTC = DateTime.UtcNow.ToString()
             });
@@ -287,12 +279,67 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.SequencerLengthUpdateScript,
-                [
-                    connectionKey,
-                ],
-                [ 
-                    payload 
-                ]
+                [connectionKey],
+                [payload]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid?> UpdateSequencerFrameAsync(Guid userId, string connectionId, UpdateSequencerFrameCommandDTO updateSequencerFrameCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Line = Hex.TwoDigit(updateSequencerFrameCommandDTO.Line),
+                NewFrame = Hex.TwoDigit(updateSequencerFrameCommandDTO.NewFrame),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.SequencerFrameUpdateScript,
+                [connectionKey],
+                [payload]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid?> UpdateSequencerChannelAsync(Guid userId, string connectionId, UpdateSequencerChannelCommandDTO updateSequencerChannelCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Line = Hex.TwoDigit(updateSequencerChannelCommandDTO.Line),
+                Channel = updateSequencerChannelCommandDTO.Channel.ToString(),
+                IsMuted = updateSequencerChannelCommandDTO.IsMuted.ToString(),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.SequencerChannelUpdateScript,
+                [connectionKey],
+                [payload]
             );
 
             if (result == null || !Guid.TryParse(result, out Guid wipId))
@@ -320,12 +367,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.LineCountUpdateScript,
-                [
-                    connectionKey
-                ],
-                [
-                    payload
-                ]
+                [connectionKey],
+                [payload]
             );
 
             if (result == null || !Guid.TryParse(result, out Guid wipId))
@@ -352,12 +395,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.LinesPerBeatUpdateScript,
-                [
-                    connectionKey
-                ],
-                [
-                    payload
-                ]
+                [connectionKey],
+                [payload]
             );
 
             if (result == null || !Guid.TryParse(result, out Guid wipId))
@@ -385,12 +424,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.ChannelTypeUpdateScript,
-                [
-                    connectionKey
-                ],
-                [
-                    payload
-                ]
+                [connectionKey],
+                [payload]
             );
 
             if (result == null || !Guid.TryParse(result, out Guid wipId))
@@ -477,12 +512,8 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
 
             string? result = (string?)await db.ScriptEvaluateAsync(
                 LuaScripts.LineUpdateScript,
-                [
-                    connectionKey,
-                ],
-                [
-                    payload
-                ]
+                [connectionKey],
+                [payload]
             );
 
             if (result == null || !Guid.TryParse(result, out Guid wipId))

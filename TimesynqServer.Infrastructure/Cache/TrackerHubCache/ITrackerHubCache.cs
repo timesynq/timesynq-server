@@ -101,6 +101,24 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         public Task<Guid?> UpdateSequencerLengthAsync(Guid userId, string connectionId, int newSequencerLength);
 
         /// <summary>
+        /// Update's which frame a sequencer is associated with. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="updateSequencerFrameCommandDTO">The information on which line of the sequencer to update and what frame to associate it with.</param>
+        /// <returns></returns>
+        public Task<Guid?> UpdateSequencerFrameAsync(Guid userId, string connectionId, UpdateSequencerFrameCommandDTO updateSequencerFrameCommandDTO);
+
+        /// <summary>
+        /// Update's the mute state of a channel in a sequencer line. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to eht request.</param>
+        /// <param name="updateSequencerChannelCommandDTO">The information on which sequenecer line and which channel to update the mute state of.</param>
+        /// <returns></returns>
+        public Task<Guid?> UpdateSequencerChannelAsync(Guid userId, string connectionId, UpdateSequencerChannelCommandDTO updateSequencerChannelCommandDTO);
+
+        /// <summary>
         /// Updates the line count of a given frame in the wip. User must have permission to edit the wip in order for changes to be made.
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>

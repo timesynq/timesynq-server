@@ -12,6 +12,8 @@ namespace TimesynqServer.Application.Service
         public Task<TrackerHubResult<Guid>> UpdateBpm(string? userIdentifier, string connectionId, int newBpm);
         public Task<TrackerHubResult<Guid>> UpdateChannelCount(string? userIdentifier, string connectionId, int newChannelCount);
         public Task<TrackerHubResult<Guid>> UpdateSequencerLength(string? userIdentifier, string connectionId, int newSequencerLength);
+        public Task<TrackerHubResult<Guid>> UpdateSequencerFrame(string? userIdentifier, string connectionId, UpdateSequencerFrameCommandDTO updateSequencerFrameCommandDTO);
+        public Task<TrackerHubResult<Guid>> UpdateSequencerChannel(string? userIdentifier, string connection, UpdateSequencerChannelCommandDTO updateSequencerChannelMuteStateDTO);
         public Task<TrackerHubResult<Guid>> UpdateLineCount(string? userIdentifier, string connectionId, UpdateLineCountCommandDTO updateLineCountCommandDTO);
         public Task<TrackerHubResult<Guid>> UpdateLinesPerBeat(string? userIdentifier, string connectionId, UpdateLinesPerBeatCommandDTO updateLinesPerBeatCommandDTO);
         public Task<TrackerHubResult<Guid>> UpdateChannelType(string? userIdentifier, string connectionId, UpdateChannelTypeCommandDTO updateChannelTypeCommandDTO);
