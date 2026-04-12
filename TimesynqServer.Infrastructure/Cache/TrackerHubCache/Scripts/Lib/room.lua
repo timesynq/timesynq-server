@@ -4,15 +4,15 @@
 local tracker_segment = "tracker"
 local room_segment = "room"
 
-function get_room_connections_key(wip_id)
+local function get_room_connections_key(wip_id)
 	return build_key(tracker_segment, room_segment, wip_id, "connections")
 end
 
-function get_room_index_key(wip_id)
+local function get_room_index_key(wip_id)
 	return build_key(tracker_segment, room_segment, wip_id, "index")
 end
 
-function get_room_info_key(wip_id)
+local function get_room_info_key(wip_id)
 	return build_key(tracker_segment, room_segment, wip_id, "info")
 end
 
@@ -24,14 +24,14 @@ local room_info_field_names = {
 	sequencer_length = "SequencerLength"
 }
 
-function get_room_log_key(wip_id)
+local function get_room_log_key(wip_id)
 	return build_key(tracker_segment, room_segment, wip_id, "log")
 end
 
-function get_room_frame_key(wip_id, frame_hex)
+local function get_room_frame_key(wip_id, frame_hex)
 	return build_key(tracker_segment, room_segment, wip_id, "frame", frame_hex)
 end
 
-function get_room_sequencer_key(wip_id)
+local function get_room_sequencer_key(wip_id)
 	return build_key(tracker_segment, room_segment, wip_id, "sequencer")
 end

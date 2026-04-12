@@ -1,7 +1,7 @@
 ﻿-- LIB IMPORTS
 -- room.lua: get_room_log_key()
 
-function add_operation_log_entry(wip_id, type, user_id, timestamp, old_value, new_value, address)
+local function add_operation_log_entry(wip_id, type, user_id, timestamp, old_value, new_value, address)
 	local room_log_key = get_room_log_key(wip_id)
 	local operation_log_entry = {
 		Type = type,

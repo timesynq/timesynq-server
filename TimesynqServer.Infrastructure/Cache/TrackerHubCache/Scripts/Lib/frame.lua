@@ -13,7 +13,7 @@ local frame_field_names = {
 	send_mask = "SendMask"
 }
 
-function get_frame_key_and_create_frame_if_nonexistent(wip_id, frame_hex, room_index_key)
+local function get_frame_key_and_create_frame_if_nonexistent(wip_id, frame_hex, room_index_key)
 	local frame_key = get_room_frame_key(wip_id, frame_hex)
 	local frame_exists = redis.call("EXISTS", frame_key)
 	if frame_exists == 0 then
