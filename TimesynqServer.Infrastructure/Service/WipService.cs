@@ -108,7 +108,7 @@ namespace TimesynqServer.Infrastructure.Service
                 onSuccess: async () =>
                 {
                     await _unitOfWork.SaveChangesAsync();
-                    await _hubContext.Clients.Group(wipId.ToString()).SendAsync(TrackerHubClientCallbacks.WipNameChanged, newName);
+                    await _hubContext.Clients.Group(wipId.ToString()).SendAsync(TrackerHubClientCallbacks.WipNameUpdated, newName);
                     await _trackerHubCache.ChangeWipNameAsync(wipId, newName);
                     return Result<WipDTO>.Success(WipDTO.FromWip(wip));
                 },

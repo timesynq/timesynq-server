@@ -9,7 +9,7 @@
         public const string UserLeftRoom = nameof(UserLeftRoom);
         public const string MessageAddedToChat = nameof(MessageAddedToChat);
         public const string AccessExpired = nameof(AccessExpired);
-        public const string WipNameChanged = nameof(WipNameChanged);
+        public const string WipNameUpdated = nameof(WipNameUpdated);
         public const string BpmUpdated = nameof(BpmUpdated);
         public const string ChannelCountUpdated = nameof(ChannelCountUpdated);
         public const string SequencerLengthUpdated = nameof(SequencerLengthUpdated);
