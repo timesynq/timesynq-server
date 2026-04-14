@@ -22,7 +22,7 @@ local sequencer_key = get_room_sequencer_key(wip_id)
 local old_sequencer_line_value = redis.call("HGET", sequencer_key, input.Line)
 old_sequencer_line_value = old_sequencer_line_value and old_sequencer_line_value or sequencer_defaults.line_value
 
-local old_frame = string.sub(old_sequencer_line_value, 1, 3)
+local old_frame = string.sub(old_sequencer_line_value, 1, 2)
 local right = string.sub(old_sequencer_line_value, 3)
 local new_sequencer_line_value = input.NewFrame .. right
 
@@ -36,7 +36,7 @@ add_operation_log_entry(
 	input.UserId,
 	input.UpdatedOnUTC,
 	old_frame,
-	new_frame,
+	input.NewFrame,
 	input.Line
 )
 

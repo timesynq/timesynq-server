@@ -4,6 +4,6 @@
     {
         public byte Line { get; init; }
         public byte Channel { get; init; }
-        public bool IsMuted { get; init; }
+        public bool IsOn { get; init; }
     }
 }

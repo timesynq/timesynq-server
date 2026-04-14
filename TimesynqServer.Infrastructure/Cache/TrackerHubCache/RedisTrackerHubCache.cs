@@ -330,7 +330,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 UserId = userId.ToString(),
                 Line = Hex.TwoDigit(updateSequencerChannelCommandDTO.Line),
                 Channel = updateSequencerChannelCommandDTO.Channel.ToString(),
-                IsMuted = updateSequencerChannelCommandDTO.IsMuted.ToString(),
+                IsOn = updateSequencerChannelCommandDTO.IsOn.ToString(),
                 UpdatedOnUTC = DateTime.UtcNow.ToString()
             });
 

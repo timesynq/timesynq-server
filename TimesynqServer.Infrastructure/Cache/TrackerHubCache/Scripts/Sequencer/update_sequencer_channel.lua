@@ -3,7 +3,7 @@
 -- KEYS[1] = connectionKey
 
 -- ARGV[1] = JSON serialized payload that contains
--- UserId, Line, Channel, IsMuted, UpdatedOnUTC
+-- UserId, Line, Channel, IsOn, UpdatedOnUTC
 
 -- LIB IMPORTS
 -- connection.lua: connection_field_names{}
@@ -22,7 +22,7 @@ local sequencer_key = get_room_sequencer_key(wip_id)
 local old_sequencer_line_value = redis.call("HGET", sequencer_key, input.Line)
 old_sequencer_line_value = old_sequencer_line_value and old_sequencer_line_value or sequencer_defaults.line_value
 
-local left = string.sub(old_sequencer_line_value, 1, 3)
+local left = string.sub(old_sequencer_line_value, 1, 2)
 local old_mask = string.sub(old_sequencer_line_value, 3)
 local old_mask_short = tonumber(old_mask, 16)
 
@@ -32,17 +32,34 @@ if not index_number then
 end
 index_number = index_number - 1
 
-local new_bit = input.IsMuted and 0 or input.bit.lshift(1, index_number)
+local is_on = string.lower(input.IsOn) == "true"
+
+local new_bit = is_on and bit.lshift(1, index_number) or 0
 local mask = bit.lshift(1, index_number)
 local cleared_mask_short = bit.band(old_mask_short, bit.bnot(mask))
 local new_mask_short = bit.bor(new_bit, cleared_mask_short)
 
-local new_mask = string.format("%x", new_mask_short)
+local new_mask = string.upper(string.format("%04x", new_mask_short))
 
 local new_sequencer_line_value = left .. new_mask
 
 redis.call("HSET", sequencer_key, 
 	input.Line, new_sequencer_line_value
+)
+
+local debug = {
+	OldMask = old_mask,
+	OldMaskShort = old_mask_short,
+	IndexNumber = index_number,
+	InputIsOn = string.lower(input.IsOn),
+	NewBit = new_bit,
+	Mask = mask,
+	CMS = cleared_mask_short,
+	NMS = new_mask_short,
+	NewMask = new_mask
+}
+redis.call("RPUSH", "DEBUG",
+	cjson.encode(debug)
 )
 
 add_operation_log_entry(

@@ -190,7 +190,7 @@ namespace TimesynqServer.Infrastructure.Service
             static string? ValidateUpdateSequencerChannelCommand(UpdateSequencerChannelCommandDTO command)
             {
                 if (command.Channel == TrackerConstants.MasterChannelIndex || command.Channel >= TrackerConstants.MaxChannels)
-                    return TrackerHubError.InvalidChannel;
+                    return TrackerHubError.InvalidSequencerChannel;
                 return null;
             }
         }

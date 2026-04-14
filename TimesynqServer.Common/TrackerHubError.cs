@@ -17,6 +17,7 @@
         public static string InvalidLinesPerBeat { get; } = $"Invalid lines per beat. Lines per beat must be between {TrackerConstants.MinLinesPerBeat} and {TrackerConstants.MaxLinesPerBeat} inclusive.";
         public static string InvalidFrame { get; } = $"Invalid frame. Frame value must be between 0 and {TrackerConstants.MaxFramesPerWip - 1} inclusive.";
         public static string InvalidChannel { get; } = $"Invalid channel. Channel value must be between 0 and {TrackerConstants.MaxChannels - 1} inclusive.";
+        public static string InvalidSequencerChannel { get; } = $"Invalid sequencer channel. Sequencer channel value must be between 1 and {TrackerConstants.MaxChannels - 1} inclusive.";
         public static string InvalidChannelCount { get; } = $"Invalid channel count. Channel count must be between {TrackerConstants.MinChannels - 1} and {TrackerConstants.MaxChannels - 1} inclusive.";
         public static string InvalidSequencerLength { get; } = $"Invalid sequencer length. Sequencer length must be between {TrackerConstants.MinSequencerLines} and {TrackerConstants.MaxSequencerLines} inclusive.";
         public static string InvalidNoteGroup { get; } = $"Invalid note group. Note group value must be between 0 and {TrackerConstants.MaxNoteGroups - 1} inclusive.";
