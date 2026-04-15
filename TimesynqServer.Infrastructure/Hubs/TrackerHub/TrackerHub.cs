@@ -68,10 +68,10 @@ namespace TimesynqServer.Hubs.TrackerHub
 
             ChatMessageDTO chatMessageDTO = sendChatMessageResult.Value;
             string roomCode = chatMessageDTO.WipId.ToString();
+            ChatMessageResponseDTO chatMessageResponseDTO = ChatMessageResponseDTO.FromChatMessage(chatMessageDTO);
             await Clients.Group(roomCode).SendAsync(
                 TrackerHubClientCallbacks.MessageAddedToChat,
-                chatMessageDTO.UserId,
-                chatMessageDTO.Message
+                chatMessageResponseDTO
             );
 
             return TrackerHubResult.Success();
