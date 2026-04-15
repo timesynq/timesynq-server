@@ -33,33 +33,15 @@ end
 index_number = index_number - 1
 
 local is_on = string.lower(input.IsOn) == "true"
-
 local new_bit = is_on and bit.lshift(1, index_number) or 0
 local mask = bit.lshift(1, index_number)
 local cleared_mask_short = bit.band(old_mask_short, bit.bnot(mask))
 local new_mask_short = bit.bor(new_bit, cleared_mask_short)
-
 local new_mask = string.upper(string.format("%04x", new_mask_short))
-
 local new_sequencer_line_value = left .. new_mask
 
 redis.call("HSET", sequencer_key, 
 	input.Line, new_sequencer_line_value
-)
-
-local debug = {
-	OldMask = old_mask,
-	OldMaskShort = old_mask_short,
-	IndexNumber = index_number,
-	InputIsOn = string.lower(input.IsOn),
-	NewBit = new_bit,
-	Mask = mask,
-	CMS = cleared_mask_short,
-	NMS = new_mask_short,
-	NewMask = new_mask
-}
-redis.call("RPUSH", "DEBUG",
-	cjson.encode(debug)
 )
 
 add_operation_log_entry(
