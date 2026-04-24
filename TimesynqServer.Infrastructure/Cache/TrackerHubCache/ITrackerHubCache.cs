@@ -146,6 +146,24 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         public Task<Guid?> UpdateChannelTypeAsync(Guid userId, string connectionId, UpdateChannelTypeCommandDTO updateChannelTypeCommandDTO);
 
         /// <summary>
+        /// Updates the mute state of a channel in a given frame to either on/unmuted or off/muted. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="updateChannelMuteCommandDTO">The information on which channel in which frame to update and the new mute state.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> UpdateChannelMuteAsync(Guid userId, string connectionId, UpdateChannelMuteCommandDTO updateChannelMuteCommandDTO);
+
+        /// <summary>
+        /// Updates the solo state of a channel in a given frame to either on/soloed or off/unsoloed. User must have permission to edit the wip in order for changes to be made.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="connectionId">The SignalR connection identifier that corresponds to the request.</param>
+        /// <param name="updateChannelSoloCommandDTO">The information on which channel in which frame to update and the new solo state.</param>
+        /// <returns>A guid representing the room's unique identifier. Null if no connection is found.</returns>
+        public Task<Guid?> UpdateChannelSoloAsync(Guid userId, string connectionId, UpdateChannelSoloCommandDTO updateChannelSoloCommandDTO);
+
+        /// <summary>
         /// Updates a single pitch value in a wip. User must have permission to edit the wip in order for changes to be made.
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>

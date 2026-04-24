@@ -157,6 +157,26 @@ namespace TimesynqServer.Hubs.TrackerHub
             );
         }
 
+        public Task<TrackerHubResult> UpdateChannelMute(UpdateChannelMuteCommandDTO updateChannelMuteCommandDTO)
+        {
+            return UpdateTracker(
+                () => _roomService.UpdateChannelMute(Context.UserIdentifier, Context.ConnectionId, updateChannelMuteCommandDTO),
+                TrackerHubClientCallbacks.ChannelMuteUpdated,
+                updateChannelMuteCommandDTO,
+                TrackerHubError.FailedToUpdateChannelMute
+            );
+        }
+
+        public Task<TrackerHubResult> UpdateChannelSolo(UpdateChannelSoloCommandDTO updateChannelSoloCommandDTO)
+        {
+            return UpdateTracker(
+                () => _roomService.UpdateChannelSolo(Context.UserIdentifier, Context.ConnectionId, updateChannelSoloCommandDTO),
+                TrackerHubClientCallbacks.ChannelSoloUpdated,
+                updateChannelSoloCommandDTO,
+                TrackerHubError.FailedToUpdateChannelSolo
+            );
+        } 
+
         public Task<TrackerHubResult> UpdatePitch(UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             return UpdateTracker(

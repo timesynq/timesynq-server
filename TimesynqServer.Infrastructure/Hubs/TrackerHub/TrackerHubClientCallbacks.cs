@@ -18,6 +18,8 @@
         public const string LineCountUpdated = nameof(LineCountUpdated);
         public const string LinesPerBeatUpdated = nameof(LinesPerBeatUpdated);
         public const string ChannelTypeUpdated = nameof(ChannelTypeUpdated);
+        public const string ChannelMuteUpdated = nameof(ChannelMuteUpdated);
+        public const string ChannelSoloUpdated = nameof(ChannelSoloUpdated);
         public const string PitchUpdated = nameof(PitchUpdated);
         public const string InstrumentUpdated = nameof(InstrumentUpdated);
         public const string FXSymbolUpdated = nameof(FXSymbolUpdated);

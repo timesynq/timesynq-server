@@ -177,6 +177,22 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache.Scripts
             .Body(LoadEmbeddedScript("Channel.update_channel_type.lua"))
             .Build();
 
+        public static readonly string ChannelMuteUpdateScript = new LuaScriptBuilder()
+            .Use(LuaLibraryModules.ConnectionModule)
+            .Use(LuaLibraryModules.RoomModule)
+            .Use(LuaLibraryModules.FrameModule)
+            .Use(LuaLibraryModules.OperationLogModule)
+            .Body(LoadEmbeddedScript("Channel.update_channel_mute.lua"))
+            .Build();
+
+        public static readonly string ChannelSoloUpdateScript = new LuaScriptBuilder()
+            .Use(LuaLibraryModules.ConnectionModule)
+            .Use(LuaLibraryModules.RoomModule)
+            .Use(LuaLibraryModules.FrameModule)
+            .Use(LuaLibraryModules.OperationLogModule)
+            .Body(LoadEmbeddedScript("Channel.update_channel_solo.lua"))
+            .Build();
+
         public static readonly string LineUpdateScript = new LuaScriptBuilder()
             .Use(LuaLibraryModules.ConnectionModule)
             .Use(LuaLibraryModules.KeyBuilderModule)

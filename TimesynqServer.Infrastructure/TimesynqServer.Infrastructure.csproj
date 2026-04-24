@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Cache\TrackerHubCache\Scripts\Channel\update_channel_mute.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\Lib\connection.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\Lib\frame.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\Lib\key_builder.lua" />
@@ -24,6 +25,11 @@
     <None Remove="Cache\TrackerHubCache\Scripts\update_sequencer_channel.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\update_sequencer_frame.lua" />
     <None Remove="Cache\TrackerHubCache\Scripts\update_sequencer_length.lua" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\Channel\update_channel_mute.lua" />
+    <EmbeddedResource Include="Cache\TrackerHubCache\Scripts\Channel\update_channel_solo.lua" />
   </ItemGroup>
 
   <ItemGroup>

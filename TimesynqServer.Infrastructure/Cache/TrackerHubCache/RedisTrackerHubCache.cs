@@ -437,6 +437,66 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
         }
 
         /// <inheritdoc/>
+        public async Task<Guid?> UpdateChannelMuteAsync(Guid userId, string connectionId, UpdateChannelMuteCommandDTO updateChannelMuteCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Frame = Hex.TwoDigit(updateChannelMuteCommandDTO.Frame),
+                Channel = updateChannelMuteCommandDTO.Channel,
+                IsOn = updateChannelMuteCommandDTO.IsOn.ToString(),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.ChannelMuteUpdateScript,
+                [connectionKey],
+                [payload]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid?> UpdateChannelSoloAsync(Guid userId, string connectionId, UpdateChannelSoloCommandDTO updateChannelSoloCommandDTO)
+        {
+            string connectionKey = CacheKeyBuilder.ConnectionKey(userId, connectionId);
+
+            string payload = JsonSerializer.Serialize(new
+            {
+                UserId = userId.ToString(),
+                Frame = Hex.TwoDigit(updateChannelSoloCommandDTO.Frame),
+                Channel = updateChannelSoloCommandDTO.Channel,
+                IsOn = updateChannelSoloCommandDTO.IsSolo.ToString(),
+                UpdatedOnUTC = DateTime.UtcNow.ToString()
+            });
+
+            IDatabase db = _redis.GetDatabase();
+
+            string? result = (string?)await db.ScriptEvaluateAsync(
+                LuaScripts.ChannelSoloUpdateScript,
+                [connectionKey],
+                [payload]
+            );
+
+            if (result == null || !Guid.TryParse(result, out Guid wipId))
+            {
+                return null;
+            }
+
+            return wipId;
+        }
+
+        /// <inheritdoc/>
         public async Task<Guid?> UpdatePitchAsync(Guid userId, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             var cellAddress = CellAddress.CreatePitchAddress(

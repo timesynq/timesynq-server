@@ -251,6 +251,42 @@ namespace TimesynqServer.Infrastructure.Service
             }
         }
 
+        public Task<TrackerHubResult<Guid>> UpdateChannelMute(string? userIdentifier, string connectionId, UpdateChannelMuteCommandDTO updateChannelMuteCommandDTO)
+        {
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateChannelMuteAsync(callerId, connectionId, updateChannelMuteCommandDTO),
+                () => ValidateUpdateChannelMuteCommand(updateChannelMuteCommandDTO)
+            );
+
+            static string? ValidateUpdateChannelMuteCommand(UpdateChannelMuteCommandDTO command)
+            {
+                if (command.Frame >= TrackerConstants.MaxFramesPerWip)
+                    return TrackerHubError.InvalidFrame;
+                if (command.Channel == TrackerConstants.MasterChannelIndex || command.Channel >= TrackerConstants.MaxChannels)
+                    return TrackerHubError.InvalidChannel;
+                return null;
+            }
+        }
+
+        public Task<TrackerHubResult<Guid>> UpdateChannelSolo(string? userIdentifier, string connectionId, UpdateChannelSoloCommandDTO updateChannelSoloCommandDTO)
+        {
+            return UpdateTrackerValue(
+                userIdentifier,
+                callerId => _trackerHubCache.UpdateChannelSoloAsync(callerId, connectionId, updateChannelSoloCommandDTO),
+                () => ValidateUpdateChannelSoloCommand(updateChannelSoloCommandDTO)
+            );
+
+            static string? ValidateUpdateChannelSoloCommand(UpdateChannelSoloCommandDTO command)
+            {
+                if (command.Frame >= TrackerConstants.MaxFramesPerWip)
+                    return TrackerHubError.InvalidFrame;
+                if (command.Channel == TrackerConstants.MasterChannelIndex || command.Channel >= TrackerConstants.MaxChannels)
+                    return TrackerHubError.InvalidChannel;
+                return null;
+            }
+        }
+
         public Task<TrackerHubResult<Guid>> UpdatePitch(string? userIdentifier, string connectionId, UpdatePitchCommandDTO updatePitchCommandDTO)
         {
             return UpdateTrackerValue(

@@ -32,5 +32,7 @@
         public static string FailedToUpdateSequencerLength { get; } = "Failed to update sequencer length";
         public static string FailedToUpdateSequencerFrame { get; } = "Failed to update sequencer frame";
         public static string FailedToUpdateSequencerChannel { get; } = "Failed to update sequencer channel";
+        public static string FailedToUpdateChannelMute { get; } = "Failed to update channel's mute state";
+        public static string FailedToUpdateChannelSolo { get; } = "Failed to update channel's solo state";
     }
 }
