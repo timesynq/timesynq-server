@@ -30,12 +30,13 @@ if not index_number then
 end
 index_number = index_number - 1
 
-local new_bit = input.IsSend and bit.lshift(1, index_number) or 0
+local is_send = string.lower(input.IsSend) == "true"
+local new_bit = is_send and bit.lshift(1, index_number) or 0
 local mask = bit.lshift(1, index_number)
 local cleared_send_mask_short = bit.band(old_send_mask_short, bit.bnot(mask))
 local new_send_mask_short = bit.bor(new_bit, cleared_send_mask_short)
 
-local new_send_mask = string.format("%x", new_send_mask_short)
+local new_send_mask = string.upper(string.format("%04x", new_send_mask_short))
 
 redis.call("HSET", frame_key,
 	frame_field_names.send_mask, new_send_mask

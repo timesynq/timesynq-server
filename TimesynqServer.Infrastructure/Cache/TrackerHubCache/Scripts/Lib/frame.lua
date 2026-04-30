@@ -5,7 +5,7 @@ local frame_defaults = {
 	line_count = 64,
 	lines_per_beat = 4,
 	send_mask = "0000",
-	on_mask = "ffff",
+	on_mask = "FFFF",
 	solo_mask = "0000"
 }
 

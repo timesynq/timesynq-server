@@ -476,7 +476,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
                 UserId = userId.ToString(),
                 Frame = Hex.TwoDigit(updateChannelSoloCommandDTO.Frame),
                 Channel = updateChannelSoloCommandDTO.Channel,
-                IsOn = updateChannelSoloCommandDTO.IsSolo.ToString(),
+                IsSolo = updateChannelSoloCommandDTO.IsSolo.ToString(),
                 UpdatedOnUTC = DateTime.UtcNow.ToString()
             });
 
