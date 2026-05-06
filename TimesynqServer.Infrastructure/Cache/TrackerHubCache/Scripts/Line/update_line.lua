@@ -45,7 +45,7 @@ local old_line_value = redis.call("HGET", channel_key, input.Line)
 old_line_value = old_line_value and old_line_value or empty_line_value
 
 local left_start = 1
-local left_end = (column * num_chars_per_column) + 1
+local left_end = (column * num_chars_per_column)
 local right_start = (column * num_chars_per_column) + num_chars_per_column + 1
 
 local left = column ~= 0 and string.sub(old_line_value, left_start, left_end) or ""
@@ -66,7 +66,7 @@ add_operation_log_entry(
 	input.Type,
 	input.UserId,
 	input.UpdatedOnUTC,
-	old_value,
+	old_line_value,
 	input.NewValue,
 	input.Address
 )

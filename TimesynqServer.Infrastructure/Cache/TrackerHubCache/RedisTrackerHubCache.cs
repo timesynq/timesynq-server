@@ -560,6 +560,7 @@ namespace TimesynqServer.Infrastructure.Cache.TrackerHubCache
             {
                 UserId = userId.ToString(),
                 Type = commandType,
+                Frame = cellAddress.FrameHex,
                 Channel = cellAddress.ChannelHex,
                 Line = cellAddress.LineHex,
                 Column = cellAddress.Column,
